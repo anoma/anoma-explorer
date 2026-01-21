@@ -121,8 +121,8 @@ defmodule AnomaExplorerWeb.AnalyticsLive do
           </form>
         </div>
       </div>
-
-      <!-- Stats Grid -->
+      
+    <!-- Stats Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div class="stat-card">
           <div class="flex items-center justify-between">
@@ -172,23 +172,23 @@ defmodule AnomaExplorerWeb.AnalyticsLive do
           </div>
         </div>
       </div>
-
-      <!-- Charts Grid -->
+      
+    <!-- Charts Grid -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <!-- Daily Activity Chart -->
         <div class="stat-card">
           <h3 class="text-lg font-semibold text-base-content mb-6">Daily Activity</h3>
           <.bar_chart data={@daily_counts} />
         </div>
-
-        <!-- Activity by Type -->
+        
+    <!-- Activity by Type -->
         <div class="stat-card">
           <h3 class="text-lg font-semibold text-base-content mb-6">Activity by Type</h3>
           <.horizontal_bar_chart data={@by_kind} color="success" />
         </div>
       </div>
-
-      <!-- Network Distribution -->
+      
+    <!-- Network Distribution -->
       <div class="stat-card">
         <h3 class="text-lg font-semibold text-base-content mb-6">Activity by Network</h3>
         <.horizontal_bar_chart data={@by_network} color="primary" />

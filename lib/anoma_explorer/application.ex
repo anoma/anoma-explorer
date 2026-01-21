@@ -16,6 +16,8 @@ defmodule AnomaExplorer.Application do
       {Finch, name: AnomaExplorer.Finch},
       # Rate limiter for API calls
       AnomaExplorer.RateLimiter,
+      # Settings cache (must be after Repo)
+      AnomaExplorer.Settings.Cache,
       # Background job processing
       {Oban, Application.fetch_env!(:anoma_explorer, Oban)},
       # Start to serve requests, typically the last entry

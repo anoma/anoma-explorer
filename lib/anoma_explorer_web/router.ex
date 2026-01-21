@@ -22,6 +22,11 @@ defmodule AnomaExplorerWeb.Router do
     # LiveView routes
     live "/activity", ActivityLive, :index
     live "/analytics", AnalyticsLive, :index
+
+    # Settings routes
+    live "/settings", SettingsLive, :index
+    live "/settings/new", SettingsLive, :new
+    live "/settings/:id/edit", SettingsLive, :edit
   end
 
   # Other scopes may use custom stacks.

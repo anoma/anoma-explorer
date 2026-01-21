@@ -37,8 +37,8 @@ defmodule AnomaExplorerWeb.Layouts do
               </div>
             </a>
           </div>
-
-          <!-- Navigation -->
+          
+    <!-- Navigation -->
           <nav class="flex-1 py-6">
             <div class="px-4 mb-2">
               <span class="text-xs font-medium text-base-content/40 uppercase tracking-wider">
@@ -61,6 +61,11 @@ defmodule AnomaExplorerWeb.Layouts do
               <span>Analytics</span>
             </a>
 
+            <a href="/settings" class={nav_class(@current_path, "/settings")}>
+              <.icon name="hero-cog-6-tooth" class="w-5 h-5" />
+              <span>Settings</span>
+            </a>
+
             <div class="px-4 mt-8 mb-2">
               <span class="text-xs font-medium text-base-content/40 uppercase tracking-wider">
                 Networks
@@ -75,8 +80,8 @@ defmodule AnomaExplorerWeb.Layouts do
               <.network_status network="Polygon" status="active" />
             </div>
           </nav>
-
-          <!-- Footer -->
+          
+    <!-- Footer -->
           <div class="p-4 border-t border-base-300">
             <div class="flex items-center justify-between">
               <span class="text-xs text-base-content/50">Theme</span>
@@ -85,8 +90,8 @@ defmodule AnomaExplorerWeb.Layouts do
           </div>
         </div>
       </aside>
-
-      <!-- Main content -->
+      
+    <!-- Main content -->
       <main class="ml-64 min-h-screen">
         <div class="p-8">
           {render_slot(@inner_block)}

@@ -445,6 +445,85 @@ defmodule AnomaExplorerWeb.CoreComponents do
     """
   end
 
+  @doc """
+  Renders a modal dialog.
+
+  ## Examples
+
+      <.modal id="confirm-modal" show={@show_modal}>
+        <:title>Confirm Action</:title>
+        Are you sure?
+      </.modal>
+  """
+  attr :id, :string, required: true
+  attr :show, :boolean, default: false
+  attr :on_cancel, JS, default: %JS{}
+
+  slot :title
+  slot :inner_block, required: true
+
+  def modal(assigns) do
+    ~H"""
+    <div
+      id={@id}
+      phx-mounted={@show && show_modal(@id)}
+      phx-remove={hide_modal(@id)}
+      data-cancel={JS.exec(@on_cancel, "phx-remove")}
+      class="hidden relative z-50"
+    >
+      <div
+        id={"#{@id}-bg"}
+        class="fixed inset-0 bg-base-300/80 transition-opacity"
+        aria-hidden="true"
+      />
+      <div class="fixed inset-0 overflow-y-auto" role="dialog" aria-modal="true">
+        <div class="flex min-h-full items-center justify-center p-4">
+          <div
+            id={"#{@id}-container"}
+            phx-window-keydown={JS.exec("data-cancel", to: "##{@id}")}
+            phx-key="escape"
+            phx-click-away={JS.exec("data-cancel", to: "##{@id}")}
+            class="relative w-full max-w-lg bg-base-100 rounded-xl shadow-xl p-6 border border-base-300"
+          >
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold text-base-content">{render_slot(@title)}</h3>
+              <button
+                phx-click={JS.exec("data-cancel", to: "##{@id}")}
+                type="button"
+                class="btn btn-ghost btn-sm btn-circle"
+                aria-label={gettext("close")}
+              >
+                <.icon name="hero-x-mark" class="w-5 h-5" />
+              </button>
+            </div>
+            {render_slot(@inner_block)}
+          </div>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
+  defp show_modal(id) do
+    JS.show(to: "##{id}")
+    |> JS.show(to: "##{id}-bg", transition: {"ease-out duration-300", "opacity-0", "opacity-100"})
+    |> JS.show(
+      to: "##{id}-container",
+      transition: {"ease-out duration-300", "opacity-0 scale-95", "opacity-100 scale-100"}
+    )
+    |> JS.focus_first(to: "##{id}-container")
+  end
+
+  defp hide_modal(id) do
+    JS.hide(to: "##{id}-bg", transition: {"ease-in duration-200", "opacity-100", "opacity-0"})
+    |> JS.hide(
+      to: "##{id}-container",
+      transition: {"ease-in duration-200", "opacity-100 scale-100", "opacity-0 scale-95"}
+    )
+    |> JS.hide(to: "##{id}", transition: {"block", "block", "hidden"})
+    |> JS.pop_focus()
+  end
+
   ## JS Commands
 
   def show(js \\ %JS{}, selector) do

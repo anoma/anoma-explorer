@@ -140,13 +140,12 @@ defmodule AnomaExplorerWeb.ActivityLive do
         </div>
         <div class="flex items-center gap-2">
           <span class="inline-flex items-center gap-2 text-sm text-success">
-            <span class="w-2 h-2 rounded-full bg-success animate-pulse"></span>
-            Live
+            <span class="w-2 h-2 rounded-full bg-success animate-pulse"></span> Live
           </span>
         </div>
       </div>
-
-      <!-- Filters -->
+      
+    <!-- Filters -->
       <div class="stat-card mb-6">
         <form phx-change="filter" class="flex flex-wrap gap-4 items-end">
           <div class="flex-1 min-w-[200px]">
@@ -194,8 +193,8 @@ defmodule AnomaExplorerWeb.ActivityLive do
           <% end %>
         </form>
       </div>
-
-      <!-- Activity Table -->
+      
+    <!-- Activity Table -->
       <div class="stat-card overflow-hidden">
         <div class="overflow-x-auto">
           <table class="data-table">
@@ -236,7 +235,6 @@ defmodule AnomaExplorerWeb.ActivityLive do
               <% end %>
             </tbody>
           </table>
-
         </div>
       </div>
     </Layouts.app>
