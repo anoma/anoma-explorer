@@ -5,27 +5,13 @@ defmodule AnomaExplorerWeb.Layouts do
   """
   use AnomaExplorerWeb, :html
 
-  # Embed all files in layouts/* within this module.
-  # The default root.html.heex file contains the HTML
-  # skeleton of your application, namely HTML headers
-  # and other static content.
   embed_templates "layouts/*"
 
   @doc """
-  Renders your app layout.
-
-  This function is typically invoked from every template,
-  and it often contains your application menu, sidebar,
-  or similar.
-
-  ## Examples
-
-      <Layouts.app flash={@flash}>
-        <h1>Content</h1>
-      </Layouts.app>
-
+  Renders your app layout with sidebar navigation.
   """
   attr :flash, :map, required: true, doc: "the map of flash messages"
+  attr :current_path, :string, default: "/", doc: "the current request path"
 
   attr :current_scope, :map,
     default: nil,
@@ -35,49 +21,112 @@ defmodule AnomaExplorerWeb.Layouts do
 
   def app(assigns) do
     ~H"""
-    <header class="navbar px-4 sm:px-6 lg:px-8">
-      <div class="flex-1">
-        <a href="/" class="flex-1 flex w-fit items-center gap-2">
-          <img src={~p"/images/logo.svg"} width="36" />
-          <span class="text-sm font-semibold">v{Application.spec(:phoenix, :vsn)}</span>
-        </a>
-      </div>
-      <div class="flex-none">
-        <ul class="flex flex-column px-1 space-x-4 items-center">
-          <li>
-            <a href="https://phoenixframework.org/" class="btn btn-ghost">Website</a>
-          </li>
-          <li>
-            <a href="https://github.com/phoenixframework/phoenix" class="btn btn-ghost">GitHub</a>
-          </li>
-          <li>
-            <.theme_toggle />
-          </li>
-          <li>
-            <a href="https://hexdocs.pm/phoenix/overview.html" class="btn btn-primary">
-              Get Started <span aria-hidden="true">&rarr;</span>
+    <div class="min-h-screen bg-base-100">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="flex flex-col h-full">
+          <!-- Logo -->
+          <div class="p-6 border-b border-base-300">
+            <a href="/" class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
+                <span class="text-xl font-bold text-primary-content">A</span>
+              </div>
+              <div>
+                <span class="text-lg font-semibold text-base-content">Anoma</span>
+                <span class="text-lg font-light text-base-content/70">Explorer</span>
+              </div>
             </a>
-          </li>
-        </ul>
-      </div>
-    </header>
+          </div>
 
-    <main class="px-4 py-20 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-2xl space-y-4">
-        {render_slot(@inner_block)}
-      </div>
-    </main>
+          <!-- Navigation -->
+          <nav class="flex-1 py-6">
+            <div class="px-4 mb-2">
+              <span class="text-xs font-medium text-base-content/40 uppercase tracking-wider">
+                Overview
+              </span>
+            </div>
 
-    <.flash_group flash={@flash} />
+            <a href="/" class={nav_class(@current_path, "/")}>
+              <.icon name="hero-home" class="w-5 h-5" />
+              <span>Dashboard</span>
+            </a>
+
+            <a href="/activity" class={nav_class(@current_path, "/activity")}>
+              <.icon name="hero-queue-list" class="w-5 h-5" />
+              <span>Activity Feed</span>
+            </a>
+
+            <a href="/analytics" class={nav_class(@current_path, "/analytics")}>
+              <.icon name="hero-chart-bar" class="w-5 h-5" />
+              <span>Analytics</span>
+            </a>
+
+            <div class="px-4 mt-8 mb-2">
+              <span class="text-xs font-medium text-base-content/40 uppercase tracking-wider">
+                Networks
+              </span>
+            </div>
+
+            <div class="px-4 py-2 space-y-2">
+              <.network_status network="Ethereum" status="active" />
+              <.network_status network="Base" status="active" />
+              <.network_status network="Optimism" status="active" />
+              <.network_status network="Arbitrum" status="active" />
+              <.network_status network="Polygon" status="active" />
+            </div>
+          </nav>
+
+          <!-- Footer -->
+          <div class="p-4 border-t border-base-300">
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-base-content/50">Theme</span>
+              <.theme_toggle />
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main content -->
+      <main class="ml-64 min-h-screen">
+        <div class="p-8">
+          {render_slot(@inner_block)}
+        </div>
+      </main>
+
+      <.flash_group flash={@flash} />
+    </div>
+    """
+  end
+
+  defp nav_class(current_path, target_path) do
+    base = "sidebar-nav-item"
+
+    if current_path == target_path do
+      "#{base} active"
+    else
+      base
+    end
+  end
+
+  attr :network, :string, required: true
+  attr :status, :string, default: "active"
+
+  defp network_status(assigns) do
+    ~H"""
+    <div class="flex items-center justify-between text-sm">
+      <span class="text-base-content/70">{@network}</span>
+      <span class={[
+        "w-2 h-2 rounded-full",
+        @status == "active" && "bg-success",
+        @status == "inactive" && "bg-base-content/30"
+      ]}>
+      </span>
+    </div>
     """
   end
 
   @doc """
   Shows the flash group with standard titles and content.
-
-  ## Examples
-
-      <.flash_group flash={@flash} />
   """
   attr :flash, :map, required: true, doc: "the map of flash messages"
   attr :id, :string, default: "flash-group", doc: "the optional id of flash container"
@@ -116,37 +165,26 @@ defmodule AnomaExplorerWeb.Layouts do
   end
 
   @doc """
-  Provides dark vs light theme toggle based on themes defined in app.css.
-
-  See <head> in root.html.heex which applies the theme before page load.
+  Provides dark vs light theme toggle.
   """
   def theme_toggle(assigns) do
     ~H"""
-    <div class="card relative flex flex-row items-center border-2 border-base-300 bg-base-300 rounded-full">
-      <div class="absolute w-1/3 h-full rounded-full border-1 border-base-200 bg-base-100 brightness-200 left-0 [[data-theme=light]_&]:left-1/3 [[data-theme=dark]_&]:left-2/3 transition-[left]" />
-
+    <div class="flex items-center gap-1 bg-base-300 rounded-lg p-1">
       <button
-        class="flex p-2 cursor-pointer w-1/3"
-        phx-click={JS.dispatch("phx:set-theme")}
-        data-phx-theme="system"
-      >
-        <.icon name="hero-computer-desktop-micro" class="size-4 opacity-75 hover:opacity-100" />
-      </button>
-
-      <button
-        class="flex p-2 cursor-pointer w-1/3"
+        class="p-1.5 rounded hover:bg-base-200 transition-colors [[data-theme=light]_&]:bg-base-200"
         phx-click={JS.dispatch("phx:set-theme")}
         data-phx-theme="light"
+        title="Light mode"
       >
-        <.icon name="hero-sun-micro" class="size-4 opacity-75 hover:opacity-100" />
+        <.icon name="hero-sun-micro" class="w-4 h-4 text-base-content/70" />
       </button>
-
       <button
-        class="flex p-2 cursor-pointer w-1/3"
+        class="p-1.5 rounded hover:bg-base-200 transition-colors [[data-theme=dark]_&]:bg-base-200"
         phx-click={JS.dispatch("phx:set-theme")}
         data-phx-theme="dark"
+        title="Dark mode"
       >
-        <.icon name="hero-moon-micro" class="size-4 opacity-75 hover:opacity-100" />
+        <.icon name="hero-moon-micro" class="w-4 h-4 text-base-content/70" />
       </button>
     </div>
     """

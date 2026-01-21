@@ -89,13 +89,19 @@ defmodule AnomaExplorerWeb.AnalyticsLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="container mx-auto px-4 py-8">
-      <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold">Analytics Dashboard</h1>
+    <Layouts.app flash={@flash} current_path="/analytics">
+      <!-- Page Header -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Analytics</h1>
+          <p class="text-sm text-base-content/60 mt-1">
+            Activity statistics and trends
+          </p>
+        </div>
 
-        <div class="flex gap-4">
+        <div class="flex items-center gap-3">
           <form phx-change="change_network">
-            <select name="network" class="rounded border-gray-300 text-sm">
+            <select name="network" class="filter-select">
               <option value="">All Networks</option>
               <%= for network <- @networks do %>
                 <option value={network} selected={@selected_network == network}>
@@ -106,57 +112,100 @@ defmodule AnomaExplorerWeb.AnalyticsLive do
           </form>
 
           <form phx-change="change_days">
-            <select name="days" class="rounded border-gray-300 text-sm">
-              <option value="7" selected={@days == 7}>Last 7 days</option>
-              <option value="14" selected={@days == 14}>Last 14 days</option>
-              <option value="30" selected={@days == 30}>Last 30 days</option>
-              <option value="90" selected={@days == 90}>Last 90 days</option>
+            <select name="days" class="filter-select">
+              <option value="7" selected={@days == 7}>7 days</option>
+              <option value="14" selected={@days == 14}>14 days</option>
+              <option value="30" selected={@days == 30}>30 days</option>
+              <option value="90" selected={@days == 90}>90 days</option>
             </select>
           </form>
         </div>
       </div>
-      
-    <!-- Summary Stats Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <.stat_card title="Total Activities" value={@summary.total_count} />
-        <.stat_card title="Active Networks" value={@summary.networks_active} />
-        <.stat_card title="Activity Types" value={@summary.kinds_used} />
-        <.stat_card title="Avg per Day" value={Float.round(@summary.avg_per_day, 1)} />
+
+      <!-- Stats Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="stat-card">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="stat-card-label">Total Activities</p>
+              <p class="stat-card-value">{format_number(@summary.total_count)}</p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+              <.icon name="hero-queue-list" class="w-6 h-6 text-primary" />
+            </div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="stat-card-label">Active Networks</p>
+              <p class="stat-card-value">{@summary.networks_active}</p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center">
+              <.icon name="hero-globe-alt" class="w-6 h-6 text-secondary" />
+            </div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="stat-card-label">Event Types</p>
+              <p class="stat-card-value">{@summary.kinds_used}</p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center">
+              <.icon name="hero-tag" class="w-6 h-6 text-accent" />
+            </div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="stat-card-label">Avg per Day</p>
+              <p class="stat-card-value">{Float.round(@summary.avg_per_day, 1)}</p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-info/10 flex items-center justify-center">
+              <.icon name="hero-arrow-trending-up" class="w-6 h-6 text-info" />
+            </div>
+          </div>
+        </div>
       </div>
-      
-    <!-- Charts Section -->
+
+      <!-- Charts Grid -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <!-- Daily Activity Chart -->
-        <div class="bg-white rounded-lg shadow p-4">
-          <h2 class="text-lg font-semibold mb-4">Daily Activity</h2>
+        <div class="stat-card">
+          <h3 class="text-lg font-semibold text-base-content mb-6">Daily Activity</h3>
           <.bar_chart data={@daily_counts} />
         </div>
-        
-    <!-- Activity by Kind -->
-        <div class="bg-white rounded-lg shadow p-4">
-          <h2 class="text-lg font-semibold mb-4">Activity by Type</h2>
-          <.horizontal_bar_chart data={@by_kind} />
+
+        <!-- Activity by Type -->
+        <div class="stat-card">
+          <h3 class="text-lg font-semibold text-base-content mb-6">Activity by Type</h3>
+          <.horizontal_bar_chart data={@by_kind} color="success" />
         </div>
       </div>
-      
-    <!-- Network Distribution -->
-      <div class="bg-white rounded-lg shadow p-4">
-        <h2 class="text-lg font-semibold mb-4">Activity by Network</h2>
-        <.horizontal_bar_chart data={@by_network} />
+
+      <!-- Network Distribution -->
+      <div class="stat-card">
+        <h3 class="text-lg font-semibold text-base-content mb-6">Activity by Network</h3>
+        <.horizontal_bar_chart data={@by_network} color="primary" />
       </div>
-    </div>
+    </Layouts.app>
     """
   end
 
-  # Component for stat cards
-  defp stat_card(assigns) do
-    ~H"""
-    <div class="bg-white rounded-lg shadow p-4">
-      <p class="text-sm text-gray-500">{@title}</p>
-      <p class="text-2xl font-bold">{@value}</p>
-    </div>
-    """
+  defp format_number(num) when num >= 1_000_000 do
+    "#{Float.round(num / 1_000_000, 1)}M"
   end
+
+  defp format_number(num) when num >= 1_000 do
+    "#{Float.round(num / 1_000, 1)}K"
+  end
+
+  defp format_number(num), do: "#{num}"
 
   # Simple text-based bar chart (CSS-based for simplicity)
   defp bar_chart(assigns) do
@@ -166,46 +215,64 @@ defmodule AnomaExplorerWeb.AnalyticsLive do
     ~H"""
     <div class="space-y-1">
       <%= if Enum.empty?(@data) do %>
-        <p class="text-gray-400 text-sm">No data available</p>
+        <div class="py-8 text-center">
+          <p class="text-base-content/40 text-sm">No data available</p>
+        </div>
       <% else %>
-        <%= for item <- @data do %>
-          <div class="flex items-center gap-2 text-xs">
-            <span class="w-16 text-gray-500 text-right">{format_date(item.date)}</span>
-            <div class="flex-1 bg-gray-100 rounded h-4">
-              <div
-                class="bg-blue-500 h-4 rounded"
-                style={"width: #{bar_width(item.count, @max_count)}%"}
-              >
+        <div class="flex flex-col gap-1">
+          <%= for item <- @data do %>
+            <div class="flex items-center gap-3 text-xs group">
+              <span class="w-12 text-base-content/50 text-right font-mono">
+                {format_date(item.date)}
+              </span>
+              <div class="flex-1 h-6 bg-base-300 rounded overflow-hidden">
+                <div
+                  class="chart-bar h-full flex items-center justify-end pr-2"
+                  style={"width: #{bar_width(item.count, @max_count)}%"}
+                >
+                  <%= if item.count > 0 do %>
+                    <span class="text-xs font-medium text-primary-content opacity-0 group-hover:opacity-100 transition-opacity">
+                      {item.count}
+                    </span>
+                  <% end %>
+                </div>
               </div>
+              <span class="w-8 text-right text-base-content/70 font-mono">{item.count}</span>
             </div>
-            <span class="w-8 text-right">{item.count}</span>
-          </div>
-        <% end %>
+          <% end %>
+        </div>
       <% end %>
     </div>
     """
   end
 
   # Horizontal bar chart for categorical data
+  attr :data, :map, required: true
+  attr :color, :string, default: "primary"
+
   defp horizontal_bar_chart(assigns) do
     data = Map.to_list(assigns.data) |> Enum.sort_by(fn {_, v} -> -v end)
     max_count = data |> Enum.map(fn {_, v} -> v end) |> Enum.max(fn -> 1 end)
     assigns = assign(assigns, data: data, max_count: max_count)
 
     ~H"""
-    <div class="space-y-2">
+    <div class="space-y-3">
       <%= if Enum.empty?(@data) do %>
-        <p class="text-gray-400 text-sm">No data available</p>
+        <div class="py-8 text-center">
+          <p class="text-base-content/40 text-sm">No data available</p>
+        </div>
       <% else %>
         <%= for {label, count} <- @data do %>
-          <div class="flex items-center gap-2">
-            <span class="w-32 text-sm font-medium truncate">{label}</span>
-            <div class="flex-1 bg-gray-100 rounded h-6">
+          <div class="group">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-sm font-medium text-base-content/80">{format_label(label)}</span>
+              <span class="text-sm font-mono text-base-content/60">{format_number(count)}</span>
+            </div>
+            <div class="h-2 bg-base-300 rounded-full overflow-hidden">
               <div
-                class="bg-green-500 h-6 rounded flex items-center justify-end pr-2"
+                class={"h-full rounded-full transition-all duration-500 bg-#{@color}"}
                 style={"width: #{bar_width(count, @max_count)}%"}
               >
-                <span class="text-xs text-white font-medium">{count}</span>
               </div>
             </div>
           </div>
@@ -219,6 +286,13 @@ defmodule AnomaExplorerWeb.AnalyticsLive do
     Calendar.strftime(date, "%m/%d")
   end
 
-  defp bar_width(count, max) when max > 0, do: count / max * 100
+  defp format_label(label) do
+    label
+    |> String.split("-")
+    |> Enum.map(&String.capitalize/1)
+    |> Enum.join(" ")
+  end
+
+  defp bar_width(count, max) when max > 0, do: max(count / max * 100, 2)
   defp bar_width(_, _), do: 0
 end

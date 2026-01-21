@@ -1,81 +1,183 @@
-<Layouts.flash_group flash={@flash} />
+<Layouts.app flash={@flash} current_path="/">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Dashboard</h1>
+      <p class="text-sm text-base-content/60 mt-1">Overview of contract activity across all networks</p>
+    </div>
+  </div>
 
-<div class="min-h-screen bg-gradient-to-br from-base-200 to-base-300">
-  <div class="container mx-auto px-4 py-16">
-    <div class="text-center mb-12">
-      <h1 class="text-5xl font-bold mb-4">Anoma Explorer</h1>
-      <p class="text-xl text-base-content/70">
-        Track contract activity across multiple EVM networks
+  <!-- Stats Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="stat-card">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="stat-card-label">Total Activities</p>
+          <p class="stat-card-value">--</p>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+          <.icon name="hero-queue-list" class="w-6 h-6 text-primary" />
+        </div>
+      </div>
+      <p class="text-xs text-base-content/50 mt-3">
+        <span class="text-success">+0%</span> from last week
       </p>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-      <a href="/activity" class="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow">
-        <div class="card-body">
-          <div class="flex items-center gap-4">
-            <div class="bg-primary/10 p-4 rounded-lg">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-8 w-8 text-primary"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
-                />
-              </svg>
-            </div>
-            <div>
-              <h2 class="card-title">Activity Feed</h2>
-              <p class="text-base-content/70">
-                Real-time logs, transactions, and transfers
-              </p>
-            </div>
-          </div>
+    <div class="stat-card">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="stat-card-label">Active Networks</p>
+          <p class="stat-card-value">5</p>
         </div>
-      </a>
-
-      <a href="/analytics" class="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow">
-        <div class="card-body">
-          <div class="flex items-center gap-4">
-            <div class="bg-secondary/10 p-4 rounded-lg">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-8 w-8 text-secondary"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                />
-              </svg>
-            </div>
-            <div>
-              <h2 class="card-title">Analytics</h2>
-              <p class="text-base-content/70">Charts and statistics dashboard</p>
-            </div>
-          </div>
+        <div class="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center">
+          <.icon name="hero-globe-alt" class="w-6 h-6 text-secondary" />
         </div>
-      </a>
+      </div>
+      <p class="text-xs text-base-content/50 mt-3">
+        All networks operational
+      </p>
     </div>
 
-    <div class="mt-16 text-center">
-      <h3 class="text-lg font-semibold mb-4">Supported Networks</h3>
-      <div class="flex flex-wrap justify-center gap-2">
-        <span class="badge badge-outline">Ethereum</span>
-        <span class="badge badge-outline">Base</span>
-        <span class="badge badge-outline">Optimism</span>
-        <span class="badge badge-outline">Arbitrum</span>
-        <span class="badge badge-outline">Polygon</span>
+    <div class="stat-card">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="stat-card-label">Contracts Tracked</p>
+          <p class="stat-card-value">1</p>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center">
+          <.icon name="hero-document-text" class="w-6 h-6 text-accent" />
+        </div>
       </div>
+      <p class="text-xs text-base-content/50 mt-3">
+        Anoma Protocol Adapter
+      </p>
+    </div>
+
+    <div class="stat-card">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="stat-card-label">Sync Status</p>
+          <p class="stat-card-value text-success">Live</p>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-success/10 flex items-center justify-center">
+          <.icon name="hero-signal" class="w-6 h-6 text-success" />
+        </div>
+      </div>
+      <p class="text-xs text-base-content/50 mt-3">
+        <span class="inline-flex items-center gap-1">
+          <span class="w-2 h-2 rounded-full bg-success animate-pulse"></span>
+          Real-time ingestion active
+        </span>
+      </p>
     </div>
   </div>
-</div>
+
+  <!-- Quick Actions -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <a
+      href="/activity"
+      class="stat-card hover:border-primary/50 transition-colors group cursor-pointer"
+    >
+      <div class="flex items-center gap-4">
+        <div class="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+          <.icon name="hero-queue-list" class="w-7 h-7 text-primary" />
+        </div>
+        <div class="flex-1">
+          <h3 class="text-lg font-semibold text-base-content group-hover:text-primary transition-colors">
+            Activity Feed
+          </h3>
+          <p class="text-sm text-base-content/60">
+            View real-time logs, transactions, and transfers
+          </p>
+        </div>
+        <.icon
+          name="hero-arrow-right"
+          class="w-5 h-5 text-base-content/30 group-hover:text-primary transition-colors"
+        />
+      </div>
+    </a>
+
+    <a
+      href="/analytics"
+      class="stat-card hover:border-secondary/50 transition-colors group cursor-pointer"
+    >
+      <div class="flex items-center gap-4">
+        <div class="w-14 h-14 rounded-xl bg-secondary/10 flex items-center justify-center group-hover:bg-secondary/20 transition-colors">
+          <.icon name="hero-chart-bar" class="w-7 h-7 text-secondary" />
+        </div>
+        <div class="flex-1">
+          <h3 class="text-lg font-semibold text-base-content group-hover:text-secondary transition-colors">
+            Analytics Dashboard
+          </h3>
+          <p class="text-sm text-base-content/60">
+            Charts, statistics, and activity trends
+          </p>
+        </div>
+        <.icon
+          name="hero-arrow-right"
+          class="w-5 h-5 text-base-content/30 group-hover:text-secondary transition-colors"
+        />
+      </div>
+    </a>
+  </div>
+
+  <!-- Network Status -->
+  <div class="stat-card">
+    <h3 class="text-lg font-semibold text-base-content mb-4">Network Status</h3>
+    <div class="overflow-x-auto">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Network</th>
+            <th>Chain ID</th>
+            <th>Status</th>
+            <th>Last Block</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <span class="network-badge network-badge-eth">Ethereum Mainnet</span>
+            </td>
+            <td class="font-mono text-base-content/70">1</td>
+            <td><span class="text-success flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-success"></span> Active</span></td>
+            <td class="font-mono text-base-content/70">--</td>
+          </tr>
+          <tr>
+            <td>
+              <span class="network-badge network-badge-eth">Ethereum Sepolia</span>
+            </td>
+            <td class="font-mono text-base-content/70">11155111</td>
+            <td><span class="text-success flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-success"></span> Active</span></td>
+            <td class="font-mono text-base-content/70">--</td>
+          </tr>
+          <tr>
+            <td>
+              <span class="network-badge network-badge-base">Base Mainnet</span>
+            </td>
+            <td class="font-mono text-base-content/70">8453</td>
+            <td><span class="text-success flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-success"></span> Active</span></td>
+            <td class="font-mono text-base-content/70">--</td>
+          </tr>
+          <tr>
+            <td>
+              <span class="network-badge network-badge-optimism">Optimism Mainnet</span>
+            </td>
+            <td class="font-mono text-base-content/70">10</td>
+            <td><span class="text-success flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-success"></span> Active</span></td>
+            <td class="font-mono text-base-content/70">--</td>
+          </tr>
+          <tr>
+            <td>
+              <span class="network-badge network-badge-arbitrum">Arbitrum One</span>
+            </td>
+            <td class="font-mono text-base-content/70">42161</td>
+            <td><span class="text-success flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-success"></span> Active</span></td>
+            <td class="font-mono text-base-content/70">--</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</Layouts.app>

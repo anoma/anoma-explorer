@@ -111,7 +111,7 @@ defmodule AnomaExplorerWeb.ActivityLiveTest do
 
       html =
         view
-        |> element("a", "Clear filters")
+        |> element("button", "Clear filters")
         |> render_click()
 
       assert html =~ "0xtx1"

@@ -10,7 +10,6 @@ defmodule AnomaExplorerWeb.ActivityLive do
   @impl true
   def mount(params, _session, socket) do
     if connected?(socket) do
-      # Subscribe to all activity topics
       subscribe_to_activities()
     end
 
@@ -68,7 +67,6 @@ defmodule AnomaExplorerWeb.ActivityLive do
 
   @impl true
   def handle_info({:new_activity, activity}, socket) do
-    # Only show if it matches current filters
     if matches_filters?(activity, socket.assigns.filters) do
       {:noreply, stream_insert(socket, :activities, activity, at: 0)}
     else
@@ -79,14 +77,10 @@ defmodule AnomaExplorerWeb.ActivityLive do
   # Private helpers
 
   defp subscribe_to_activities do
-    # Subscribe to all networks
     for network <- Config.supported_networks() do
-      # We subscribe to a wildcard topic for now
-      # In production, you'd subscribe to specific contract addresses
       Phoenix.PubSub.subscribe(AnomaExplorer.PubSub, "contract:#{network}:*")
     end
 
-    # Also subscribe to a general topic
     Phoenix.PubSub.subscribe(AnomaExplorer.PubSub, "activities:new")
   end
 
@@ -135,17 +129,31 @@ defmodule AnomaExplorerWeb.ActivityLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="container mx-auto px-4 py-8">
-      <h1 class="text-3xl font-bold mb-6">Activity Feed</h1>
-      
-    <!-- Filters -->
-      <div class="bg-base-200 rounded-lg p-4 mb-6">
+    <Layouts.app flash={@flash} current_path="/activity">
+      <!-- Page Header -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Activity Feed</h1>
+          <p class="text-sm text-base-content/60 mt-1">
+            Real-time contract events across all networks
+          </p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="inline-flex items-center gap-2 text-sm text-success">
+            <span class="w-2 h-2 rounded-full bg-success animate-pulse"></span>
+            Live
+          </span>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="stat-card mb-6">
         <form phx-change="filter" class="flex flex-wrap gap-4 items-end">
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text">Network</span>
+          <div class="flex-1 min-w-[200px]">
+            <label class="block text-xs font-medium text-base-content/50 uppercase tracking-wider mb-2">
+              Network
             </label>
-            <select name="filter[network]" class="select select-bordered">
+            <select name="filter[network]" class="filter-select w-full">
               <%= for network <- @networks do %>
                 <option
                   value={network}
@@ -153,90 +161,124 @@ defmodule AnomaExplorerWeb.ActivityLive do
                     @filters.network == network || (@filters.network == nil && network == "all")
                   }
                 >
-                  {network}
+                  {format_network_name(network)}
                 </option>
               <% end %>
             </select>
           </div>
 
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text">Type</span>
+          <div class="flex-1 min-w-[200px]">
+            <label class="block text-xs font-medium text-base-content/50 uppercase tracking-wider mb-2">
+              Event Type
             </label>
-            <select name="filter[kind]" class="select select-bordered">
+            <select name="filter[kind]" class="filter-select w-full">
               <%= for kind <- @kinds do %>
                 <option
                   value={kind}
                   selected={@filters.kind == kind || (@filters.kind == nil && kind == "all")}
                 >
-                  {kind}
+                  {format_kind_name(kind)}
                 </option>
               <% end %>
             </select>
           </div>
 
-          <div class="form-control">
-            <a href="#" phx-click="clear_filters" class="btn btn-ghost">Clear filters</a>
-          </div>
+          <%= if @filters.network || @filters.kind do %>
+            <button
+              type="button"
+              phx-click="clear_filters"
+              class="px-4 py-2 text-sm text-base-content/70 hover:text-base-content transition-colors"
+            >
+              Clear filters
+            </button>
+          <% end %>
         </form>
       </div>
-      
-    <!-- Activity List -->
-      <div class="overflow-x-auto">
-        <table class="table table-zebra w-full">
-          <thead>
-            <tr>
-              <th>Block</th>
-              <th>Network</th>
-              <th>Type</th>
-              <th>Transaction Hash</th>
-              <th>Time</th>
-            </tr>
-          </thead>
-          <tbody id="activities" phx-update="stream">
-            <%= for {id, activity} <- @streams.activities do %>
-              <tr id={id}>
-                <td class="font-mono">{activity.block_number}</td>
-                <td>
-                  <span class="badge badge-primary badge-sm">{activity.network}</span>
-                </td>
-                <td>
-                  <span class={["badge badge-sm", kind_badge_class(activity.kind)]}>
-                    {activity.kind}
-                  </span>
-                </td>
-                <td class="font-mono text-sm">
-                  <span title={activity.tx_hash}>{truncate_hash(activity.tx_hash)}</span>
-                </td>
-                <td class="text-sm text-gray-500">
-                  {format_time(activity.inserted_at)}
-                </td>
+
+      <!-- Activity Table -->
+      <div class="stat-card overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Block</th>
+                <th>Network</th>
+                <th>Type</th>
+                <th>Transaction Hash</th>
+                <th>Time</th>
               </tr>
-            <% end %>
-          </tbody>
-        </table>
+            </thead>
+            <tbody id="activities" phx-update="stream">
+              <%= for {id, activity} <- @streams.activities do %>
+                <tr id={id} class="group">
+                  <td>
+                    <span class="font-mono text-base-content">{activity.block_number}</span>
+                  </td>
+                  <td>
+                    <span class={network_badge_class(activity.network)}>
+                      {format_network_short(activity.network)}
+                    </span>
+                  </td>
+                  <td>
+                    <span class={kind_badge_class(activity.kind)}>
+                      {activity.kind}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="hash-display" title={activity.tx_hash}>
+                      {truncate_hash(activity.tx_hash)}
+                    </span>
+                  </td>
+                  <td class="text-sm text-base-content/50">
+                    {format_time(activity.inserted_at)}
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+
+        </div>
       </div>
-      
-    <!-- Load More -->
-      <div class="mt-4 text-center">
-        <%= if has_more?(@streams.activities) do %>
-          <button
-            phx-click="load_more"
-            phx-value-cursor={last_id(@streams.activities)}
-            class="btn btn-outline"
-          >
-            Load More
-          </button>
-        <% end %>
-      </div>
-    </div>
+    </Layouts.app>
     """
   end
 
-  defp kind_badge_class("tx"), do: "badge-info"
-  defp kind_badge_class("log"), do: "badge-success"
-  defp kind_badge_class("transfer"), do: "badge-warning"
-  defp kind_badge_class(_), do: "badge-ghost"
+  defp format_network_name("all"), do: "All Networks"
+  defp format_network_name(network), do: network
+
+  defp format_network_short(network) do
+    network
+    |> String.split("-")
+    |> List.first()
+    |> String.capitalize()
+  end
+
+  defp format_kind_name("all"), do: "All Types"
+  defp format_kind_name(kind), do: String.capitalize(kind)
+
+  defp network_badge_class(network) do
+    base = "network-badge"
+
+    cond do
+      String.contains?(network, "eth") -> "#{base} network-badge-eth"
+      String.contains?(network, "base") -> "#{base} network-badge-base"
+      String.contains?(network, "polygon") -> "#{base} network-badge-polygon"
+      String.contains?(network, "arb") -> "#{base} network-badge-arbitrum"
+      String.contains?(network, "optimism") -> "#{base} network-badge-optimism"
+      true -> base
+    end
+  end
+
+  defp kind_badge_class(kind) do
+    base = "kind-badge"
+
+    case kind do
+      "log" -> "#{base} kind-badge-log"
+      "tx" -> "#{base} kind-badge-tx"
+      "transfer" -> "#{base} kind-badge-transfer"
+      _ -> base
+    end
+  end
 
   defp truncate_hash(nil), do: "-"
 
@@ -250,17 +292,5 @@ defmodule AnomaExplorerWeb.ActivityLive do
 
   defp format_time(datetime) do
     Calendar.strftime(datetime, "%Y-%m-%d %H:%M:%S")
-  end
-
-  defp has_more?(stream) do
-    # Simple heuristic: if we got 50 items, there might be more
-    Enum.count(stream) >= 50
-  end
-
-  defp last_id(stream) do
-    case Enum.at(stream, -1) do
-      {_id, activity} -> activity.id
-      nil -> nil
-    end
   end
 end

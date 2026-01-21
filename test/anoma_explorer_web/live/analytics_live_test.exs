@@ -24,10 +24,10 @@ defmodule AnomaExplorerWeb.AnalyticsLiveTest do
     test "renders dashboard with stats", %{conn: conn} do
       {:ok, _view, html} = live(conn, ~p"/analytics")
 
-      assert html =~ "Analytics Dashboard"
+      assert html =~ "Analytics"
       assert html =~ "Total Activities"
       assert html =~ "Active Networks"
-      assert html =~ "Activity Types"
+      assert html =~ "Event Types"
       assert html =~ "Avg per Day"
     end
 
@@ -73,7 +73,7 @@ defmodule AnomaExplorerWeb.AnalyticsLiveTest do
         |> element("form[phx-change=change_days]")
         |> render_change(%{"days" => "7"})
 
-      assert html =~ "Last 7 days"
+      assert html =~ "7 days"
     end
   end
 
@@ -82,7 +82,7 @@ defmodule AnomaExplorerWeb.AnalyticsLiveTest do
       {:ok, _view, html} = live(conn, ~p"/analytics?days=7")
 
       # The 7 days option should be selected
-      assert html =~ "Last 7 days"
+      assert html =~ "7 days"
       assert html =~ ~s(selected)
     end
 
