@@ -7,6 +7,7 @@ defmodule AnomaExplorerWeb.ResourcesLive do
   alias AnomaExplorerWeb.Layouts
   alias AnomaExplorer.Indexer.GraphQL
   alias AnomaExplorer.Indexer.Client
+  alias AnomaExplorer.Indexer.Networks
 
   @page_size 20
 
@@ -220,8 +221,8 @@ defmodule AnomaExplorerWeb.ResourcesLive do
             <tr>
               <th>Tag</th>
               <th>Status</th>
-              <th>Logic Ref</th>
-              <th class="hidden md:table-cell">Quantity</th>
+              <th>Network</th>
+              <th class="hidden md:table-cell">Logic Ref</th>
               <th class="hidden lg:table-cell">Block</th>
               <th>Transaction</th>
             </tr>
@@ -240,10 +241,12 @@ defmodule AnomaExplorerWeb.ResourcesLive do
                   <% end %>
                 </td>
                 <td>
-                  <code class="hash-display text-xs"><%= truncate_hash(resource["logicRef"]) %></code>
+                  <span class="badge badge-outline badge-sm" title={"Chain ID: #{resource["chainId"]}"}>
+                    <%= Networks.short_name(resource["chainId"]) %>
+                  </span>
                 </td>
                 <td class="hidden md:table-cell">
-                  <%= resource["quantity"] || "-" %>
+                  <code class="hash-display text-xs"><%= truncate_hash(resource["logicRef"]) %></code>
                 </td>
                 <td class="hidden lg:table-cell font-mono text-sm">
                   <%= resource["blockNumber"] %>
@@ -251,9 +254,9 @@ defmodule AnomaExplorerWeb.ResourcesLive do
                 <td>
                   <%= if resource["transaction"] do %>
                     <a
-                      href={"/transactions/#{resource["transaction"]["txHash"]}"}
+                      href={"/transactions/#{resource["transaction"]["id"]}"}
                       class="hash-display text-xs hover:text-primary"
-                      phx-click={JS.navigate("/transactions/#{resource["transaction"]["txHash"]}")}
+                      phx-click={JS.navigate("/transactions/#{resource["transaction"]["id"]}")}
                     >
                       <%= truncate_hash(resource["transaction"]["txHash"]) %>
                     </a>

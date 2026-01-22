@@ -6,6 +6,7 @@ defmodule AnomaExplorerWeb.TransactionLive do
 
   alias AnomaExplorerWeb.Layouts
   alias AnomaExplorer.Indexer.GraphQL
+  alias AnomaExplorer.Indexer.Networks
 
   @impl true
   def mount(%{"id" => id}, _session, socket) do
@@ -98,6 +99,10 @@ defmodule AnomaExplorerWeb.TransactionLive do
   end
 
   defp transaction_header(assigns) do
+    assigns = assign(assigns, :block_url, Networks.block_url(assigns.tx["chainId"], assigns.tx["blockNumber"]))
+    assigns = assign(assigns, :tx_url, Networks.tx_url(assigns.tx["chainId"], assigns.tx["txHash"]))
+    assigns = assign(assigns, :contract_url, Networks.address_url(assigns.tx["chainId"], assigns.tx["contractAddress"]))
+
     ~H"""
     <div class="stat-card mb-6">
       <h2 class="text-lg font-semibold mb-4">Overview</h2>
@@ -114,15 +119,33 @@ defmodule AnomaExplorerWeb.TransactionLive do
             >
               <.icon name="hero-clipboard-document" class="w-3 h-3" />
             </button>
+            <%= if @tx_url do %>
+              <a href={@tx_url} target="_blank" class="btn btn-ghost btn-xs" title="View on Explorer">
+                <.icon name="hero-arrow-top-right-on-square" class="w-3 h-3" />
+              </a>
+            <% end %>
           </div>
         </div>
         <div>
           <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1">Block Number</div>
-          <div class="font-mono"><%= @tx["blockNumber"] %></div>
+          <div class="flex items-center gap-2">
+            <%= if @block_url do %>
+              <a href={@block_url} target="_blank" class="font-mono hover:text-primary">
+                <%= @tx["blockNumber"] %>
+                <.icon name="hero-arrow-top-right-on-square" class="w-3 h-3 inline ml-1" />
+              </a>
+            <% else %>
+              <span class="font-mono"><%= @tx["blockNumber"] %></span>
+            <% end %>
+          </div>
         </div>
         <div>
-          <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1">Chain ID</div>
-          <div><span class="badge badge-outline"><%= @tx["chainId"] %></span></div>
+          <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1">Network</div>
+          <div>
+            <span class="badge badge-outline" title={"Chain ID: #{@tx["chainId"]}"}>
+              <%= Networks.name(@tx["chainId"]) %>
+            </span>
+          </div>
         </div>
         <div>
           <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1">Timestamp</div>
@@ -131,7 +154,14 @@ defmodule AnomaExplorerWeb.TransactionLive do
         <%= if @tx["contractAddress"] do %>
           <div class="md:col-span-2">
             <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1">Contract Address</div>
-            <code class="hash-display text-sm"><%= @tx["contractAddress"] %></code>
+            <div class="flex items-center gap-2">
+              <code class="hash-display text-sm"><%= @tx["contractAddress"] %></code>
+              <%= if @contract_url do %>
+                <a href={@contract_url} target="_blank" class="btn btn-ghost btn-xs" title="View on Explorer">
+                  <.icon name="hero-arrow-top-right-on-square" class="w-3 h-3" />
+                </a>
+              <% end %>
+            </div>
           </div>
         <% end %>
       </div>

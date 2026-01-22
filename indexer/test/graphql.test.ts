@@ -26,7 +26,7 @@ async function query<T>(queryString: string): Promise<T> {
     body: JSON.stringify({ query: queryString }),
   });
 
-  const result: GraphQLResponse<T> = await response.json();
+  const result = (await response.json()) as GraphQLResponse<T>;
 
   if (result.errors) {
     throw new Error(result.errors.map((e) => e.message).join(", "));

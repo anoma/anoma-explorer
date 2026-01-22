@@ -7,6 +7,7 @@ defmodule AnomaExplorerWeb.TransactionsLive do
   alias AnomaExplorerWeb.Layouts
   alias AnomaExplorer.Indexer.GraphQL
   alias AnomaExplorer.Indexer.Client
+  alias AnomaExplorer.Indexer.Networks
 
   @page_size 20
 
@@ -166,30 +167,32 @@ defmodule AnomaExplorerWeb.TransactionsLive do
           <thead>
             <tr>
               <th>Tx Hash</th>
+              <th>Network</th>
               <th>Block</th>
-              <th>Chain</th>
-              <th>Tags</th>
-              <th>Logic Refs</th>
+              <th>Resources</th>
               <th class="hidden lg:table-cell">Time</th>
             </tr>
           </thead>
           <tbody>
             <%= for tx <- @transactions do %>
+              <% tags = tx["tags"] || [] %>
+              <% consumed = div(length(tags), 2) %>
+              <% created = length(tags) - consumed %>
               <tr class="hover:bg-base-200/50 cursor-pointer" phx-click={JS.navigate("/transactions/#{tx["id"]}")}>
                 <td>
                   <span class="hash-display"><%= truncate_hash(tx["txHash"]) %></span>
                 </td>
                 <td>
+                  <span class="badge badge-outline badge-sm" title={"Chain ID: #{tx["chainId"]}"}>
+                    <%= Networks.short_name(tx["chainId"]) %>
+                  </span>
+                </td>
+                <td>
                   <span class="font-mono text-sm"><%= tx["blockNumber"] %></span>
                 </td>
                 <td>
-                  <span class="badge badge-outline badge-sm"><%= tx["chainId"] %></span>
-                </td>
-                <td>
-                  <span class="badge badge-ghost"><%= length(tx["tags"] || []) %></span>
-                </td>
-                <td>
-                  <span class="badge badge-ghost"><%= length(tx["logicRefs"] || []) %></span>
+                  <span class="badge badge-error badge-sm" title="Consumed"><%= consumed %></span>
+                  <span class="badge badge-success badge-sm" title="Created"><%= created %></span>
                 </td>
                 <td class="hidden lg:table-cell text-base-content/60 text-sm">
                   <%= format_timestamp(tx["timestamp"]) %>

@@ -7,6 +7,7 @@ defmodule AnomaExplorerWeb.HomeLive do
   alias AnomaExplorerWeb.Layouts
   alias AnomaExplorer.Indexer.GraphQL
   alias AnomaExplorer.Indexer.Client
+  alias AnomaExplorer.Indexer.Networks
 
   @refresh_interval 30_000
 
@@ -252,14 +253,17 @@ defmodule AnomaExplorerWeb.HomeLive do
             <thead>
               <tr>
                 <th>Tx Hash</th>
+                <th>Network</th>
                 <th>Block</th>
-                <th>Tags</th>
-                <th>Logic Refs</th>
+                <th>Resources</th>
                 <th class="hidden lg:table-cell">Time</th>
               </tr>
             </thead>
             <tbody>
               <%= for tx <- @transactions do %>
+                <% tags = tx["tags"] || [] %>
+                <% consumed = div(length(tags), 2) %>
+                <% created = length(tags) - consumed %>
                 <tr>
                   <td>
                     <a href={"/transactions/#{tx["id"]}"} class="hash-display hover:text-primary">
@@ -267,13 +271,16 @@ defmodule AnomaExplorerWeb.HomeLive do
                     </a>
                   </td>
                   <td>
+                    <span class="badge badge-outline badge-sm" title={"Chain ID: #{tx["chainId"]}"}>
+                      <%= Networks.short_name(tx["chainId"]) %>
+                    </span>
+                  </td>
+                  <td>
                     <span class="font-mono text-sm"><%= tx["blockNumber"] %></span>
                   </td>
                   <td>
-                    <span class="badge badge-ghost"><%= length(tx["tags"] || []) %></span>
-                  </td>
-                  <td>
-                    <span class="badge badge-ghost"><%= length(tx["logicRefs"] || []) %></span>
+                    <span class="badge badge-error badge-sm" title="Consumed"><%= consumed %></span>
+                    <span class="badge badge-success badge-sm" title="Created"><%= created %></span>
                   </td>
                   <td class="hidden lg:table-cell text-base-content/60 text-sm">
                     <%= format_timestamp(tx["timestamp"]) %>

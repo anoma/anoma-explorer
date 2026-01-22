@@ -6,6 +6,7 @@ defmodule AnomaExplorerWeb.ResourceLive do
 
   alias AnomaExplorerWeb.Layouts
   alias AnomaExplorer.Indexer.GraphQL
+  alias AnomaExplorer.Indexer.Networks
 
   @impl true
   def mount(%{"id" => id}, _session, socket) do
@@ -104,6 +105,8 @@ defmodule AnomaExplorerWeb.ResourceLive do
   end
 
   defp resource_header(assigns) do
+    assigns = assign(assigns, :block_url, Networks.block_url(assigns.resource["chainId"], assigns.resource["blockNumber"]))
+
     ~H"""
     <div class="stat-card mb-6">
       <div class="flex items-center justify-between mb-4">
@@ -135,11 +138,24 @@ defmodule AnomaExplorerWeb.ResourceLive do
         </div>
         <div>
           <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1">Block Number</div>
-          <div class="font-mono"><%= @resource["blockNumber"] %></div>
+          <div class="flex items-center gap-2">
+            <%= if @block_url do %>
+              <a href={@block_url} target="_blank" class="font-mono hover:text-primary">
+                <%= @resource["blockNumber"] %>
+                <.icon name="hero-arrow-top-right-on-square" class="w-3 h-3 inline ml-1" />
+              </a>
+            <% else %>
+              <span class="font-mono"><%= @resource["blockNumber"] %></span>
+            <% end %>
+          </div>
         </div>
         <div>
-          <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1">Chain ID</div>
-          <div><span class="badge badge-outline"><%= @resource["chainId"] %></span></div>
+          <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1">Network</div>
+          <div>
+            <span class="badge badge-outline" title={"Chain ID: #{@resource["chainId"]}"}>
+              <%= Networks.name(@resource["chainId"]) %>
+            </span>
+          </div>
         </div>
         <div>
           <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1">Decoding Status</div>
@@ -226,6 +242,19 @@ defmodule AnomaExplorerWeb.ResourceLive do
   end
 
   defp transaction_section(assigns) do
+    assigns =
+      if assigns.resource["transaction"] do
+        chain_id = assigns.resource["chainId"]
+        tx = assigns.resource["transaction"]
+        assigns
+        |> assign(:tx_block_url, Networks.block_url(chain_id, tx["blockNumber"]))
+        |> assign(:tx_url, Networks.tx_url(chain_id, tx["txHash"]))
+      else
+        assigns
+        |> assign(:tx_block_url, nil)
+        |> assign(:tx_url, nil)
+      end
+
     ~H"""
     <%= if @resource["transaction"] do %>
       <div class="stat-card">
@@ -233,13 +262,29 @@ defmodule AnomaExplorerWeb.ResourceLive do
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="md:col-span-2">
             <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1">Transaction Hash</div>
-            <a href={"/transactions/#{@resource["transaction"]["id"]}"} class="hash-display text-sm hover:text-primary">
-              <%= @resource["transaction"]["txHash"] %>
-            </a>
+            <div class="flex items-center gap-2">
+              <a href={"/transactions/#{@resource["transaction"]["id"]}"} class="hash-display text-sm hover:text-primary">
+                <%= @resource["transaction"]["txHash"] %>
+              </a>
+              <%= if @tx_url do %>
+                <a href={@tx_url} target="_blank" class="btn btn-ghost btn-xs" title="View on Explorer">
+                  <.icon name="hero-arrow-top-right-on-square" class="w-3 h-3" />
+                </a>
+              <% end %>
+            </div>
           </div>
           <div>
             <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1">Block</div>
-            <div class="font-mono"><%= @resource["transaction"]["blockNumber"] %></div>
+            <div class="flex items-center gap-2">
+              <%= if @tx_block_url do %>
+                <a href={@tx_block_url} target="_blank" class="font-mono hover:text-primary">
+                  <%= @resource["transaction"]["blockNumber"] %>
+                  <.icon name="hero-arrow-top-right-on-square" class="w-3 h-3 inline ml-1" />
+                </a>
+              <% else %>
+                <span class="font-mono"><%= @resource["transaction"]["blockNumber"] %></span>
+              <% end %>
+            </div>
           </div>
         </div>
       </div>
