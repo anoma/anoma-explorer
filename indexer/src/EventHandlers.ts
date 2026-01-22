@@ -20,9 +20,7 @@ import {
   Action,
   ComplianceUnit,
   LogicInput,
-  DiscoveryPayload,
-  ExternalPayload,
-  ApplicationPayload,
+  Payload,
   CommitmentTreeRoot,
   ForwarderCall,
   handlerContext,
@@ -589,77 +587,58 @@ ProtocolAdapter.ResourcePayload.handler(
 );
 
 // ============================================
-// DiscoveryPayload Handler
+// Payload Handlers (Discovery, External, Application)
 // ============================================
+// All three payload types are unified into a single Payload entity with a kind discriminator.
+
+/**
+ * Creates a Payload entity with the specified kind.
+ */
+function createPayloadEntity(
+  event: {
+    chainId: number;
+    block: { number: number; timestamp: number };
+    logIndex: number;
+    srcAddress: string;
+    params: { tag: string; index: bigint; blob: string };
+  },
+  kind: "discovery" | "forwarder" | "application"
+): Payload {
+  const eventId = createEventId(event);
+  const resourceId = createResourceId(event.chainId, event.params.tag);
+
+  return {
+    id: eventId,
+    kind: kind,
+    tag: event.params.tag,
+    index: Number(event.params.index),
+    blob: event.params.blob,
+    deletionCriterion: undefined, // Would need to decode from blob structure
+    blockNumber: event.block.number,
+    chainId: event.chainId,
+    timestamp: event.block.timestamp,
+    resource_id: resourceId,
+  };
+}
 
 ProtocolAdapter.DiscoveryPayload.handler(
   async ({ event, context }: DiscoveryPayloadArgs) => {
-    const eventId = createEventId(event);
-    const resourceId = createResourceId(event.chainId, event.params.tag);
-
-    const entity: DiscoveryPayload = {
-      id: eventId,
-      tag: event.params.tag,
-      index: Number(event.params.index),
-      blob: event.params.blob,
-      deletionCriterion: undefined, // Would need to decode from blob structure
-      blockNumber: event.block.number,
-      chainId: event.chainId,
-      timestamp: event.block.timestamp,
-      resource_id: resourceId,
-    };
-
-    context.DiscoveryPayload.set(entity);
+    const entity = createPayloadEntity(event, "discovery");
+    context.Payload.set(entity);
   }
 );
-
-// ============================================
-// ExternalPayload Handler
-// ============================================
 
 ProtocolAdapter.ExternalPayload.handler(
   async ({ event, context }: ExternalPayloadArgs) => {
-    const eventId = createEventId(event);
-    const resourceId = createResourceId(event.chainId, event.params.tag);
-
-    const entity: ExternalPayload = {
-      id: eventId,
-      tag: event.params.tag,
-      index: Number(event.params.index),
-      blob: event.params.blob,
-      deletionCriterion: undefined,
-      blockNumber: event.block.number,
-      chainId: event.chainId,
-      timestamp: event.block.timestamp,
-      resource_id: resourceId,
-    };
-
-    context.ExternalPayload.set(entity);
+    const entity = createPayloadEntity(event, "forwarder");
+    context.Payload.set(entity);
   }
 );
 
-// ============================================
-// ApplicationPayload Handler
-// ============================================
-
 ProtocolAdapter.ApplicationPayload.handler(
   async ({ event, context }: ApplicationPayloadArgs) => {
-    const eventId = createEventId(event);
-    const resourceId = createResourceId(event.chainId, event.params.tag);
-
-    const entity: ApplicationPayload = {
-      id: eventId,
-      tag: event.params.tag,
-      index: Number(event.params.index),
-      blob: event.params.blob,
-      deletionCriterion: undefined,
-      blockNumber: event.block.number,
-      chainId: event.chainId,
-      timestamp: event.block.timestamp,
-      resource_id: resourceId,
-    };
-
-    context.ApplicationPayload.set(entity);
+    const entity = createPayloadEntity(event, "application");
+    context.Payload.set(entity);
   }
 );
 

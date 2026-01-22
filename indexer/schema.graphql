@@ -19,6 +19,13 @@ enum DeletionCriterion {
   never        # Blob should be persisted permanently (value: 1)
 }
 
+# Payload type indicator
+enum PayloadKind {
+  discovery     # DiscoveryPayload - data with public keys for discovery
+  forwarder     # ExternalPayload - data for external/forwarder calls
+  application   # ApplicationPayload - application-specific data
+}
+
 # ============================================
 # Core Anoma Types
 # ============================================
@@ -146,46 +153,17 @@ type Resource {
   transaction: Transaction!
   logicInput: LogicInput
   complianceUnit: ComplianceUnit # The compliance unit this resource belongs to (use isConsumed to determine side)
-  discoveryPayloads: [DiscoveryPayload!]! @derivedFrom(field: "resource")
-  externalPayloads: [ExternalPayload!]! @derivedFrom(field: "resource")
-  applicationPayloads: [ApplicationPayload!]! @derivedFrom(field: "resource")
+  payloads: [Payload!]! @derivedFrom(field: "resource")
 }
 
 # ============================================
 # Payload Types (from events)
 # ============================================
 
-# DiscoveryPayload - Data with public keys for discovery
-type DiscoveryPayload {
+# Unified Payload type for all payload events (Discovery, External, Application)
+type Payload {
   id: ID!
-  tag: String!
-  index: Int!
-  blob: String!
-  deletionCriterion: DeletionCriterion
-  blockNumber: Int!
-  chainId: Int!
-  timestamp: Int!
-
-  resource: Resource
-}
-
-# ExternalPayload - Data for external/forwarder calls
-type ExternalPayload {
-  id: ID!
-  tag: String!
-  index: Int!
-  blob: String!
-  deletionCriterion: DeletionCriterion
-  blockNumber: Int!
-  chainId: Int!
-  timestamp: Int!
-
-  resource: Resource # Link to parent resource by tag
-}
-
-# ApplicationPayload - Application-specific data
-type ApplicationPayload {
-  id: ID!
+  kind: PayloadKind!  # Discriminator for payload type
   tag: String!
   index: Int!
   blob: String!
