@@ -76,4 +76,5 @@ COPY --from=builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/anoma_explore
 
 USER nobody
 
-CMD ["/app/bin/server"]
+# Run migrations then start server
+CMD /app/bin/migrate && /app/bin/server
