@@ -127,7 +127,14 @@ defmodule AnomaExplorerWeb.IndexerLive do
         <div>
           <h1 class="page-title">Indexer Settings</h1>
           <p class="text-sm text-base-content/70 mt-1">
-            Configure the Envio Hyperindex GraphQL endpoint for indexed blockchain data
+            Configure the
+            <a
+              href="https://envio.dev"
+              target="_blank"
+              rel="noopener"
+              class="link link-primary"
+            >Envio Hyperindex</a>
+            GraphQL endpoint for indexed blockchain data
           </p>
         </div>
       </div>

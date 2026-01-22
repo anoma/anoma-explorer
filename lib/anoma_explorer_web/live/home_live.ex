@@ -339,7 +339,8 @@ defmodule AnomaExplorerWeb.HomeLive do
       <div class="flex items-center gap-2 text-xs text-base-content/50 mb-6">
         <.icon name="hero-information-circle" class="w-4 h-4" />
         <span>
-          Stats showing 1,000 may be limited by the indexer API. Actual counts could be higher.
+          Stats showing 1,000 may be limited by the
+          <a href="/settings/indexer" class="link link-primary">indexer API</a>. Actual counts could be higher.
         </span>
       </div>
     <% end %>

@@ -138,6 +138,32 @@ defmodule AnomaExplorerWeb.Layouts do
             </div>
 
             <a
+              href="/settings/indexer"
+              class={nav_class(@current_path, "/settings/indexer")}
+              title="Indexer"
+            >
+              <.icon name="hero-server-stack" class="w-5 h-5" />
+              <span>Indexer</span>
+            </a>
+
+            <%= if show_dev_tools?() do %>
+              <a
+                href="/settings/api-keys"
+                class={nav_class(@current_path, "/settings/api-keys")}
+                title="Environment"
+              >
+                <.icon name="hero-cog-6-tooth" class="w-5 h-5" />
+                <span>Environment</span>
+              </a>
+            <% end %>
+
+            <div class="px-4 mb-2 mt-4 sidebar-section-label">
+              <span class="text-[10px] font-medium text-base-content/40 uppercase tracking-wider">
+                Network Info
+              </span>
+            </div>
+
+            <a
               href="/settings/contracts"
               class={nav_class(@current_path, "/settings/contracts")}
               title="Contracts"
@@ -153,26 +179,6 @@ defmodule AnomaExplorerWeb.Layouts do
             >
               <.icon name="hero-globe-alt" class="w-5 h-5" />
               <span>Networks</span>
-            </a>
-
-            <%= if show_dev_tools?() do %>
-              <a
-                href="/settings/api-keys"
-                class={nav_class(@current_path, "/settings/api-keys")}
-                title="Environment"
-              >
-                <.icon name="hero-cog-6-tooth" class="w-5 h-5" />
-                <span>Environment</span>
-              </a>
-            <% end %>
-
-            <a
-              href="/settings/indexer"
-              class={nav_class(@current_path, "/settings/indexer")}
-              title="Indexer"
-            >
-              <.icon name="hero-server-stack" class="w-5 h-5" />
-              <span>Indexer</span>
             </a>
           </nav>
           
