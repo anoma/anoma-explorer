@@ -1116,14 +1116,20 @@ defmodule AnomaExplorer.Indexer.GraphQL do
   # Private Helpers
   # ============================================
 
+  # Escapes a string for safe inclusion in GraphQL queries.
+  # Handles backslashes, quotes, newlines, tabs, and SQL LIKE wildcards.
   defp escape_string(str) when is_binary(str) do
     str
     |> String.replace("\\", "\\\\")
     |> String.replace("\"", "\\\"")
+    |> String.replace("\n", "\\n")
+    |> String.replace("\r", "\\r")
+    |> String.replace("\t", "\\t")
     |> String.replace("%", "\\%")
+    |> String.replace("_", "\\_")
   end
 
-  defp escape_string(other), do: to_string(other)
+  defp escape_string(other), do: escape_string(to_string(other))
 
   defp execute(query) do
     case get_url() do
