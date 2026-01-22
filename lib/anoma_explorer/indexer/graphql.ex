@@ -1198,10 +1198,7 @@ defmodule AnomaExplorer.Indexer.GraphQL do
         end
 
       {:ok, {{_http_version, status, _reason}, _headers, response_body}} ->
-        Logger.error("GraphQL HTTP error",
-          status: status,
-          body: String.slice(to_string(response_body), 0, 500)
-        )
+        Logger.error("GraphQL HTTP error: status=#{status}, body=#{String.slice(to_string(response_body), 0, 200)}")
 
         {:error, {:http_error, status, response_body}}
 
