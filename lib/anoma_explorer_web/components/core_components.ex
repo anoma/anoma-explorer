@@ -631,7 +631,7 @@ defmodule AnomaExplorerWeb.CoreComponents do
       @class
     ]}>
       <.icon name="hero-wrench-screwdriver" class="h-4 w-4 shrink-0 text-base-content/50" />
-      <span>Under construction — some data may not appear as expected.</span>
+      <span>Under construction — some data may not appear as expected, or may show missing values.</span>
     </div>
     """
   end
