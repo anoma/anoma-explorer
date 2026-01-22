@@ -111,7 +111,9 @@ defmodule AnomaExplorerWeb.IndexerLive do
   @impl true
   def handle_info({:settings_changed, {:app_setting_updated, _}}, socket) do
     url = Settings.get_envio_url() || ""
-    {:noreply, assign(socket, :url, url)}
+    # Update both @url and @url_input to avoid race condition where
+    # the input field shows stale data after external updates
+    {:noreply, socket |> assign(:url, url) |> assign(:url_input, url)}
   end
 
   @impl true
@@ -204,6 +206,7 @@ defmodule AnomaExplorerWeb.IndexerLive do
               <div class="relative flex-1">
                 <input
                   type="url"
+                  id="envio-url-input"
                   name="url"
                   value={@url_input}
                   placeholder="https://indexer.dev.hyperindex.xyz/xxx/v1/graphql"
