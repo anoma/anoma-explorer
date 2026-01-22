@@ -16,121 +16,38 @@ defmodule AnomaExplorer.EnvConfig do
         }
 
   @env_vars [
-    # Alchemy API Configuration
+    # Database Configuration
     %{
-      name: "ALCHEMY_API_KEY",
-      description: "Alchemy API key for blockchain RPC access",
+      name: "DATABASE_URL",
+      description: "PostgreSQL database connection URL (postgresql://user:password@host:port/database)",
       required: true,
-      env: :all,
-      category: :alchemy,
+      env: :prod,
+      category: :database,
       default: nil,
       secret: true
     },
     %{
-      name: "ALCHEMY_NETWORKS",
-      description: "Comma-separated list of networks (e.g., eth-mainnet,base-sepolia)",
-      required: true,
-      env: :all,
-      category: :alchemy,
+      name: "POOL_SIZE",
+      description: "Database connection pool size",
+      required: false,
+      env: :prod,
+      category: :database,
+      default: "10",
+      secret: false
+    },
+    %{
+      name: "ECTO_IPV6",
+      description: "Enable IPv6 for database connections (set to 'true' or '1' to enable)",
+      required: false,
+      env: :prod,
+      category: :database,
       default: nil,
       secret: false
-    },
-    %{
-      name: "CONTRACT_ADDRESS",
-      description: "Ethereum contract address to monitor (0x...)",
-      required: true,
-      env: :all,
-      category: :alchemy,
-      default: nil,
-      secret: false
-    },
-    %{
-      name: "POLL_INTERVAL_SECONDS",
-      description: "Polling interval for blockchain data",
-      required: false,
-      env: :all,
-      category: :alchemy,
-      default: "20",
-      secret: false
-    },
-    %{
-      name: "START_BLOCK",
-      description: "Starting block number for ingestion",
-      required: false,
-      env: :all,
-      category: :alchemy,
-      default: nil,
-      secret: false
-    },
-    %{
-      name: "BACKFILL_BLOCKS",
-      description: "Number of blocks to backfill",
-      required: false,
-      env: :all,
-      category: :alchemy,
-      default: "50000",
-      secret: false
-    },
-    %{
-      name: "PAGE_SIZE",
-      description: "Results per page for API requests",
-      required: false,
-      env: :all,
-      category: :alchemy,
-      default: "100",
-      secret: false
-    },
-    %{
-      name: "MAX_REQ_PER_SECOND",
-      description: "Rate limit for Alchemy requests",
-      required: false,
-      env: :all,
-      category: :alchemy,
-      default: "5",
-      secret: false
-    },
-    %{
-      name: "LOG_CHUNK_BLOCKS",
-      description: "Block chunk size for log queries",
-      required: false,
-      env: :all,
-      category: :alchemy,
-      default: "2000",
-      secret: false
-    },
-    # Envio Indexer
-    %{
-      name: "ENVIO_GRAPHQL_URL",
-      description: "Envio Hyperindex GraphQL endpoint URL",
-      required: false,
-      env: :all,
-      category: :indexer,
-      default: nil,
-      secret: false
-    },
-    # Etherscan API
-    %{
-      name: "ETHERSCAN_API_KEY",
-      description: "Etherscan V2 API key for contract verification",
-      required: false,
-      env: :all,
-      category: :etherscan,
-      default: nil,
-      secret: true
     },
     # Phoenix Configuration
     %{
-      name: "DATABASE_URL",
-      description: "PostgreSQL database connection URL",
-      required: true,
-      env: :prod,
-      category: :phoenix,
-      default: nil,
-      secret: true
-    },
-    %{
       name: "SECRET_KEY_BASE",
-      description: "Secret key for signing/encrypting cookies and sessions",
+      description: "Secret key for signing/encrypting cookies and sessions (generate with: mix phx.gen.secret)",
       required: true,
       env: :prod,
       category: :phoenix,
@@ -139,11 +56,20 @@ defmodule AnomaExplorer.EnvConfig do
     },
     %{
       name: "PHX_HOST",
-      description: "Hostname for the Phoenix application",
+      description: "Hostname where the application will be accessible",
       required: false,
       env: :prod,
       category: :phoenix,
-      default: "example.com",
+      default: nil,
+      secret: false
+    },
+    %{
+      name: "PHX_SERVER",
+      description: "Enable the Phoenix server (set to true for releases)",
+      required: false,
+      env: :all,
+      category: :phoenix,
+      default: "true",
       secret: false
     },
     %{
@@ -156,63 +82,50 @@ defmodule AnomaExplorer.EnvConfig do
       secret: false
     },
     %{
-      name: "PHX_SERVER",
-      description: "Enable the Phoenix server (set to true for releases)",
+      name: "DNS_CLUSTER_QUERY",
+      description: "DNS query for cluster discovery (optional, for production clustering)",
+      required: false,
+      env: :prod,
+      category: :phoenix,
+      default: nil,
+      secret: false
+    },
+    # External Services
+    %{
+      name: "ENVIO_GRAPHQL_URL",
+      description: "Envio Hyperindex GraphQL endpoint for indexed blockchain data",
       required: false,
       env: :all,
-      category: :phoenix,
+      category: :services,
       default: nil,
       secret: false
     },
     %{
-      name: "POOL_SIZE",
-      description: "Database connection pool size",
+      name: "ETHERSCAN_API_KEY",
+      description: "Etherscan V2 API key for contract verification (single key works for all supported chains)",
       required: false,
-      env: :prod,
-      category: :phoenix,
-      default: "10",
-      secret: false
-    },
-    %{
-      name: "ECTO_IPV6",
-      description: "Enable IPv6 for database connections",
-      required: false,
-      env: :prod,
-      category: :phoenix,
+      env: :all,
+      category: :services,
       default: nil,
-      secret: false
-    },
-    %{
-      name: "DNS_CLUSTER_QUERY",
-      description: "DNS query for cluster discovery",
-      required: false,
-      env: :prod,
-      category: :phoenix,
-      default: nil,
-      secret: false
+      secret: true
     }
   ]
 
   @categories %{
-    alchemy: %{
-      title: "Alchemy API",
-      description: "Configuration for blockchain data ingestion via Alchemy",
+    database: %{
+      title: "Database",
+      description: "PostgreSQL database connection settings",
       order: 1
-    },
-    indexer: %{
-      title: "Envio Indexer",
-      description: "Envio Hyperindex GraphQL endpoint for indexed blockchain data",
-      order: 2
-    },
-    etherscan: %{
-      title: "Etherscan API",
-      description: "Contract verification and chain explorer integration",
-      order: 3
     },
     phoenix: %{
       title: "Phoenix Application",
-      description: "Web server and database configuration",
-      order: 4
+      description: "Web server configuration",
+      order: 2
+    },
+    services: %{
+      title: "External Services",
+      description: "Third-party API integrations",
+      order: 3
     }
   }
 

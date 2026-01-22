@@ -67,7 +67,8 @@ defmodule AnomaExplorerWeb.ApiKeysLive do
             <code class="bg-base-200 px-1 rounded">mix phx.gen.secret</code>
           </li>
           <li>
-            Supported Alchemy networks: eth-mainnet, eth-sepolia, arb-mainnet, arb-sepolia, base-mainnet, base-sepolia, polygon-mainnet, polygon-amoy, optimism-mainnet, optimism-sepolia
+            See <code class="bg-base-200 px-1 rounded">.env.example</code>
+            for the complete list of environment variables
           </li>
         </ul>
       </div>
