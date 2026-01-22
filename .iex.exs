@@ -35,16 +35,6 @@ defmodule H do
     "base-mainnet" => "0x9ED43C229480659bF6B6607C46d7B96c6D760cBB"
   }
 
-  # Known ERC20 Forwarder addresses
-  @erc20_forwarders %{
-    "eth-sepolia" => "0xa04942494174eD85A11416E716262eC0AE0a065d",
-    "eth-mainnet" => "0x0D38C332135f9f0de4dcc4a6F9c918b72e2A1Df3",
-    "base-sepolia" => "0xA73Ce304460F17C3530b58BA95bCD3B89Bd38D69",
-    "base-mainnet" => "0xA73Ce304460F17C3530b58BA95bCD3B89Bd38D69",
-    "optimism-mainnet" => "0xA73Ce304460F17C3530b58BA95bCD3B89Bd38D69",
-    "arb-mainnet" => "0xA73Ce304460F17C3530b58BA95bCD3B89Bd38D69"
-  }
-
   @doc "Get the configured contract address (from env)"
   def caddr do
     case System.get_env("CONTRACT_ADDRESS") do
@@ -80,9 +70,6 @@ defmodule H do
 
     Anoma Protocol Adapter Addresses:
     #{format_addrs(@protocol_adapters)}
-
-    ERC20 Forwarder Addresses:
-    #{format_addrs(@erc20_forwarders)}
     """)
   end
 
@@ -94,9 +81,6 @@ defmodule H do
 
   @doc "Get Protocol Adapter address for a network"
   def pa_addr(network), do: Map.get(@protocol_adapters, network, :not_found)
-
-  @doc "Get ERC20 Forwarder address for a network"
-  def forwarder_addr(network), do: Map.get(@erc20_forwarders, network, :not_found)
 
   @doc "Run one ingestion cycle for a network"
   def ingest_once(network) do
@@ -146,7 +130,6 @@ defmodule H do
     Anoma Addresses:
       H.anoma_addrs()       - Show all known Anoma contract addresses
       H.pa_addr(net)        - Get Protocol Adapter address for network
-      H.forwarder_addr(net) - Get ERC20 Forwarder address for network
 
     Ingestion:
       H.ingest_once(net)  - Run one sync cycle for a network
@@ -162,10 +145,6 @@ defmodule H do
       export CONTRACT_ADDRESS=0x9ED43C229480659bF6B6607C46d7B96c6D760cBB
       export ALCHEMY_API_KEY=your_key_here
       export ALCHEMY_NETWORKS=base-sepolia
-
-    Example setup for ERC20 Forwarder on mainnet chains:
-      export CONTRACT_ADDRESS=0xA73Ce304460F17C3530b58BA95bCD3B89Bd38D69
-      export ALCHEMY_NETWORKS=base-mainnet,optimism-mainnet,arb-mainnet
     """)
   end
 end

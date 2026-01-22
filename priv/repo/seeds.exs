@@ -92,43 +92,12 @@ Enum.each(protocol_adapter_v1, fn {network, address} ->
 end)
 
 # ============================================
-# Seed AnomaPay ERC20 Forwarder
-# ============================================
-
-IO.puts("Seeding AnomaPay ERC20 Forwarder...")
-
-erc20_forwarder =
-  get_or_create_protocol.(
-    "AnomaPay ERC20 Forwarder",
-    "ERC20 token forwarder for AnomaPay",
-    "https://github.com/anoma/anomapay-erc20-forwarder"
-  )
-
-IO.puts("  Protocol ID: #{erc20_forwarder.id}")
-
-erc20_forwarder_v1 = [
-  {"eth-sepolia", "0xa04942494174eD85A11416E716262eC0AE0a065d"},
-  {"eth-mainnet", "0x0D38C332135f9f0de4dcc4a6F9c918b72e2A1Df3"},
-  {"base-sepolia", "0xA73Ce304460F17C3530b58BA95bCD3B89Bd38D69"},
-  {"base-mainnet", "0xA73Ce304460F17C3530b58BA95bCD3B89Bd38D69"},
-  {"optimism-mainnet", "0xA73Ce304460F17C3530b58BA95bCD3B89Bd38D69"},
-  {"arb-mainnet", "0xA73Ce304460F17C3530b58BA95bCD3B89Bd38D69"}
-]
-
-IO.puts("Seeding ERC20 Forwarder v1.0 addresses...")
-
-Enum.each(erc20_forwarder_v1, fn {network, address} ->
-  upsert_address.(erc20_forwarder.id, "erc20_forwarder", "v1.0", network, address)
-  IO.puts("  #{network}: #{address}")
-end)
-
-# ============================================
 # Summary
 # ============================================
 
-total_addresses = length(protocol_adapter_v1) + length(erc20_forwarder_v1)
+total_addresses = length(protocol_adapter_v1)
 IO.puts("")
 IO.puts("Done! Seeded:")
-IO.puts("  - 2 protocols (Protocol Adapter, AnomaPay ERC20 Forwarder)")
+IO.puts("  - 1 protocol (Protocol Adapter)")
 IO.puts("  - #{total_addresses} contract addresses")
 IO.puts("  - Version: v1.0")
