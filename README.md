@@ -12,7 +12,7 @@ Anoma Explorer is a Phoenix LiveView application for visualising Anoma Protocol 
 
 ## Prerequisites
 
-- Elixir `~> 1.17` and Erlang/OTP
+- Elixir `~> 1.17 or ~> 1.18` and Erlang/OTP 28
 - PostgreSQL
 - Node.js (for Tailwind and esbuild assets)
 - Access to an Envio Hyperindex deployment (or compatible GraphQL endpoint)
