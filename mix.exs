@@ -67,7 +67,8 @@ def application do
       # HTTP server
       {:plug_cowboy, "~> 2.7"},
       # Testing
-      {:mox, "~> 1.2", only: :test}
+      {:mox, "~> 1.2", only: :test},
+      {:tidewave, "~> 0.5.4", only: :dev}
     ]
   end
 
