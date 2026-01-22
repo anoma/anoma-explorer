@@ -32,6 +32,48 @@ const liveSocket = new LiveSocket("/live", Socket, {
   hooks: {...colocatedHooks},
 })
 
+// Sidebar state persistence and toggle
+function restoreSidebarState() {
+  const isCollapsed = localStorage.getItem("sidebar-collapsed") === "true"
+  const collapseIcon = document.getElementById("collapse-icon")
+  const expandIcon = document.getElementById("expand-icon")
+
+  if (isCollapsed) {
+    document.getElementById("sidebar")?.classList.add("collapsed")
+    document.getElementById("main-content")?.classList.add("sidebar-collapsed")
+    // Show expand icon (right chevron) when collapsed
+    collapseIcon?.classList.add("hidden")
+    expandIcon?.classList.remove("hidden")
+  } else {
+    // Show collapse icon (left chevron) when expanded
+    collapseIcon?.classList.remove("hidden")
+    expandIcon?.classList.add("hidden")
+  }
+}
+
+// Toggle sidebar function - called from onclick handler
+window.toggleSidebar = function() {
+  const sidebar = document.getElementById("sidebar")
+  const mainContent = document.getElementById("main-content")
+  const collapseIcon = document.getElementById("collapse-icon")
+  const expandIcon = document.getElementById("expand-icon")
+
+  sidebar?.classList.toggle("collapsed")
+  mainContent?.classList.toggle("sidebar-collapsed")
+  collapseIcon?.classList.toggle("hidden")
+  expandIcon?.classList.toggle("hidden")
+
+  // Persist state
+  const isNowCollapsed = sidebar?.classList.contains("collapsed")
+  localStorage.setItem("sidebar-collapsed", isNowCollapsed ? "true" : "false")
+}
+
+// Restore on initial page load
+document.addEventListener("DOMContentLoaded", restoreSidebarState)
+
+// Restore on LiveView navigation
+window.addEventListener("phx:page-loading-stop", restoreSidebarState)
+
 // Show progress bar on live navigation and form submits
 topbar.config({barColors: {0: "#29d"}, shadowColor: "rgba(0, 0, 0, .3)"})
 window.addEventListener("phx:page-loading-start", _info => topbar.show(300))

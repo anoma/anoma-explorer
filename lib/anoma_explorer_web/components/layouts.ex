@@ -21,72 +21,88 @@ defmodule AnomaExplorerWeb.Layouts do
 
   def app(assigns) do
     ~H"""
-    <div class="min-h-screen bg-base-100">
+    <div class="min-h-screen bg-base-100" id="app-container">
       <!-- Sidebar -->
-      <aside class="sidebar">
+      <aside id="sidebar" class="sidebar">
         <div class="flex flex-col h-full">
           <!-- Logo -->
-          <div class="p-6 border-b border-base-300">
+          <div class="p-6 border-b border-base-300 sidebar-header">
             <div class="flex items-center justify-between">
-              <a href="/" class="flex items-center gap-3">
+              <a href="/" class="flex items-center gap-3 sidebar-logo-full">
                 <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
                   <span class="text-xl font-bold text-primary-content">A</span>
                 </div>
-                <div>
+                <div class="sidebar-logo-text">
                   <span class="text-lg font-semibold text-base-content">Anoma</span>
                   <span class="text-lg font-light text-base-content/70">Explorer</span>
                 </div>
               </a>
-              <.theme_toggle />
+              <a href="/" class="sidebar-logo-icon w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
+                <span class="text-xl font-bold text-primary-content">A</span>
+              </a>
+              <div class="sidebar-theme-toggle">
+                <.theme_toggle />
+              </div>
             </div>
           </div>
-          
+
     <!-- Navigation -->
           <nav class="flex-1 py-6">
-            <div class="px-4 mb-2">
+            <div class="px-4 mb-2 sidebar-section-label">
               <span class="text-xs font-medium text-base-content/60 uppercase tracking-wider">
                 Overview
               </span>
             </div>
 
-            <a href="/" class={nav_class(@current_path, "/")}>
+            <a href="/" class={nav_class(@current_path, "/")} title="Dashboard">
               <.icon name="hero-home" class="w-5 h-5" />
               <span>Dashboard</span>
             </a>
 
-            <div class="px-4 mb-2 mt-6">
+            <div class="px-4 mb-2 mt-6 sidebar-section-label">
               <span class="text-xs font-medium text-base-content/60 uppercase tracking-wider">
                 Settings
               </span>
             </div>
 
-            <a href="/settings/contracts" class={nav_class(@current_path, "/settings/contracts")}>
+            <a href="/settings/contracts" class={nav_class(@current_path, "/settings/contracts")} title="Contracts">
               <.icon name="hero-document-text" class="w-5 h-5" />
               <span>Contracts</span>
             </a>
 
-            <a href="/settings/networks" class={nav_class(@current_path, "/settings/networks")}>
+            <a href="/settings/networks" class={nav_class(@current_path, "/settings/networks")} title="Networks">
               <.icon name="hero-globe-alt" class="w-5 h-5" />
               <span>Networks</span>
             </a>
 
-            <a href="/settings/api-keys" class={nav_class(@current_path, "/settings/api-keys")}>
-              <.icon name="hero-key" class="w-5 h-5" />
-              <span>API Keys</span>
+            <a href="/settings/api-keys" class={nav_class(@current_path, "/settings/api-keys")} title="Environment">
+              <.icon name="hero-cog-6-tooth" class="w-5 h-5" />
+              <span>Environment</span>
             </a>
           </nav>
-          
+
     <!-- Footer -->
           <div class="p-4 border-t border-base-300">
-            <div class="text-xs text-base-content/60">
-              v{app_version()}
+            <div class="flex items-center justify-between">
+              <div class="text-xs text-base-content/60 sidebar-version">
+                v{app_version()}
+              </div>
+              <button
+                id="sidebar-toggle"
+                class="sidebar-collapse-btn"
+                onclick="window.toggleSidebar()"
+                title="Toggle sidebar"
+              >
+                <span id="collapse-icon"><.icon name="hero-chevron-left" class="w-5 h-5" /></span>
+                <span id="expand-icon" class="hidden"><.icon name="hero-chevron-right" class="w-5 h-5" /></span>
+              </button>
             </div>
           </div>
         </div>
       </aside>
-      
+
     <!-- Main content -->
-      <main class="ml-64 min-h-screen">
+      <main id="main-content" class="main-content min-h-screen">
         <div class="p-8">
           {render_slot(@inner_block)}
         </div>
