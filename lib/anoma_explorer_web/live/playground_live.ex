@@ -410,7 +410,7 @@ defmodule AnomaExplorerWeb.PlaygroundLive do
         <div>
           <h1 class="page-title">GraphQL Playground</h1>
           <p class="text-sm text-base-content/70 mt-1">
-            Execute GraphQL queries against the Envio indexer
+            Execute GraphQL queries against the <a href="https://docs.envio.dev/docs/HyperIndex/overview" target="_blank" rel="noopener noreferrer" class="link link-primary">Envio HyperIndexer</a>
           </p>
         </div>
       </div>

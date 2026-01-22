@@ -44,7 +44,8 @@ defmodule AnomaExplorer.Indexer.GraphQL do
           consumed: integer(),
           created: integer(),
           actions: integer(),
-          commitment_roots: integer()
+          compliances: integer(),
+          logics: integer()
         }
 
   @doc """
@@ -57,7 +58,8 @@ defmodule AnomaExplorer.Indexer.GraphQL do
       transactions: Transaction(limit: 1000) { id }
       resources: Resource(limit: 1000) { id isConsumed }
       actions: Action(limit: 1000) { id }
-      roots: CommitmentTreeRoot(limit: 1000) { id }
+      compliances: ComplianceUnit(limit: 1000) { id }
+      logics: LogicInput(limit: 1000) { id }
     }
     """
 
@@ -73,7 +75,8 @@ defmodule AnomaExplorer.Indexer.GraphQL do
            consumed: consumed,
            created: length(resources) - consumed,
            actions: length(data["actions"] || []),
-           commitment_roots: length(data["roots"] || [])
+           compliances: length(data["compliances"] || []),
+           logics: length(data["logics"] || [])
          }}
 
       error ->

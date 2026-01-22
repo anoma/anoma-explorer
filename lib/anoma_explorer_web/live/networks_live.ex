@@ -51,7 +51,6 @@ defmodule AnomaExplorerWeb.NetworksLive do
                     <th>Name</th>
                     <th>Display Name</th>
                     <th>Chain ID</th>
-                    <th class="hidden lg:table-cell">Explorer URL</th>
                     <th class="hidden xl:table-cell">RPC URL</th>
                     <th>Type</th>
                     <th>Status</th>
@@ -68,21 +67,6 @@ defmodule AnomaExplorerWeb.NetworksLive do
                       <td>
                         <%= if network.chain_id do %>
                           <span class="badge badge-outline badge-sm">{network.chain_id}</span>
-                        <% else %>
-                          <span class="text-base-content/40">-</span>
-                        <% end %>
-                      </td>
-                      <td class="hidden lg:table-cell">
-                        <%= if network.explorer_url do %>
-                          <a
-                            href={network.explorer_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="text-sm link link-primary truncate max-w-[200px] inline-block"
-                            title={network.explorer_url}
-                          >
-                            {truncate_url(network.explorer_url)}
-                          </a>
                         <% else %>
                           <span class="text-base-content/40">-</span>
                         <% end %>
