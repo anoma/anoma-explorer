@@ -620,26 +620,53 @@ defmodule AnomaExplorerWeb.CoreComponents do
   end
 
   @doc """
-  Renders a disclaimer banner for data accuracy notice.
+  Renders a disclaimer banner as a small tab on the right edge.
+
+  The banner appears as a compact tab that can be expanded to show the full message.
+  Dismissal state is stored in localStorage to persist across page loads.
 
   ## Examples
 
       <.disclaimer_banner />
-      <.disclaimer_banner class="mb-4" />
   """
-  attr :class, :string, default: nil
-
   def disclaimer_banner(assigns) do
     ~H"""
-    <div class={[
-      "flex items-center gap-2 px-4 py-2 rounded-lg text-sm",
-      "bg-base-200/50 border border-base-300/50 text-base-content/70",
-      @class
-    ]}>
-      <.icon name="hero-wrench-screwdriver" class="h-4 w-4 shrink-0 text-base-content/50" />
-      <span>
-        Under construction — some data may not appear as expected, or may show missing values.
-      </span>
+    <div
+      id="disclaimer-banner"
+      class="fixed top-20 right-0 z-40 transition-all duration-300"
+      phx-hook="DisclaimerBanner"
+    >
+      <!-- Collapsed tab (visible when banner is collapsed) -->
+      <button
+        id="disclaimer-tab"
+        type="button"
+        onclick="window.expandDisclaimerBanner()"
+        class="hidden absolute right-0 top-0 px-2 py-3 bg-warning/20 hover:bg-warning/30 border border-r-0 border-warning/30 rounded-l-lg transition-colors cursor-pointer group"
+        title="Show notice"
+      >
+        <.icon
+          name="hero-wrench-screwdriver"
+          class="h-4 w-4 text-warning group-hover:text-warning/80"
+        />
+      </button>
+      <!-- Expanded banner -->
+      <div
+        id="disclaimer-content"
+        class="flex items-center gap-2 pl-3 pr-2 py-2 bg-warning/10 border border-r-0 border-warning/20 rounded-l-xl backdrop-blur-sm shadow-lg"
+      >
+        <.icon name="hero-wrench-screwdriver" class="h-4 w-4 shrink-0 text-warning" />
+        <span class="text-xs text-base-content/70 max-w-[280px]">
+          Under construction — some data may not appear as expected.
+        </span>
+        <button
+          type="button"
+          class="p-1 rounded-md hover:bg-base-content/10 transition-colors shrink-0"
+          onclick="window.dismissDisclaimerBanner()"
+          title="Dismiss"
+        >
+          <.icon name="hero-x-mark" class="h-3.5 w-3.5 text-base-content/50 hover:text-base-content/70" />
+        </button>
+      </div>
     </div>
     """
   end

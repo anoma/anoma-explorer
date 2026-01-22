@@ -39,6 +39,16 @@ const Hooks = {
     }
   },
 
+  DisclaimerBanner: {
+    mounted() {
+      const dismissed = sessionStorage.getItem("disclaimer-banner-dismissed") === "true"
+      if (dismissed) {
+        this.el.classList.add("translate-x-full")
+        this.el.classList.add("opacity-0")
+      }
+    }
+  },
+
   SyntaxHighlight: {
     mounted() {
       this.highlight()
@@ -187,6 +197,38 @@ document.addEventListener("keydown", (e) => {
     }
   }
 })
+
+// Disclaimer banner functions
+// Uses sessionStorage so banner reappears on new browser session
+window.dismissDisclaimerBanner = function() {
+  const banner = document.getElementById("disclaimer-banner")
+  if (banner) {
+    banner.classList.add("translate-x-full")
+    banner.classList.add("opacity-0")
+    sessionStorage.setItem("disclaimer-banner-dismissed", "true")
+  }
+}
+
+window.expandDisclaimerBanner = function() {
+  const banner = document.getElementById("disclaimer-banner")
+  const tab = document.getElementById("disclaimer-tab")
+  const content = document.getElementById("disclaimer-content")
+  if (banner && tab && content) {
+    tab.classList.add("hidden")
+    content.classList.remove("hidden")
+    sessionStorage.removeItem("disclaimer-banner-dismissed")
+  }
+}
+
+window.collapseDisclaimerBanner = function() {
+  const tab = document.getElementById("disclaimer-tab")
+  const content = document.getElementById("disclaimer-content")
+  if (tab && content) {
+    content.classList.add("hidden")
+    tab.classList.remove("hidden")
+    sessionStorage.setItem("disclaimer-banner-dismissed", "true")
+  }
+}
 
 // expose liveSocket on window for web console debug logs and latency simulation:
 // >> liveSocket.enableDebug()

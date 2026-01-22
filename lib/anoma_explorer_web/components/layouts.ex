@@ -212,14 +212,13 @@ defmodule AnomaExplorerWeb.Layouts do
             <.global_search />
           </div>
         </div>
-        <!-- Data Disclaimer Banner -->
-        <div class="px-8 pt-6">
-          <.disclaimer_banner />
-        </div>
-        <div class="p-8 pt-4">
+        <div class="p-8">
           {render_slot(@inner_block)}
         </div>
       </main>
+
+      <!-- Floating Disclaimer Banner -->
+      <.disclaimer_banner />
 
       <.flash_group flash={@flash} />
       <.copy_toast />
