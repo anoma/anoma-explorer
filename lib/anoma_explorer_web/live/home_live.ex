@@ -104,8 +104,13 @@ defmodule AnomaExplorerWeb.HomeLive do
       |> assign(:configured, false)
       |> assign(:loading, false)
     else
-      stats_result = GraphQL.get_stats()
-      txs_result = GraphQL.list_transactions(limit: 10)
+      # Run stats and transactions queries in parallel for faster loading
+      stats_task = Task.async(fn -> GraphQL.get_stats() end)
+      txs_task = Task.async(fn -> GraphQL.list_transactions(limit: 10) end)
+
+      # Await both results (15 second timeout to match GraphQL timeout)
+      stats_result = Task.await(stats_task, 15_000)
+      txs_result = Task.await(txs_task, 15_000)
 
       case {stats_result, txs_result} do
         {{:ok, stats}, {:ok, transactions}} ->
