@@ -26,23 +26,30 @@ import topbar from "../vendor/topbar"
 
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 
+// Sidebar state management - shared helper function
+function applySidebarState() {
+  const isCollapsed = localStorage.getItem("sidebar-collapsed") === "true"
+  const sidebar = document.getElementById("sidebar")
+  const mainContent = document.getElementById("main-content")
+  const collapseIcon = document.getElementById("collapse-icon")
+  const expandIcon = document.getElementById("expand-icon")
+
+  if (isCollapsed) {
+    sidebar?.classList.add("collapsed")
+    mainContent?.classList.add("sidebar-collapsed")
+    collapseIcon?.classList.add("hidden")
+    expandIcon?.classList.remove("hidden")
+  }
+}
+
 // Custom hooks
 const Hooks = {
   SidebarState: {
     mounted() {
-      this.applySidebarState()
+      applySidebarState()
     },
     updated() {
-      this.applySidebarState()
-    },
-    applySidebarState() {
-      const isCollapsed = localStorage.getItem("sidebar-collapsed") === "true"
-      if (isCollapsed) {
-        document.getElementById("sidebar")?.classList.add("collapsed")
-        document.getElementById("main-content")?.classList.add("sidebar-collapsed")
-        document.getElementById("collapse-icon")?.classList.add("hidden")
-        document.getElementById("expand-icon")?.classList.remove("hidden")
-      }
+      applySidebarState()
     }
   },
 
@@ -126,23 +133,6 @@ const liveSocket = new LiveSocket("/live", Socket, {
   params: {_csrf_token: csrfToken},
   hooks: Hooks,
 })
-
-// Sidebar state management
-// Sidebar starts open by default and state only changes when clicking the toggle button
-function applySidebarState() {
-  const isCollapsed = localStorage.getItem("sidebar-collapsed") === "true"
-  const sidebar = document.getElementById("sidebar")
-  const mainContent = document.getElementById("main-content")
-  const collapseIcon = document.getElementById("collapse-icon")
-  const expandIcon = document.getElementById("expand-icon")
-
-  if (isCollapsed) {
-    sidebar?.classList.add("collapsed")
-    mainContent?.classList.add("sidebar-collapsed")
-    collapseIcon?.classList.add("hidden")
-    expandIcon?.classList.remove("hidden")
-  }
-}
 
 // Toggle sidebar function - called from onclick handler
 window.toggleSidebar = function() {
