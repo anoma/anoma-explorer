@@ -32,5 +32,17 @@ networks:
     contracts:
     - name: ProtocolAdapter
       address:
-        - "0xc63336a48d0f60fad70ed027dfb256908bbd5e37"
+        - "0x2E539c08414DCaBF06305d4095e11096F3d7e612"
+  - id: 84532
+    start_block: 0
+    contracts:
+    - name: ProtocolAdapter
+      address:
+        - "0x9ED43C229480659bF6B6607C46d7B96c6D760cBB"
+  - id: 8453
+    start_block: 0
+    contracts:
+    - name: ProtocolAdapter
+      address:
+        - "0x9ED43C229480659bF6B6607C46d7B96c6D760cBB"
 unordered_multichain_mode: true
