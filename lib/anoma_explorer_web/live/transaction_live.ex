@@ -46,6 +46,17 @@ defmodule AnomaExplorerWeb.TransactionLive do
   end
 
   @impl true
+  def handle_event("global_search", %{"query" => query}, socket) do
+    query = String.trim(query)
+
+    if query != "" do
+      {:noreply, push_navigate(socket, to: "/transactions?search=#{URI.encode_www_form(query)}")}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  @impl true
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_path="/transactions">
@@ -57,7 +68,7 @@ defmodule AnomaExplorerWeb.TransactionLive do
           <div>
             <h1 class="page-title">Transaction Details</h1>
             <p class="text-sm text-base-content/70 mt-1">
-              <%= if @transaction, do: truncate_hash(@transaction["txHash"]), else: "Loading..." %>
+              {if @transaction, do: truncate_hash(@transaction["txHash"]), else: "Loading..."}
             </p>
           </div>
         </div>
@@ -66,7 +77,7 @@ defmodule AnomaExplorerWeb.TransactionLive do
       <%= if @error do %>
         <div class="alert alert-error mb-6">
           <.icon name="hero-exclamation-triangle" class="h-5 w-5" />
-          <span><%= @error %></span>
+          <span>{@error}</span>
         </div>
       <% end %>
 
@@ -99,18 +110,33 @@ defmodule AnomaExplorerWeb.TransactionLive do
   end
 
   defp transaction_header(assigns) do
-    assigns = assign(assigns, :block_url, Networks.block_url(assigns.tx["chainId"], assigns.tx["blockNumber"]))
-    assigns = assign(assigns, :tx_url, Networks.tx_url(assigns.tx["chainId"], assigns.tx["txHash"]))
-    assigns = assign(assigns, :contract_url, Networks.address_url(assigns.tx["chainId"], assigns.tx["contractAddress"]))
+    assigns =
+      assign(
+        assigns,
+        :block_url,
+        Networks.block_url(assigns.tx["chainId"], assigns.tx["blockNumber"])
+      )
+
+    assigns =
+      assign(assigns, :tx_url, Networks.tx_url(assigns.tx["chainId"], assigns.tx["txHash"]))
+
+    assigns =
+      assign(
+        assigns,
+        :contract_url,
+        Networks.address_url(assigns.tx["chainId"], assigns.tx["contractAddress"])
+      )
 
     ~H"""
     <div class="stat-card mb-6">
       <h2 class="text-lg font-semibold mb-4">Overview</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1">Transaction Hash</div>
+          <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1">
+            Transaction Hash
+          </div>
           <div class="flex items-center gap-2">
-            <code class="hash-display text-sm break-all"><%= @tx["txHash"] %></code>
+            <code class="hash-display text-sm break-all">{@tx["txHash"]}</code>
             <button
               type="button"
               phx-click={JS.dispatch("phx:copy", detail: %{text: @tx["txHash"]})}
@@ -131,11 +157,11 @@ defmodule AnomaExplorerWeb.TransactionLive do
           <div class="flex items-center gap-2">
             <%= if @block_url do %>
               <a href={@block_url} target="_blank" class="font-mono hover:text-primary">
-                <%= @tx["blockNumber"] %>
+                {@tx["blockNumber"]}
                 <.icon name="hero-arrow-top-right-on-square" class="w-3 h-3 inline ml-1" />
               </a>
             <% else %>
-              <span class="font-mono"><%= @tx["blockNumber"] %></span>
+              <span class="font-mono">{@tx["blockNumber"]}</span>
             <% end %>
           </div>
         </div>
@@ -143,21 +169,28 @@ defmodule AnomaExplorerWeb.TransactionLive do
           <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1">Network</div>
           <div>
             <span class="badge badge-outline" title={"Chain ID: #{@tx["chainId"]}"}>
-              <%= Networks.name(@tx["chainId"]) %>
+              {Networks.name(@tx["chainId"])}
             </span>
           </div>
         </div>
         <div>
           <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1">Timestamp</div>
-          <div><%= format_timestamp(@tx["timestamp"]) %></div>
+          <div>{format_timestamp(@tx["timestamp"])}</div>
         </div>
         <%= if @tx["contractAddress"] do %>
           <div class="md:col-span-2">
-            <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1">Contract Address</div>
+            <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1">
+              Contract Address
+            </div>
             <div class="flex items-center gap-2">
-              <code class="hash-display text-sm"><%= @tx["contractAddress"] %></code>
+              <code class="hash-display text-sm">{@tx["contractAddress"]}</code>
               <%= if @contract_url do %>
-                <a href={@contract_url} target="_blank" class="btn btn-ghost btn-xs" title="View on Explorer">
+                <a
+                  href={@contract_url}
+                  target="_blank"
+                  class="btn btn-ghost btn-xs"
+                  title="View on Explorer"
+                >
                   <.icon name="hero-arrow-top-right-on-square" class="w-3 h-3" />
                 </a>
               <% end %>
@@ -173,8 +206,7 @@ defmodule AnomaExplorerWeb.TransactionLive do
     ~H"""
     <div class="stat-card mb-6">
       <h2 class="text-lg font-semibold mb-4">
-        Tags & Logic Refs
-        <span class="badge badge-ghost ml-2"><%= length(@tags || []) %></span>
+        Tags & Logic Refs <span class="badge badge-ghost ml-2">{length(@tags || [])}</span>
       </h2>
       <%= if (@tags || []) == [] do %>
         <div class="text-base-content/50 text-center py-4">No tags</div>
@@ -195,20 +227,24 @@ defmodule AnomaExplorerWeb.TransactionLive do
                 <% logic_ref = Enum.at(@logic_refs || [], idx) %>
                 <tr>
                   <td>
-                    <span class="badge badge-ghost badge-sm"><%= idx %></span>
+                    <span class="badge badge-ghost badge-sm">{idx}</span>
                   </td>
                   <td>
                     <%= if is_consumed do %>
-                      <span class="badge badge-error badge-sm">Consumed</span>
+                      <span class="badge badge-outline badge-sm text-error border-error/50">
+                        Consumed
+                      </span>
                     <% else %>
-                      <span class="badge badge-success badge-sm">Created</span>
+                      <span class="badge badge-outline badge-sm text-success border-success/50">
+                        Created
+                      </span>
                     <% end %>
                   </td>
                   <td>
-                    <code class="hash-display text-xs"><%= truncate_hash(tag) %></code>
+                    <code class="hash-display text-xs">{truncate_hash(tag)}</code>
                   </td>
                   <td>
-                    <code class="hash-display text-xs"><%= truncate_hash(logic_ref) %></code>
+                    <code class="hash-display text-xs">{truncate_hash(logic_ref)}</code>
                   </td>
                 </tr>
               <% end %>
@@ -224,8 +260,7 @@ defmodule AnomaExplorerWeb.TransactionLive do
     ~H"""
     <div class="stat-card mb-6">
       <h2 class="text-lg font-semibold mb-4">
-        Resources
-        <span class="badge badge-ghost ml-2"><%= length(@resources) %></span>
+        Resources <span class="badge badge-ghost ml-2">{length(@resources)}</span>
       </h2>
       <%= if @resources == [] do %>
         <div class="text-base-content/50 text-center py-4">No resources</div>
@@ -243,22 +278,29 @@ defmodule AnomaExplorerWeb.TransactionLive do
             </thead>
             <tbody>
               <%= for resource <- @resources do %>
-                <tr class="hover:bg-base-200/50 cursor-pointer" phx-click={JS.navigate("/resources/#{resource["id"]}")}>
+                <tr
+                  class="hover:bg-base-200/50 cursor-pointer"
+                  phx-click={JS.navigate("/resources/#{resource["id"]}")}
+                >
                   <td>
-                    <code class="hash-display text-xs"><%= truncate_hash(resource["tag"]) %></code>
+                    <code class="hash-display text-xs">{truncate_hash(resource["tag"])}</code>
                   </td>
                   <td>
                     <%= if resource["isConsumed"] do %>
-                      <span class="badge badge-error badge-sm">Consumed</span>
+                      <span class="badge badge-outline badge-sm text-error border-error/50">
+                        Consumed
+                      </span>
                     <% else %>
-                      <span class="badge badge-success badge-sm">Created</span>
+                      <span class="badge badge-outline badge-sm text-success border-success/50">
+                        Created
+                      </span>
                     <% end %>
                   </td>
                   <td>
-                    <code class="hash-display text-xs"><%= truncate_hash(resource["logicRef"]) %></code>
+                    <code class="hash-display text-xs">{truncate_hash(resource["logicRef"])}</code>
                   </td>
                   <td>
-                    <%= resource["quantity"] || "-" %>
+                    {resource["quantity"] || "-"}
                   </td>
                   <td>
                     <.decoding_badge status={resource["decodingStatus"]} />
@@ -277,8 +319,7 @@ defmodule AnomaExplorerWeb.TransactionLive do
     ~H"""
     <div class="stat-card">
       <h2 class="text-lg font-semibold mb-4">
-        Actions
-        <span class="badge badge-ghost ml-2"><%= length(@actions) %></span>
+        Actions <span class="badge badge-ghost ml-2">{length(@actions)}</span>
       </h2>
       <%= if @actions == [] do %>
         <div class="text-base-content/50 text-center py-4">No actions</div>
@@ -295,10 +336,12 @@ defmodule AnomaExplorerWeb.TransactionLive do
               <%= for action <- @actions do %>
                 <tr>
                   <td>
-                    <code class="hash-display text-xs"><%= truncate_hash(action["actionTreeRoot"]) %></code>
+                    <code class="hash-display text-xs">
+                      {truncate_hash(action["actionTreeRoot"])}
+                    </code>
                   </td>
                   <td>
-                    <span class="badge badge-ghost"><%= action["tagCount"] %></span>
+                    <span class="badge badge-ghost">{action["tagCount"]}</span>
                   </td>
                 </tr>
               <% end %>
@@ -314,13 +357,13 @@ defmodule AnomaExplorerWeb.TransactionLive do
     ~H"""
     <%= case @status do %>
       <% "success" -> %>
-        <span class="badge badge-success badge-sm">Decoded</span>
+        <span class="badge badge-outline badge-sm text-success border-success/50">Decoded</span>
       <% "failed" -> %>
-        <span class="badge badge-error badge-sm">Failed</span>
+        <span class="badge badge-outline badge-sm text-error border-error/50">Failed</span>
       <% "pending" -> %>
-        <span class="badge badge-warning badge-sm">Pending</span>
+        <span class="badge badge-outline badge-sm text-warning border-warning/50">Pending</span>
       <% _ -> %>
-        <span class="badge badge-ghost badge-sm"><%= @status || "-" %></span>
+        <span class="badge badge-outline badge-ghost badge-sm">{@status || "-"}</span>
     <% end %>
     """
   end

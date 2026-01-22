@@ -29,25 +29,23 @@ defmodule AnomaExplorerWeb.Layouts do
           <div class="p-6 border-b border-base-300 sidebar-header">
             <div class="flex items-center justify-between">
               <a href="/" class="flex items-center gap-3 sidebar-logo-full">
-                <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-                  <span class="text-xl font-bold text-primary-content">A</span>
-                </div>
+                <img src="/images/anoma-logo.svg" alt="Anoma" class="w-10 h-10" />
                 <div class="sidebar-logo-text">
                   <span class="text-lg font-semibold text-base-content">Anoma</span>
                   <span class="text-lg font-light text-base-content/70">Explorer</span>
                 </div>
               </a>
-              <a href="/" class="sidebar-logo-icon w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-                <span class="text-xl font-bold text-primary-content">A</span>
+              <a href="/" class="sidebar-logo-icon">
+                <img src="/images/anoma-logo.svg" alt="Anoma" class="w-10 h-10" />
               </a>
               <div class="sidebar-theme-toggle">
                 <.theme_toggle />
               </div>
             </div>
           </div>
-
+          
     <!-- Navigation -->
-          <nav class="flex-1 py-6">
+          <nav class="flex-1 py-6 overflow-y-auto">
             <div class="px-4 mb-2 sidebar-section-label">
               <span class="text-xs font-medium text-base-content/60 uppercase tracking-wider">
                 Overview
@@ -59,7 +57,11 @@ defmodule AnomaExplorerWeb.Layouts do
               <span>Dashboard</span>
             </a>
 
-            <a href="/transactions" class={nav_class(@current_path, "/transactions")} title="Transactions">
+            <a
+              href="/transactions"
+              class={nav_class(@current_path, "/transactions")}
+              title="Transactions"
+            >
               <.icon name="hero-document-text" class="w-5 h-5" />
               <span>Transactions</span>
             </a>
@@ -69,35 +71,93 @@ defmodule AnomaExplorerWeb.Layouts do
               <span>Resources</span>
             </a>
 
+            <a href="/actions" class={nav_class(@current_path, "/actions")} title="Actions">
+              <.icon name="hero-bolt" class="w-5 h-5" />
+              <span>Actions</span>
+            </a>
+
+            <a
+              href="/compliances"
+              class={nav_class(@current_path, "/compliances")}
+              title="Compliance Units"
+            >
+              <.icon name="hero-shield-check" class="w-5 h-5" />
+              <span>Compliances</span>
+            </a>
+
+            <a href="/logics" class={nav_class(@current_path, "/logics")} title="Logic Inputs">
+              <.icon name="hero-cpu-chip" class="w-5 h-5" />
+              <span>Logics</span>
+            </a>
+
+            <a
+              href="/commitments"
+              class={nav_class(@current_path, "/commitments")}
+              title="Commitment Tree Roots"
+            >
+              <.icon name="hero-finger-print" class="w-5 h-5" />
+              <span>Commitments</span>
+            </a>
+
+            <a href="/nullifiers" class={nav_class(@current_path, "/nullifiers")} title="Nullifiers">
+              <.icon name="hero-no-symbol" class="w-5 h-5" />
+              <span>Nullifiers</span>
+            </a>
+
+            <a
+              href="/playground"
+              class={nav_class(@current_path, "/playground")}
+              title="GraphQL Playground"
+            >
+              <.icon name="hero-command-line" class="w-5 h-5" />
+              <span>Playground</span>
+            </a>
+
             <div class="px-4 mb-2 mt-6 sidebar-section-label">
               <span class="text-xs font-medium text-base-content/60 uppercase tracking-wider">
                 Settings
               </span>
             </div>
 
-            <a href="/settings/contracts" class={nav_class(@current_path, "/settings/contracts")} title="Contracts">
+            <a
+              href="/settings/contracts"
+              class={nav_class(@current_path, "/settings/contracts")}
+              title="Contracts"
+            >
               <.icon name="hero-document-text" class="w-5 h-5" />
               <span>Contracts</span>
             </a>
 
-            <a href="/settings/networks" class={nav_class(@current_path, "/settings/networks")} title="Networks">
+            <a
+              href="/settings/networks"
+              class={nav_class(@current_path, "/settings/networks")}
+              title="Networks"
+            >
               <.icon name="hero-globe-alt" class="w-5 h-5" />
               <span>Networks</span>
             </a>
 
-            <a href="/settings/api-keys" class={nav_class(@current_path, "/settings/api-keys")} title="Environment">
+            <a
+              href="/settings/api-keys"
+              class={nav_class(@current_path, "/settings/api-keys")}
+              title="Environment"
+            >
               <.icon name="hero-cog-6-tooth" class="w-5 h-5" />
               <span>Environment</span>
             </a>
 
-            <a href="/settings/indexer" class={nav_class(@current_path, "/settings/indexer")} title="Indexer">
+            <a
+              href="/settings/indexer"
+              class={nav_class(@current_path, "/settings/indexer")}
+              title="Indexer"
+            >
               <.icon name="hero-server-stack" class="w-5 h-5" />
               <span>Indexer</span>
             </a>
           </nav>
-
+          
     <!-- Footer -->
-          <div class="p-4 border-t border-base-300">
+          <div class="p-4 border-t border-base-300 shrink-0">
             <div class="flex items-center justify-between">
               <div class="text-xs text-base-content/60 sidebar-version">
                 v{app_version()}
@@ -109,15 +169,23 @@ defmodule AnomaExplorerWeb.Layouts do
                 title="Toggle sidebar"
               >
                 <span id="collapse-icon"><.icon name="hero-chevron-left" class="w-5 h-5" /></span>
-                <span id="expand-icon" class="hidden"><.icon name="hero-chevron-right" class="w-5 h-5" /></span>
+                <span id="expand-icon" class="hidden">
+                  <.icon name="hero-chevron-right" class="w-5 h-5" />
+                </span>
               </button>
             </div>
           </div>
         </div>
       </aside>
-
+      
     <!-- Main content -->
       <main id="main-content" class="main-content min-h-screen">
+        <!-- Search Header -->
+        <div class="sticky top-0 z-10 bg-base-100/95 backdrop-blur-sm border-b border-base-200">
+          <div class="px-8 py-4">
+            <.global_search />
+          </div>
+        </div>
         <div class="p-8">
           {render_slot(@inner_block)}
         </div>
@@ -185,6 +253,41 @@ defmodule AnomaExplorerWeb.Layouts do
         <.icon name="hero-arrow-path" class="ml-1 size-3 motion-safe:animate-spin" />
       </.flash>
     </div>
+    """
+  end
+
+  @doc """
+  Global search component for the header.
+  """
+  attr :id, :string, default: "global-search"
+
+  def global_search(assigns) do
+    ~H"""
+    <form
+      id={@id}
+      phx-submit="global_search"
+      class="relative flex items-center w-full"
+    >
+      <div class="relative w-full group">
+        <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+          <.icon name="hero-magnifying-glass" class="w-5 h-5 text-base-content/40 group-focus-within:text-primary transition-colors" />
+        </div>
+        <input
+          type="text"
+          name="query"
+          id="search-input"
+          placeholder="Search transactions by hash..."
+          autocomplete="off"
+          class="block w-full pl-11 pr-28 py-3 text-sm bg-base-200/50 border border-base-300/50 rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary/50 focus:bg-base-100 transition-all duration-200 placeholder:text-base-content/40 shadow-sm hover:border-base-300"
+        />
+        <div class="absolute inset-y-0 right-0 flex items-center gap-2 pr-3">
+          <span class="text-xs text-base-content/40 hidden sm:inline">Transactions</span>
+          <kbd class="hidden sm:inline-flex items-center gap-0.5 px-2 py-1 text-xs font-medium text-base-content/50 bg-base-300/70 rounded-md border border-base-content/10">
+            <span class="text-[10px]">⌘</span>K
+          </kbd>
+        </div>
+      </div>
+    </form>
     """
   end
 

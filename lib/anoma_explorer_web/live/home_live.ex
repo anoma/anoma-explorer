@@ -26,7 +26,9 @@ defmodule AnomaExplorerWeb.HomeLive do
      |> assign(:loading, true)
      |> assign(:error, nil)
      |> assign(:configured, Client.configured?())
-     |> assign(:last_updated, nil)}
+     |> assign(:last_updated, nil)
+     |> assign(:selected_chain, nil)
+     |> assign(:selected_resources, nil)}
   end
 
   @impl true
@@ -53,6 +55,47 @@ defmodule AnomaExplorerWeb.HomeLive do
       |> load_dashboard_data()
 
     {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("show_chain_info", %{"chain-id" => chain_id}, socket) do
+    chain_id = String.to_integer(chain_id)
+    {:noreply, assign(socket, :selected_chain, Networks.chain_info(chain_id))}
+  end
+
+  @impl true
+  def handle_event("close_chain_modal", _params, socket) do
+    {:noreply, assign(socket, :selected_chain, nil)}
+  end
+
+  @impl true
+  def handle_event(
+        "show_resources",
+        %{"tx-id" => tx_id, "tags" => tags_json, "logic-refs" => logic_refs_json},
+        socket
+      ) do
+    tags = Jason.decode!(tags_json)
+    logic_refs = Jason.decode!(logic_refs_json)
+
+    {:noreply,
+     assign(socket, :selected_resources, %{tx_id: tx_id, tags: tags, logic_refs: logic_refs})}
+  end
+
+  @impl true
+  def handle_event("close_resources_modal", _params, socket) do
+    {:noreply, assign(socket, :selected_resources, nil)}
+  end
+
+  @impl true
+  def handle_event("global_search", %{"query" => query}, socket) do
+    query = String.trim(query)
+
+    if query != "" do
+      # Default search: look for transactions by hash
+      {:noreply, push_navigate(socket, to: "/transactions?search=#{URI.encode_www_form(query)}")}
+    else
+      {:noreply, socket}
+    end
   end
 
   defp load_dashboard_data(socket) do
@@ -107,7 +150,7 @@ defmodule AnomaExplorerWeb.HomeLive do
         <div class="flex items-center gap-2">
           <%= if @last_updated do %>
             <span class="text-xs text-base-content/50">
-              Updated <%= format_time(@last_updated) %>
+              Updated {format_time(@last_updated)}
             </span>
           <% end %>
           <button phx-click="refresh" class="btn btn-ghost btn-sm" disabled={@loading}>
@@ -122,7 +165,7 @@ defmodule AnomaExplorerWeb.HomeLive do
         <%= if @error do %>
           <div class="alert alert-error mb-6">
             <.icon name="hero-exclamation-triangle" class="h-5 w-5" />
-            <span><%= @error %></span>
+            <span>{@error}</span>
           </div>
         <% end %>
 
@@ -132,6 +175,9 @@ defmodule AnomaExplorerWeb.HomeLive do
           <.stats_grid stats={@stats} />
           <.recent_transactions transactions={@transactions} loading={@loading} />
         <% end %>
+
+        <.chain_info_modal chain={@selected_chain} />
+        <.resources_modal resources={@selected_resources} />
       <% end %>
     </Layouts.app>
     """
@@ -152,8 +198,7 @@ defmodule AnomaExplorerWeb.HomeLive do
             Configure the Envio GraphQL endpoint to view indexed data.
           </p>
           <a href="/settings/indexer" class="btn btn-primary btn-sm mt-3">
-            <.icon name="hero-cog-6-tooth" class="w-4 h-4" />
-            Configure Indexer
+            <.icon name="hero-cog-6-tooth" class="w-4 h-4" /> Configure Indexer
           </a>
         </div>
       </div>
@@ -176,37 +221,22 @@ defmodule AnomaExplorerWeb.HomeLive do
 
   defp stats_grid(assigns) do
     ~H"""
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-4">
       <.stat_card
         label="Transactions"
         value={@stats.transactions}
         icon="hero-document-text"
         color="primary"
       />
-      <.stat_card
-        label="Resources"
-        value={@stats.resources}
-        icon="hero-cube"
-        color="secondary"
-      />
+      <.stat_card label="Resources" value={@stats.resources} icon="hero-cube" color="secondary" />
       <.stat_card
         label="Consumed"
         value={@stats.consumed}
         icon="hero-arrow-right-start-on-rectangle"
         color="error"
       />
-      <.stat_card
-        label="Created"
-        value={@stats.created}
-        icon="hero-plus-circle"
-        color="success"
-      />
-      <.stat_card
-        label="Actions"
-        value={@stats.actions}
-        icon="hero-bolt"
-        color="warning"
-      />
+      <.stat_card label="Created" value={@stats.created} icon="hero-plus-circle" color="success" />
+      <.stat_card label="Actions" value={@stats.actions} icon="hero-bolt" color="warning" />
       <.stat_card
         label="Tree Roots"
         value={@stats.commitment_roots}
@@ -214,6 +244,7 @@ defmodule AnomaExplorerWeb.HomeLive do
         color="info"
       />
     </div>
+    <.stats_warning stats={@stats} />
     """
   end
 
@@ -222,12 +253,33 @@ defmodule AnomaExplorerWeb.HomeLive do
     <div class="stat-card">
       <div class="flex items-center gap-2 mb-1">
         <.icon name={@icon} class={"w-4 h-4 text-#{@color}"} />
-        <span class="text-xs text-base-content/60 uppercase tracking-wide"><%= @label %></span>
+        <span class="text-xs text-base-content/60 uppercase tracking-wide">{@label}</span>
       </div>
       <div class="text-2xl font-bold text-base-content">
-        <%= format_number(@value) %>
+        {format_number(@value)}
       </div>
     </div>
+    """
+  end
+
+  defp stats_warning(assigns) do
+    has_capped_value =
+      assigns.stats.transactions >= 1000 or
+        assigns.stats.resources >= 1000 or
+        assigns.stats.actions >= 1000 or
+        assigns.stats.commitment_roots >= 1000
+
+    assigns = assign(assigns, :show_warning, has_capped_value)
+
+    ~H"""
+    <%= if @show_warning do %>
+      <div class="flex items-center gap-2 text-xs text-base-content/50 mb-6">
+        <.icon name="hero-information-circle" class="w-4 h-4" />
+        <span>
+          Stats showing 1,000 may be limited by the indexer API. Actual counts could be higher.
+        </span>
+      </div>
+    <% end %>
     """
   end
 
@@ -237,8 +289,7 @@ defmodule AnomaExplorerWeb.HomeLive do
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-lg font-semibold">Recent Transactions</h2>
         <a href="/transactions" class="btn btn-ghost btn-sm">
-          View All
-          <.icon name="hero-arrow-right" class="w-4 h-4" />
+          View All <.icon name="hero-arrow-right" class="w-4 h-4" />
         </a>
       </div>
 
@@ -266,24 +317,64 @@ defmodule AnomaExplorerWeb.HomeLive do
                 <% created = length(tags) - consumed %>
                 <tr>
                   <td>
-                    <a href={"/transactions/#{tx["id"]}"} class="hash-display hover:text-primary">
-                      <%= truncate_hash(tx["txHash"]) %>
-                    </a>
+                    <div class="flex items-center gap-1">
+                      <a href={"/transactions/#{tx["id"]}"} class="hash-display hover:text-primary">
+                        {truncate_hash(tx["txHash"])}
+                      </a>
+                      <button
+                        type="button"
+                        phx-click={JS.dispatch("phx:copy", detail: %{text: tx["txHash"]})}
+                        class="btn btn-ghost btn-xs opacity-50 hover:opacity-100"
+                        title="Copy full hash"
+                      >
+                        <.icon name="hero-clipboard-document" class="w-3 h-3" />
+                      </button>
+                    </div>
                   </td>
                   <td>
-                    <span class="badge badge-outline badge-sm" title={"Chain ID: #{tx["chainId"]}"}>
-                      <%= Networks.short_name(tx["chainId"]) %>
-                    </span>
+                    <button
+                      phx-click="show_chain_info"
+                      phx-value-chain-id={tx["chainId"]}
+                      class="text-sm cursor-pointer hover:text-primary hover:underline"
+                      title={"Chain ID: #{tx["chainId"]}"}
+                    >
+                      {Networks.short_name(tx["chainId"])}
+                    </button>
                   </td>
                   <td>
-                    <span class="font-mono text-sm"><%= tx["blockNumber"] %></span>
+                    <%= if block_url = Networks.block_url(tx["chainId"], tx["blockNumber"]) do %>
+                      <a
+                        href={block_url}
+                        target="_blank"
+                        rel="noopener"
+                        class="font-mono text-sm link link-hover"
+                      >
+                        {tx["blockNumber"]}
+                      </a>
+                    <% else %>
+                      <span class="font-mono text-sm">{tx["blockNumber"]}</span>
+                    <% end %>
                   </td>
                   <td>
-                    <span class="badge badge-error badge-sm" title="Consumed"><%= consumed %></span>
-                    <span class="badge badge-success badge-sm" title="Created"><%= created %></span>
+                    <button
+                      phx-click="show_resources"
+                      phx-value-tx-id={tx["id"]}
+                      phx-value-tags={Jason.encode!(tx["tags"] || [])}
+                      phx-value-logic-refs={Jason.encode!(tx["logicRefs"] || [])}
+                      class="flex items-center gap-1 cursor-pointer hover:opacity-80"
+                      title="View resources"
+                    >
+                      <span class="text-sm text-base-content/70">{consumed}</span>
+                      <.icon
+                        name="hero-arrow-right-start-on-rectangle"
+                        class="w-3 h-3 text-base-content/50"
+                      />
+                      <span class="text-sm text-base-content/70">{created}</span>
+                      <.icon name="hero-plus-circle" class="w-3 h-3 text-base-content/50" />
+                    </button>
                   </td>
                   <td class="hidden lg:table-cell text-base-content/60 text-sm">
-                    <%= format_timestamp(tx["timestamp"]) %>
+                    {format_timestamp(tx["timestamp"])}
                   </td>
                 </tr>
               <% end %>
@@ -292,6 +383,160 @@ defmodule AnomaExplorerWeb.HomeLive do
         </div>
       <% end %>
     </div>
+    """
+  end
+
+  defp chain_info_modal(assigns) do
+    ~H"""
+    <%= if @chain do %>
+      <div class="modal modal-open" phx-click="close_chain_modal">
+        <div class="modal-box" phx-click-away="close_chain_modal">
+          <button
+            class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+            phx-click="close_chain_modal"
+          >
+            <.icon name="hero-x-mark" class="w-5 h-5" />
+          </button>
+
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="text-lg font-semibold">Network Details</h3>
+              <div class="flex items-center gap-2">
+                <span class="badge badge-info">Mainnet</span>
+                <%= if @chain.explorer do %>
+                  <a
+                    href={@chain.explorer}
+                    target="_blank"
+                    rel="noopener"
+                    class="btn btn-ghost btn-sm"
+                  >
+                    View Explorer <.icon name="hero-arrow-top-right-on-square" class="w-4 h-4" />
+                  </a>
+                <% end %>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="text-xs text-base-content/60 uppercase tracking-wider">Name</label>
+                <p class="text-sm">{@chain.short}</p>
+              </div>
+              <div>
+                <label class="text-xs text-base-content/60 uppercase tracking-wider">
+                  Display Name
+                </label>
+                <p class="text-sm">{@chain.name}</p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="text-xs text-base-content/60 uppercase tracking-wider">Chain ID</label>
+                <p class="text-sm">
+                  <span class="badge badge-outline badge-sm">{@chain.chain_id}</span>
+                </p>
+              </div>
+              <div>
+                <label class="text-xs text-base-content/60 uppercase tracking-wider">Status</label>
+                <p class="text-sm">
+                  <span class="badge badge-success badge-sm">Active</span>
+                </p>
+              </div>
+            </div>
+
+            <%= if @chain.explorer do %>
+              <div>
+                <label class="text-xs text-base-content/60 uppercase tracking-wider">
+                  Explorer URL
+                </label>
+                <p class="text-sm break-all text-base-content/70">{@chain.explorer}</p>
+              </div>
+            <% end %>
+          </div>
+        </div>
+        <div class="modal-backdrop bg-black/50"></div>
+      </div>
+    <% end %>
+    """
+  end
+
+  defp resources_modal(assigns) do
+    ~H"""
+    <%= if @resources do %>
+      <div class="modal modal-open" phx-click="close_resources_modal">
+        <div class="modal-box max-w-2xl" phx-click-away="close_resources_modal">
+          <button
+            class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+            phx-click="close_resources_modal"
+          >
+            <.icon name="hero-x-mark" class="w-5 h-5" />
+          </button>
+
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <h3 class="text-lg font-semibold">Resources</h3>
+                <span class="badge badge-outline">{length(@resources.tags)} total</span>
+              </div>
+              <a href={"/transactions/#{@resources.tx_id}"} class="btn btn-ghost btn-sm">
+                View Transaction <.icon name="hero-arrow-right" class="w-4 h-4" />
+              </a>
+            </div>
+
+            <%= if @resources.tags == [] do %>
+              <div class="text-base-content/50 text-center py-4">No resources</div>
+            <% else %>
+              <div class="overflow-x-auto">
+                <table class="data-table w-full">
+                  <thead>
+                    <tr>
+                      <th>Index</th>
+                      <th>Type</th>
+                      <th>Tag</th>
+                      <th>Logic Ref</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <%= for {tag, idx} <- Enum.with_index(@resources.tags) do %>
+                      <% is_consumed = rem(idx, 2) == 0 %>
+                      <% logic_ref = Enum.at(@resources.logic_refs, idx) %>
+                      <tr>
+                        <td>
+                          <span class="text-sm text-base-content/60">{idx}</span>
+                        </td>
+                        <td>
+                          <%= if is_consumed do %>
+                            <div class="flex items-center gap-1 text-sm">
+                              <.icon
+                                name="hero-arrow-right-start-on-rectangle"
+                                class="w-3 h-3 text-base-content/50"
+                              />
+                              <span class="text-base-content/70">Consumed</span>
+                            </div>
+                          <% else %>
+                            <div class="flex items-center gap-1 text-sm">
+                              <.icon name="hero-plus-circle" class="w-3 h-3 text-base-content/50" />
+                              <span class="text-base-content/70">Created</span>
+                            </div>
+                          <% end %>
+                        </td>
+                        <td>
+                          <code class="hash-display text-xs">{truncate_hash(tag)}</code>
+                        </td>
+                        <td>
+                          <code class="hash-display text-xs">{truncate_hash(logic_ref)}</code>
+                        </td>
+                      </tr>
+                    <% end %>
+                  </tbody>
+                </table>
+              </div>
+            <% end %>
+          </div>
+        </div>
+        <div class="modal-backdrop bg-black/50"></div>
+      </div>
+    <% end %>
     """
   end
 
@@ -304,9 +549,18 @@ defmodule AnomaExplorerWeb.HomeLive do
   defp truncate_hash(hash), do: hash
 
   defp format_number(nil), do: "-"
-  defp format_number(n) when n >= 1_000_000, do: "#{Float.round(n / 1_000_000, 1)}M"
-  defp format_number(n) when n >= 1_000, do: "#{Float.round(n / 1_000, 1)}K"
-  defp format_number(n), do: Integer.to_string(n)
+
+  defp format_number(n) when is_integer(n) do
+    n
+    |> Integer.to_string()
+    |> String.graphemes()
+    |> Enum.reverse()
+    |> Enum.chunk_every(3)
+    |> Enum.join(",")
+    |> String.reverse()
+  end
+
+  defp format_number(n), do: to_string(n)
 
   defp format_timestamp(nil), do: "-"
 

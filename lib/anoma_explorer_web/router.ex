@@ -23,6 +23,27 @@ defmodule AnomaExplorerWeb.Router do
     live "/resources", ResourcesLive, :index
     live "/resources/:id", ResourceLive, :show
 
+    # Action routes
+    live "/actions", ActionsLive, :index
+    live "/actions/:id", ActionLive, :show
+
+    # Compliance routes
+    live "/compliances", CompliancesLive, :index
+    live "/compliances/:id", ComplianceLive, :show
+
+    # Logic routes
+    live "/logics", LogicsLive, :index
+    live "/logics/:id", LogicLive, :show
+
+    # Commitment routes
+    live "/commitments", CommitmentsLive, :index
+
+    # Nullifier routes
+    live "/nullifiers", NullifiersLive, :index
+
+    # GraphQL Playground
+    live "/playground", PlaygroundLive, :index
+
     # Settings routes
     get "/settings", PageController, :settings_redirect
     live "/settings/contracts", SettingsLive, :index

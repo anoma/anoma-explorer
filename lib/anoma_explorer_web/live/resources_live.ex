@@ -11,6 +11,16 @@ defmodule AnomaExplorerWeb.ResourcesLive do
 
   @page_size 20
 
+  @default_filters %{
+    "is_consumed" => "",
+    "tag" => "",
+    "logic_ref" => "",
+    "chain_id" => "",
+    "decoding_status" => "",
+    "block_min" => "",
+    "block_max" => ""
+  }
+
   @impl true
   def mount(_params, _session, socket) do
     if connected?(socket), do: send(self(), :load_data)
@@ -23,8 +33,10 @@ defmodule AnomaExplorerWeb.ResourcesLive do
      |> assign(:error, nil)
      |> assign(:page, 0)
      |> assign(:has_more, false)
-     |> assign(:filter, nil)
-     |> assign(:configured, Client.configured?())}
+     |> assign(:filters, @default_filters)
+     |> assign(:show_filters, false)
+     |> assign(:configured, Client.configured?())
+     |> assign(:chains, Networks.list_chains())}
   end
 
   @impl true
@@ -34,17 +46,46 @@ defmodule AnomaExplorerWeb.ResourcesLive do
   end
 
   @impl true
-  def handle_event("filter", %{"status" => status}, socket) do
-    filter =
+  def handle_event("quick_filter", %{"status" => status}, socket) do
+    filters =
       case status do
-        "consumed" -> true
-        "created" -> false
-        _ -> nil
+        "consumed" -> Map.put(socket.assigns.filters, "is_consumed", "true")
+        "created" -> Map.put(socket.assigns.filters, "is_consumed", "false")
+        _ -> Map.put(socket.assigns.filters, "is_consumed", "")
       end
 
     socket =
       socket
-      |> assign(:filter, filter)
+      |> assign(:filters, filters)
+      |> assign(:page, 0)
+      |> assign(:loading, true)
+      |> load_resources()
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("toggle_filters", _params, socket) do
+    {:noreply, assign(socket, :show_filters, !socket.assigns.show_filters)}
+  end
+
+  @impl true
+  def handle_event("apply_filters", %{"filters" => filters}, socket) do
+    socket =
+      socket
+      |> assign(:filters, filters)
+      |> assign(:page, 0)
+      |> assign(:loading, true)
+      |> load_resources()
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("clear_filters", _params, socket) do
+    socket =
+      socket
+      |> assign(:filters, @default_filters)
       |> assign(:page, 0)
       |> assign(:loading, true)
       |> load_resources()
@@ -74,6 +115,17 @@ defmodule AnomaExplorerWeb.ResourcesLive do
     {:noreply, socket}
   end
 
+  @impl true
+  def handle_event("global_search", %{"query" => query}, socket) do
+    query = String.trim(query)
+
+    if query != "" do
+      {:noreply, push_navigate(socket, to: "/transactions?search=#{URI.encode_www_form(query)}")}
+    else
+      {:noreply, socket}
+    end
+  end
+
   defp load_resources(socket) do
     if not Client.configured?() do
       socket
@@ -81,9 +133,19 @@ defmodule AnomaExplorerWeb.ResourcesLive do
       |> assign(:loading, false)
     else
       offset = socket.assigns.page * @page_size
-      filter = socket.assigns.filter
+      filters = socket.assigns.filters
 
-      case GraphQL.list_resources(limit: @page_size + 1, offset: offset, is_consumed: filter) do
+      opts =
+        [limit: @page_size + 1, offset: offset]
+        |> maybe_add_bool_filter(:is_consumed, filters["is_consumed"])
+        |> maybe_add_filter(:tag, filters["tag"])
+        |> maybe_add_filter(:logic_ref, filters["logic_ref"])
+        |> maybe_add_filter(:decoding_status, filters["decoding_status"])
+        |> maybe_add_int_filter(:chain_id, filters["chain_id"])
+        |> maybe_add_int_filter(:block_min, filters["block_min"])
+        |> maybe_add_int_filter(:block_max, filters["block_max"])
+
+      case GraphQL.list_resources(opts) do
         {:ok, resources} ->
           has_more = length(resources) > @page_size
           display_resources = Enum.take(resources, @page_size)
@@ -103,9 +165,39 @@ defmodule AnomaExplorerWeb.ResourcesLive do
     end
   end
 
+  defp maybe_add_filter(opts, _key, nil), do: opts
+  defp maybe_add_filter(opts, _key, ""), do: opts
+  defp maybe_add_filter(opts, key, value), do: Keyword.put(opts, key, value)
+
+  defp maybe_add_bool_filter(opts, _key, nil), do: opts
+  defp maybe_add_bool_filter(opts, _key, ""), do: opts
+  defp maybe_add_bool_filter(opts, key, "true"), do: Keyword.put(opts, key, true)
+  defp maybe_add_bool_filter(opts, key, "false"), do: Keyword.put(opts, key, false)
+  defp maybe_add_bool_filter(opts, _key, _), do: opts
+
+  defp maybe_add_int_filter(opts, _key, nil), do: opts
+  defp maybe_add_int_filter(opts, _key, ""), do: opts
+
+  defp maybe_add_int_filter(opts, key, value) when is_binary(value) do
+    case Integer.parse(value) do
+      {int, _} -> Keyword.put(opts, key, int)
+      :error -> opts
+    end
+  end
+
+  defp maybe_add_int_filter(opts, key, value) when is_integer(value) do
+    Keyword.put(opts, key, value)
+  end
+
   defp format_error(:not_configured), do: "Indexer endpoint not configured"
   defp format_error({:connection_error, _}), do: "Failed to connect to indexer"
   defp format_error(reason), do: "Error: #{inspect(reason)}"
+
+  defp active_filter_count(filters) do
+    filters
+    |> Map.delete("is_consumed")
+    |> Enum.count(fn {_k, v} -> v != "" and not is_nil(v) end)
+  end
 
   @impl true
   def render(assigns) do
@@ -126,12 +218,17 @@ defmodule AnomaExplorerWeb.ResourcesLive do
         <%= if @error do %>
           <div class="alert alert-error mb-6">
             <.icon name="hero-exclamation-triangle" class="h-5 w-5" />
-            <span><%= @error %></span>
+            <span>{@error}</span>
           </div>
         <% end %>
 
         <div class="stat-card">
-          <.filter_tabs filter={@filter} />
+          <.filter_header
+            filters={@filters}
+            show_filters={@show_filters}
+            filter_count={active_filter_count(@filters)}
+          />
+          <.filter_form :if={@show_filters} filters={@filters} chains={@chains} />
 
           <%= if @loading and @resources == [] do %>
             <.loading_skeleton />
@@ -143,6 +240,146 @@ defmodule AnomaExplorerWeb.ResourcesLive do
         </div>
       <% end %>
     </Layouts.app>
+    """
+  end
+
+  defp filter_header(assigns) do
+    ~H"""
+    <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+      <div class="flex gap-2">
+        <button
+          phx-click="quick_filter"
+          phx-value-status="all"
+          class={["btn btn-sm", (@filters["is_consumed"] == "" && "btn-primary") || "btn-ghost"]}
+        >
+          All
+        </button>
+        <button
+          phx-click="quick_filter"
+          phx-value-status="consumed"
+          class={["btn btn-sm", (@filters["is_consumed"] == "true" && "btn-primary") || "btn-ghost"]}
+        >
+          <.icon name="hero-arrow-right-start-on-rectangle" class="w-4 h-4" /> Consumed
+        </button>
+        <button
+          phx-click="quick_filter"
+          phx-value-status="created"
+          class={["btn btn-sm", (@filters["is_consumed"] == "false" && "btn-primary") || "btn-ghost"]}
+        >
+          <.icon name="hero-plus-circle" class="w-4 h-4" /> Created
+        </button>
+      </div>
+
+      <button phx-click="toggle_filters" class="btn btn-ghost btn-sm gap-2">
+        <.icon name="hero-funnel" class="w-4 h-4" /> More Filters
+        <%= if @filter_count > 0 do %>
+          <span class="badge badge-primary badge-sm">{@filter_count}</span>
+        <% end %>
+        <.icon
+          name={if @show_filters, do: "hero-chevron-up", else: "hero-chevron-down"}
+          class="w-4 h-4"
+        />
+      </button>
+    </div>
+    """
+  end
+
+  defp filter_form(assigns) do
+    ~H"""
+    <form phx-submit="apply_filters" class="mb-6 p-4 bg-base-200/50 rounded-lg">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div>
+          <label class="text-xs text-base-content/60 uppercase tracking-wide mb-1 block">Tag</label>
+          <input
+            type="text"
+            name="filters[tag]"
+            value={@filters["tag"]}
+            placeholder="0x..."
+            class="input input-bordered input-sm w-full"
+          />
+        </div>
+
+        <div>
+          <label class="text-xs text-base-content/60 uppercase tracking-wide mb-1 block">
+            Logic Ref
+          </label>
+          <input
+            type="text"
+            name="filters[logic_ref]"
+            value={@filters["logic_ref"]}
+            placeholder="0x..."
+            class="input input-bordered input-sm w-full"
+          />
+        </div>
+
+        <div>
+          <label class="text-xs text-base-content/60 uppercase tracking-wide mb-1 block">
+            Network
+          </label>
+          <select name="filters[chain_id]" class="select select-bordered select-sm w-full">
+            <option value="">All Networks</option>
+            <%= for {chain_id, name} <- @chains do %>
+              <option value={chain_id} selected={to_string(chain_id) == @filters["chain_id"]}>
+                {name}
+              </option>
+            <% end %>
+          </select>
+        </div>
+
+        <div>
+          <label class="text-xs text-base-content/60 uppercase tracking-wide mb-1 block">
+            Decoding Status
+          </label>
+          <select name="filters[decoding_status]" class="select select-bordered select-sm w-full">
+            <option value="">All Statuses</option>
+            <option value="success" selected={@filters["decoding_status"] == "success"}>
+              Decoded
+            </option>
+            <option value="failed" selected={@filters["decoding_status"] == "failed"}>Failed</option>
+            <option value="pending" selected={@filters["decoding_status"] == "pending"}>
+              Pending
+            </option>
+          </select>
+        </div>
+
+        <div>
+          <label class="text-xs text-base-content/60 uppercase tracking-wide mb-1 block">
+            Block Min
+          </label>
+          <input
+            type="number"
+            name="filters[block_min]"
+            value={@filters["block_min"]}
+            placeholder="Min block"
+            class="input input-bordered input-sm w-full"
+          />
+        </div>
+
+        <div>
+          <label class="text-xs text-base-content/60 uppercase tracking-wide mb-1 block">
+            Block Max
+          </label>
+          <input
+            type="number"
+            name="filters[block_max]"
+            value={@filters["block_max"]}
+            placeholder="Max block"
+            class="input input-bordered input-sm w-full"
+          />
+        </div>
+
+        <input type="hidden" name="filters[is_consumed]" value={@filters["is_consumed"]} />
+      </div>
+
+      <div class="flex justify-end gap-2 mt-4">
+        <button type="button" phx-click="clear_filters" class="btn btn-ghost btn-sm">
+          Clear Filters
+        </button>
+        <button type="submit" class="btn btn-primary btn-sm">
+          <.icon name="hero-magnifying-glass" class="w-4 h-4" /> Apply Filters
+        </button>
+      </div>
+    </form>
     """
   end
 
@@ -163,36 +400,6 @@ defmodule AnomaExplorerWeb.ResourcesLive do
           </a>
         </div>
       </div>
-    </div>
-    """
-  end
-
-  defp filter_tabs(assigns) do
-    ~H"""
-    <div class="flex gap-2 mb-4">
-      <button
-        phx-click="filter"
-        phx-value-status="all"
-        class={["btn btn-sm", @filter == nil && "btn-primary" || "btn-ghost"]}
-      >
-        All
-      </button>
-      <button
-        phx-click="filter"
-        phx-value-status="consumed"
-        class={["btn btn-sm", @filter == true && "btn-primary" || "btn-ghost"]}
-      >
-        <.icon name="hero-arrow-right-start-on-rectangle" class="w-4 h-4" />
-        Consumed
-      </button>
-      <button
-        phx-click="filter"
-        phx-value-status="created"
-        class={["btn btn-sm", @filter == false && "btn-primary" || "btn-ghost"]}
-      >
-        <.icon name="hero-plus-circle" class="w-4 h-4" />
-        Created
-      </button>
     </div>
     """
   end
@@ -229,27 +436,37 @@ defmodule AnomaExplorerWeb.ResourcesLive do
           </thead>
           <tbody>
             <%= for resource <- @resources do %>
-              <tr class="hover:bg-base-200/50 cursor-pointer" phx-click={JS.navigate("/resources/#{resource["id"]}")}>
+              <tr
+                class="hover:bg-base-200/50 cursor-pointer"
+                phx-click={JS.navigate("/resources/#{resource["id"]}")}
+              >
                 <td>
-                  <code class="hash-display text-xs"><%= truncate_hash(resource["tag"]) %></code>
+                  <code class="hash-display text-xs">{truncate_hash(resource["tag"])}</code>
                 </td>
                 <td>
                   <%= if resource["isConsumed"] do %>
-                    <span class="badge badge-error badge-sm">Consumed</span>
+                    <span class="badge badge-outline badge-sm text-error border-error/50">
+                      Consumed
+                    </span>
                   <% else %>
-                    <span class="badge badge-success badge-sm">Created</span>
+                    <span class="badge badge-outline badge-sm text-success border-success/50">
+                      Created
+                    </span>
                   <% end %>
                 </td>
                 <td>
-                  <span class="badge badge-outline badge-sm" title={"Chain ID: #{resource["chainId"]}"}>
-                    <%= Networks.short_name(resource["chainId"]) %>
+                  <span
+                    class="text-sm text-base-content/70"
+                    title={"Chain ID: #{resource["chainId"]}"}
+                  >
+                    {Networks.short_name(resource["chainId"])}
                   </span>
                 </td>
                 <td class="hidden md:table-cell">
-                  <code class="hash-display text-xs"><%= truncate_hash(resource["logicRef"]) %></code>
+                  <code class="hash-display text-xs">{truncate_hash(resource["logicRef"])}</code>
                 </td>
                 <td class="hidden lg:table-cell font-mono text-sm">
-                  <%= resource["blockNumber"] %>
+                  {resource["blockNumber"]}
                 </td>
                 <td>
                   <%= if resource["transaction"] do %>
@@ -258,7 +475,7 @@ defmodule AnomaExplorerWeb.ResourcesLive do
                       class="hash-display text-xs hover:text-primary"
                       phx-click={JS.navigate("/transactions/#{resource["transaction"]["id"]}")}
                     >
-                      <%= truncate_hash(resource["transaction"]["txHash"]) %>
+                      {truncate_hash(resource["transaction"]["txHash"])}
                     </a>
                   <% else %>
                     -
@@ -276,24 +493,14 @@ defmodule AnomaExplorerWeb.ResourcesLive do
   defp pagination(assigns) do
     ~H"""
     <div class="flex items-center justify-between mt-4 pt-4 border-t border-base-300">
-      <button
-        phx-click="prev_page"
-        disabled={@page == 0 || @loading}
-        class="btn btn-ghost btn-sm"
-      >
-        <.icon name="hero-chevron-left" class="w-4 h-4" />
-        Previous
+      <button phx-click="prev_page" disabled={@page == 0 || @loading} class="btn btn-ghost btn-sm">
+        <.icon name="hero-chevron-left" class="w-4 h-4" /> Previous
       </button>
       <span class="text-sm text-base-content/60">
-        Page <%= @page + 1 %>
+        Page {@page + 1}
       </span>
-      <button
-        phx-click="next_page"
-        disabled={not @has_more || @loading}
-        class="btn btn-ghost btn-sm"
-      >
-        Next
-        <.icon name="hero-chevron-right" class="w-4 h-4" />
+      <button phx-click="next_page" disabled={not @has_more || @loading} class="btn btn-ghost btn-sm">
+        Next <.icon name="hero-chevron-right" class="w-4 h-4" />
       </button>
     </div>
     """

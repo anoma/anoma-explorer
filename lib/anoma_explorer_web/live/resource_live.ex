@@ -52,6 +52,17 @@ defmodule AnomaExplorerWeb.ResourceLive do
   end
 
   @impl true
+  def handle_event("global_search", %{"query" => query}, socket) do
+    query = String.trim(query)
+
+    if query != "" do
+      {:noreply, push_navigate(socket, to: "/transactions?search=#{URI.encode_www_form(query)}")}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  @impl true
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_path="/resources">
@@ -63,7 +74,7 @@ defmodule AnomaExplorerWeb.ResourceLive do
           <div>
             <h1 class="page-title">Resource Details</h1>
             <p class="text-sm text-base-content/70 mt-1">
-              <%= if @resource, do: truncate_hash(@resource["tag"]), else: "Loading..." %>
+              {if @resource, do: truncate_hash(@resource["tag"]), else: "Loading..."}
             </p>
           </div>
         </div>
@@ -72,7 +83,7 @@ defmodule AnomaExplorerWeb.ResourceLive do
       <%= if @error do %>
         <div class="alert alert-error mb-6">
           <.icon name="hero-exclamation-triangle" class="h-5 w-5" />
-          <span><%= @error %></span>
+          <span>{@error}</span>
         </div>
       <% end %>
 
@@ -105,23 +116,28 @@ defmodule AnomaExplorerWeb.ResourceLive do
   end
 
   defp resource_header(assigns) do
-    assigns = assign(assigns, :block_url, Networks.block_url(assigns.resource["chainId"], assigns.resource["blockNumber"]))
+    assigns =
+      assign(
+        assigns,
+        :block_url,
+        Networks.block_url(assigns.resource["chainId"], assigns.resource["blockNumber"])
+      )
 
     ~H"""
     <div class="stat-card mb-6">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-lg font-semibold">Overview</h2>
         <%= if @resource["isConsumed"] do %>
-          <span class="badge badge-error">Consumed</span>
+          <span class="badge badge-outline text-error border-error/50">Consumed</span>
         <% else %>
-          <span class="badge badge-success">Created</span>
+          <span class="badge badge-outline text-success border-success/50">Created</span>
         <% end %>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="md:col-span-2">
           <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1">Tag</div>
           <div class="flex items-center gap-2">
-            <code class="hash-display text-sm break-all"><%= @resource["tag"] %></code>
+            <code class="hash-display text-sm break-all">{@resource["tag"]}</code>
             <button
               type="button"
               phx-click={JS.dispatch("phx:copy", detail: %{text: @resource["tag"]})}
@@ -134,18 +150,18 @@ defmodule AnomaExplorerWeb.ResourceLive do
         </div>
         <div>
           <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1">Index</div>
-          <div class="font-mono"><%= @resource["index"] %></div>
+          <div class="font-mono">{@resource["index"]}</div>
         </div>
         <div>
           <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1">Block Number</div>
           <div class="flex items-center gap-2">
             <%= if @block_url do %>
               <a href={@block_url} target="_blank" class="font-mono hover:text-primary">
-                <%= @resource["blockNumber"] %>
+                {@resource["blockNumber"]}
                 <.icon name="hero-arrow-top-right-on-square" class="w-3 h-3 inline ml-1" />
               </a>
             <% else %>
-              <span class="font-mono"><%= @resource["blockNumber"] %></span>
+              <span class="font-mono">{@resource["blockNumber"]}</span>
             <% end %>
           </div>
         </div>
@@ -153,7 +169,7 @@ defmodule AnomaExplorerWeb.ResourceLive do
           <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1">Network</div>
           <div>
             <span class="badge badge-outline" title={"Chain ID: #{@resource["chainId"]}"}>
-              <%= Networks.name(@resource["chainId"]) %>
+              {Networks.name(@resource["chainId"])}
             </span>
           </div>
         </div>
@@ -174,7 +190,11 @@ defmodule AnomaExplorerWeb.ResourceLive do
         <.field_row label="Logic Ref" value={@resource["logicRef"]} copyable />
         <.field_row label="Label Ref" value={@resource["labelRef"]} copyable />
         <.field_row label="Value Ref" value={@resource["valueRef"]} copyable />
-        <.field_row label="Nullifier Key Commitment" value={@resource["nullifierKeyCommitment"]} copyable />
+        <.field_row
+          label="Nullifier Key Commitment"
+          value={@resource["nullifierKeyCommitment"]}
+          copyable
+        />
         <.field_row label="Nonce" value={@resource["nonce"]} copyable />
         <.field_row label="Rand Seed" value={@resource["randSeed"]} copyable />
         <.field_row label="Quantity" value={@resource["quantity"]} />
@@ -189,10 +209,10 @@ defmodule AnomaExplorerWeb.ResourceLive do
 
     ~H"""
     <div>
-      <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1"><%= @label %></div>
+      <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1">{@label}</div>
       <%= if @value do %>
         <div class="flex items-center gap-2">
-          <code class="hash-display text-sm break-all"><%= truncate_value(@value) %></code>
+          <code class="hash-display text-sm break-all">{truncate_value(@value)}</code>
           <%= if @copyable and is_binary(@value) do %>
             <button
               type="button"
@@ -218,11 +238,9 @@ defmodule AnomaExplorerWeb.ResourceLive do
         <h2 class="text-lg font-semibold">Raw Blob</h2>
         <button phx-click="toggle_raw_blob" class="btn btn-ghost btn-sm">
           <%= if @show do %>
-            <.icon name="hero-chevron-up" class="w-4 h-4" />
-            Hide
+            <.icon name="hero-chevron-up" class="w-4 h-4" /> Hide
           <% else %>
-            <.icon name="hero-chevron-down" class="w-4 h-4" />
-            Show
+            <.icon name="hero-chevron-down" class="w-4 h-4" /> Show
           <% end %>
         </button>
       </div>
@@ -230,7 +248,7 @@ defmodule AnomaExplorerWeb.ResourceLive do
         <%= if @resource["rawBlob"] && @resource["rawBlob"] != "" do %>
           <div class="bg-base-200 rounded-lg p-4 overflow-x-auto">
             <code class="text-xs font-mono break-all whitespace-pre-wrap">
-              <%= @resource["rawBlob"] %>
+              {@resource["rawBlob"]}
             </code>
           </div>
         <% else %>
@@ -246,6 +264,7 @@ defmodule AnomaExplorerWeb.ResourceLive do
       if assigns.resource["transaction"] do
         chain_id = assigns.resource["chainId"]
         tx = assigns.resource["transaction"]
+
         assigns
         |> assign(:tx_block_url, Networks.block_url(chain_id, tx["blockNumber"]))
         |> assign(:tx_url, Networks.tx_url(chain_id, tx["txHash"]))
@@ -261,13 +280,23 @@ defmodule AnomaExplorerWeb.ResourceLive do
         <h2 class="text-lg font-semibold mb-4">Parent Transaction</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="md:col-span-2">
-            <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1">Transaction Hash</div>
+            <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1">
+              Transaction Hash
+            </div>
             <div class="flex items-center gap-2">
-              <a href={"/transactions/#{@resource["transaction"]["id"]}"} class="hash-display text-sm hover:text-primary">
-                <%= @resource["transaction"]["txHash"] %>
+              <a
+                href={"/transactions/#{@resource["transaction"]["id"]}"}
+                class="hash-display text-sm hover:text-primary"
+              >
+                {@resource["transaction"]["txHash"]}
               </a>
               <%= if @tx_url do %>
-                <a href={@tx_url} target="_blank" class="btn btn-ghost btn-xs" title="View on Explorer">
+                <a
+                  href={@tx_url}
+                  target="_blank"
+                  class="btn btn-ghost btn-xs"
+                  title="View on Explorer"
+                >
                   <.icon name="hero-arrow-top-right-on-square" class="w-3 h-3" />
                 </a>
               <% end %>
@@ -278,11 +307,11 @@ defmodule AnomaExplorerWeb.ResourceLive do
             <div class="flex items-center gap-2">
               <%= if @tx_block_url do %>
                 <a href={@tx_block_url} target="_blank" class="font-mono hover:text-primary">
-                  <%= @resource["transaction"]["blockNumber"] %>
+                  {@resource["transaction"]["blockNumber"]}
                   <.icon name="hero-arrow-top-right-on-square" class="w-3 h-3 inline ml-1" />
                 </a>
               <% else %>
-                <span class="font-mono"><%= @resource["transaction"]["blockNumber"] %></span>
+                <span class="font-mono">{@resource["transaction"]["blockNumber"]}</span>
               <% end %>
             </div>
           </div>
@@ -297,18 +326,18 @@ defmodule AnomaExplorerWeb.ResourceLive do
     <div class="flex items-center gap-2">
       <%= case @status do %>
         <% "success" -> %>
-          <span class="badge badge-success">Decoded</span>
+          <span class="badge badge-outline text-success border-success/50">Decoded</span>
         <% "failed" -> %>
-          <span class="badge badge-error">Failed</span>
+          <span class="badge badge-outline text-error border-error/50">Failed</span>
           <%= if @error do %>
             <span class="text-xs text-error" title={@error}>
               <.icon name="hero-information-circle" class="w-4 h-4" />
             </span>
           <% end %>
         <% "pending" -> %>
-          <span class="badge badge-warning">Pending</span>
+          <span class="badge badge-outline text-warning border-warning/50">Pending</span>
         <% _ -> %>
-          <span class="badge badge-ghost"><%= @status || "-" %></span>
+          <span class="badge badge-outline badge-ghost">{@status || "-"}</span>
       <% end %>
     </div>
     """
@@ -323,9 +352,11 @@ defmodule AnomaExplorerWeb.ResourceLive do
   defp truncate_hash(hash), do: hash
 
   defp truncate_value(nil), do: nil
+
   defp truncate_value(val) when is_binary(val) and byte_size(val) > 50 do
     String.slice(val, 0, 24) <> "..." <> String.slice(val, -24, 24)
   end
+
   defp truncate_value(val), do: to_string(val)
 
   defp format_bool(nil), do: nil

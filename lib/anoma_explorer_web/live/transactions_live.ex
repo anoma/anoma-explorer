@@ -11,8 +11,28 @@ defmodule AnomaExplorerWeb.TransactionsLive do
 
   @page_size 20
 
+  @default_filters %{
+    "tx_hash" => "",
+    "chain_id" => "",
+    "block_min" => "",
+    "block_max" => "",
+    "contract_address" => ""
+  }
+
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
+    # Handle search query param from global search
+    search_query = Map.get(params, "search", "")
+
+    filters =
+      if search_query != "" do
+        Map.put(@default_filters, "tx_hash", search_query)
+      else
+        @default_filters
+      end
+
+    show_filters = search_query != ""
+
     if connected?(socket), do: send(self(), :load_data)
 
     {:ok,
@@ -23,12 +43,44 @@ defmodule AnomaExplorerWeb.TransactionsLive do
      |> assign(:error, nil)
      |> assign(:page, 0)
      |> assign(:has_more, false)
-     |> assign(:configured, Client.configured?())}
+     |> assign(:configured, Client.configured?())
+     |> assign(:show_filters, show_filters)
+     |> assign(:filters, filters)
+     |> assign(:chains, Networks.list_chains())}
   end
 
   @impl true
   def handle_info(:load_data, socket) do
     socket = load_transactions(socket)
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("toggle_filters", _params, socket) do
+    {:noreply, assign(socket, :show_filters, !socket.assigns.show_filters)}
+  end
+
+  @impl true
+  def handle_event("apply_filters", %{"filters" => filters}, socket) do
+    socket =
+      socket
+      |> assign(:filters, filters)
+      |> assign(:page, 0)
+      |> assign(:loading, true)
+      |> load_transactions()
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("clear_filters", _params, socket) do
+    socket =
+      socket
+      |> assign(:filters, @default_filters)
+      |> assign(:page, 0)
+      |> assign(:loading, true)
+      |> load_transactions()
+
     {:noreply, socket}
   end
 
@@ -54,6 +106,28 @@ defmodule AnomaExplorerWeb.TransactionsLive do
     {:noreply, socket}
   end
 
+  @impl true
+  def handle_event("global_search", %{"query" => query}, socket) do
+    query = String.trim(query)
+
+    if query != "" do
+      # Apply search as tx_hash filter
+      filters = Map.put(@default_filters, "tx_hash", query)
+
+      socket =
+        socket
+        |> assign(:filters, filters)
+        |> assign(:show_filters, true)
+        |> assign(:page, 0)
+        |> assign(:loading, true)
+        |> load_transactions()
+
+      {:noreply, socket}
+    else
+      {:noreply, socket}
+    end
+  end
+
   defp load_transactions(socket) do
     if not Client.configured?() do
       socket
@@ -61,8 +135,17 @@ defmodule AnomaExplorerWeb.TransactionsLive do
       |> assign(:loading, false)
     else
       offset = socket.assigns.page * @page_size
+      filters = socket.assigns.filters
 
-      case GraphQL.list_transactions(limit: @page_size + 1, offset: offset) do
+      opts =
+        [limit: @page_size + 1, offset: offset]
+        |> maybe_add_filter(:tx_hash, filters["tx_hash"])
+        |> maybe_add_filter(:contract_address, filters["contract_address"])
+        |> maybe_add_int_filter(:chain_id, filters["chain_id"])
+        |> maybe_add_int_filter(:block_min, filters["block_min"])
+        |> maybe_add_int_filter(:block_max, filters["block_max"])
+
+      case GraphQL.list_transactions(opts) do
         {:ok, transactions} ->
           has_more = length(transactions) > @page_size
           display_txs = Enum.take(transactions, @page_size)
@@ -82,9 +165,31 @@ defmodule AnomaExplorerWeb.TransactionsLive do
     end
   end
 
+  defp maybe_add_filter(opts, _key, nil), do: opts
+  defp maybe_add_filter(opts, _key, ""), do: opts
+  defp maybe_add_filter(opts, key, value), do: Keyword.put(opts, key, value)
+
+  defp maybe_add_int_filter(opts, _key, nil), do: opts
+  defp maybe_add_int_filter(opts, _key, ""), do: opts
+
+  defp maybe_add_int_filter(opts, key, value) when is_binary(value) do
+    case Integer.parse(value) do
+      {int, _} -> Keyword.put(opts, key, int)
+      :error -> opts
+    end
+  end
+
+  defp maybe_add_int_filter(opts, key, value) when is_integer(value) do
+    Keyword.put(opts, key, value)
+  end
+
   defp format_error(:not_configured), do: "Indexer endpoint not configured"
   defp format_error({:connection_error, _}), do: "Failed to connect to indexer"
   defp format_error(reason), do: "Error: #{inspect(reason)}"
+
+  defp active_filter_count(filters) do
+    Enum.count(filters, fn {_k, v} -> v != "" and not is_nil(v) end)
+  end
 
   @impl true
   def render(assigns) do
@@ -105,11 +210,14 @@ defmodule AnomaExplorerWeb.TransactionsLive do
         <%= if @error do %>
           <div class="alert alert-error mb-6">
             <.icon name="hero-exclamation-triangle" class="h-5 w-5" />
-            <span><%= @error %></span>
+            <span>{@error}</span>
           </div>
         <% end %>
 
         <div class="stat-card">
+          <.filter_toggle show_filters={@show_filters} filter_count={active_filter_count(@filters)} />
+          <.filter_form :if={@show_filters} filters={@filters} chains={@chains} />
+
           <%= if @loading and @transactions == [] do %>
             <.loading_skeleton />
           <% else %>
@@ -120,6 +228,106 @@ defmodule AnomaExplorerWeb.TransactionsLive do
         </div>
       <% end %>
     </Layouts.app>
+    """
+  end
+
+  defp filter_toggle(assigns) do
+    ~H"""
+    <div class="flex items-center justify-between mb-4">
+      <button phx-click="toggle_filters" class="btn btn-ghost btn-sm gap-2">
+        <.icon name="hero-funnel" class="w-4 h-4" /> Advanced Search
+        <%= if @filter_count > 0 do %>
+          <span class="badge badge-primary badge-sm">{@filter_count}</span>
+        <% end %>
+        <.icon
+          name={if @show_filters, do: "hero-chevron-up", else: "hero-chevron-down"}
+          class="w-4 h-4"
+        />
+      </button>
+    </div>
+    """
+  end
+
+  defp filter_form(assigns) do
+    ~H"""
+    <form phx-submit="apply_filters" class="mb-6 p-4 bg-base-200/50 rounded-lg">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div>
+          <label class="text-xs text-base-content/60 uppercase tracking-wide mb-1 block">
+            Tx Hash
+          </label>
+          <input
+            type="text"
+            name="filters[tx_hash]"
+            value={@filters["tx_hash"]}
+            placeholder="0x..."
+            class="input input-bordered input-sm w-full"
+          />
+        </div>
+
+        <div>
+          <label class="text-xs text-base-content/60 uppercase tracking-wide mb-1 block">
+            Network
+          </label>
+          <select name="filters[chain_id]" class="select select-bordered select-sm w-full">
+            <option value="">All Networks</option>
+            <%= for {chain_id, name} <- @chains do %>
+              <option value={chain_id} selected={to_string(chain_id) == @filters["chain_id"]}>
+                {name}
+              </option>
+            <% end %>
+          </select>
+        </div>
+
+        <div>
+          <label class="text-xs text-base-content/60 uppercase tracking-wide mb-1 block">
+            Contract Address
+          </label>
+          <input
+            type="text"
+            name="filters[contract_address]"
+            value={@filters["contract_address"]}
+            placeholder="0x..."
+            class="input input-bordered input-sm w-full"
+          />
+        </div>
+
+        <div>
+          <label class="text-xs text-base-content/60 uppercase tracking-wide mb-1 block">
+            Block Min
+          </label>
+          <input
+            type="number"
+            name="filters[block_min]"
+            value={@filters["block_min"]}
+            placeholder="Min block"
+            class="input input-bordered input-sm w-full"
+          />
+        </div>
+
+        <div>
+          <label class="text-xs text-base-content/60 uppercase tracking-wide mb-1 block">
+            Block Max
+          </label>
+          <input
+            type="number"
+            name="filters[block_max]"
+            value={@filters["block_max"]}
+            placeholder="Max block"
+            class="input input-bordered input-sm w-full"
+          />
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 mt-4">
+        <button type="button" phx-click="clear_filters" class="btn btn-ghost btn-sm">
+          Clear Filters
+        </button>
+        <button type="submit" class="btn btn-primary btn-sm">
+          <.icon name="hero-magnifying-glass" class="w-4 h-4" /> Apply Filters
+        </button>
+      </div>
+    </form>
     """
   end
 
@@ -178,24 +386,37 @@ defmodule AnomaExplorerWeb.TransactionsLive do
               <% tags = tx["tags"] || [] %>
               <% consumed = div(length(tags), 2) %>
               <% created = length(tags) - consumed %>
-              <tr class="hover:bg-base-200/50 cursor-pointer" phx-click={JS.navigate("/transactions/#{tx["id"]}")}>
+              <tr
+                class="hover:bg-base-200/50 cursor-pointer"
+                phx-click={JS.navigate("/transactions/#{tx["id"]}")}
+              >
                 <td>
-                  <span class="hash-display"><%= truncate_hash(tx["txHash"]) %></span>
+                  <span class="hash-display">{truncate_hash(tx["txHash"])}</span>
                 </td>
                 <td>
-                  <span class="badge badge-outline badge-sm" title={"Chain ID: #{tx["chainId"]}"}>
-                    <%= Networks.short_name(tx["chainId"]) %>
+                  <span class="text-sm text-base-content/70" title={"Chain ID: #{tx["chainId"]}"}>
+                    {Networks.short_name(tx["chainId"])}
                   </span>
                 </td>
                 <td>
-                  <span class="font-mono text-sm"><%= tx["blockNumber"] %></span>
+                  <span class="font-mono text-sm">{tx["blockNumber"]}</span>
                 </td>
                 <td>
-                  <span class="badge badge-error badge-sm" title="Consumed"><%= consumed %></span>
-                  <span class="badge badge-success badge-sm" title="Created"><%= created %></span>
+                  <span
+                    class="badge badge-outline badge-sm text-error border-error/50"
+                    title="Consumed"
+                  >
+                    {consumed}
+                  </span>
+                  <span
+                    class="badge badge-outline badge-sm text-success border-success/50"
+                    title="Created"
+                  >
+                    {created}
+                  </span>
                 </td>
                 <td class="hidden lg:table-cell text-base-content/60 text-sm">
-                  <%= format_timestamp(tx["timestamp"]) %>
+                  {format_timestamp(tx["timestamp"])}
                 </td>
               </tr>
             <% end %>
@@ -209,24 +430,14 @@ defmodule AnomaExplorerWeb.TransactionsLive do
   defp pagination(assigns) do
     ~H"""
     <div class="flex items-center justify-between mt-4 pt-4 border-t border-base-300">
-      <button
-        phx-click="prev_page"
-        disabled={@page == 0 || @loading}
-        class="btn btn-ghost btn-sm"
-      >
-        <.icon name="hero-chevron-left" class="w-4 h-4" />
-        Previous
+      <button phx-click="prev_page" disabled={@page == 0 || @loading} class="btn btn-ghost btn-sm">
+        <.icon name="hero-chevron-left" class="w-4 h-4" /> Previous
       </button>
       <span class="text-sm text-base-content/60">
-        Page <%= @page + 1 %>
+        Page {@page + 1}
       </span>
-      <button
-        phx-click="next_page"
-        disabled={not @has_more || @loading}
-        class="btn btn-ghost btn-sm"
-      >
-        Next
-        <.icon name="hero-chevron-right" class="w-4 h-4" />
+      <button phx-click="next_page" disabled={not @has_more || @loading} class="btn btn-ghost btn-sm">
+        Next <.icon name="hero-chevron-right" class="w-4 h-4" />
       </button>
     </div>
     """

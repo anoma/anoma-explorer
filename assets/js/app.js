@@ -26,10 +26,88 @@ import {hooks as colocatedHooks} from "phoenix-colocated/anoma_explorer"
 import topbar from "../vendor/topbar"
 
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
+
+// Custom hooks
+const Hooks = {
+  CtrlEnterSubmit: {
+    mounted() {
+      this.el.addEventListener("keydown", (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+          e.preventDefault()
+          this.el.form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }))
+        }
+      })
+    }
+  },
+
+  SyntaxHighlight: {
+    mounted() {
+      this.highlight()
+    },
+    updated() {
+      this.highlight()
+    },
+    highlight() {
+      if (window.hljs) {
+        const codeBlock = this.el.querySelector("code")
+        if (codeBlock) {
+          codeBlock.removeAttribute("data-highlighted")
+          window.hljs.highlightElement(codeBlock)
+        }
+      }
+    }
+  },
+
+  GraphQLEditor: {
+    mounted() {
+      const textarea = this.el.querySelector("textarea")
+      const highlightPre = this.el.querySelector(".highlight-layer")
+
+      if (textarea && highlightPre) {
+        this.syncHighlight(textarea, highlightPre)
+
+        textarea.addEventListener("input", () => {
+          this.syncHighlight(textarea, highlightPre)
+        })
+
+        textarea.addEventListener("scroll", () => {
+          highlightPre.scrollTop = textarea.scrollTop
+          highlightPre.scrollLeft = textarea.scrollLeft
+        })
+      }
+
+      textarea.addEventListener("keydown", (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+          e.preventDefault()
+          const form = document.getElementById("query-form")
+          if (form) {
+            form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }))
+          }
+        }
+      })
+    },
+    updated() {
+      const textarea = this.el.querySelector("textarea")
+      const highlightPre = this.el.querySelector(".highlight-layer")
+      if (textarea && highlightPre) {
+        this.syncHighlight(textarea, highlightPre)
+      }
+    },
+    syncHighlight(textarea, highlightPre) {
+      const code = highlightPre.querySelector("code")
+      if (code && window.hljs) {
+        code.textContent = textarea.value + "\n"
+        code.removeAttribute("data-highlighted")
+        window.hljs.highlightElement(code)
+      }
+    }
+  }
+}
+
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
-  hooks: {...colocatedHooks},
+  hooks: {...colocatedHooks, ...Hooks},
 })
 
 // Sidebar state persistence and toggle
@@ -87,6 +165,18 @@ window.addEventListener("phx:copy", (event) => {
   const text = event.detail.text
   if (navigator.clipboard) {
     navigator.clipboard.writeText(text)
+  }
+})
+
+// Global search keyboard shortcut (⌘K / Ctrl+K)
+document.addEventListener("keydown", (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+    e.preventDefault()
+    const searchInput = document.getElementById("search-input")
+    if (searchInput) {
+      searchInput.focus()
+      searchInput.select()
+    }
   }
 })
 
