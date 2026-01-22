@@ -46,7 +46,8 @@ defmodule AnomaExplorerWeb.TransactionsLive do
      |> assign(:configured, Client.configured?())
      |> assign(:show_filters, show_filters)
      |> assign(:filters, filters)
-     |> assign(:chains, Networks.list_chains())}
+     |> assign(:chains, Networks.list_chains())
+     |> assign(:selected_resources, nil)}
   end
 
   @impl true
@@ -128,6 +129,24 @@ defmodule AnomaExplorerWeb.TransactionsLive do
     end
   end
 
+  @impl true
+  def handle_event(
+        "show_resources",
+        %{"tx-id" => tx_id, "tags" => tags_json, "logic-refs" => logic_refs_json},
+        socket
+      ) do
+    tags = Jason.decode!(tags_json)
+    logic_refs = Jason.decode!(logic_refs_json)
+
+    {:noreply,
+     assign(socket, :selected_resources, %{tx_id: tx_id, tags: tags, logic_refs: logic_refs})}
+  end
+
+  @impl true
+  def handle_event("close_resources_modal", _params, socket) do
+    {:noreply, assign(socket, :selected_resources, nil)}
+  end
+
   defp load_transactions(socket) do
     if not Client.configured?() do
       socket
@@ -197,7 +216,18 @@ defmodule AnomaExplorerWeb.TransactionsLive do
     <Layouts.app flash={@flash} current_path="/transactions">
       <div class="page-header">
         <div>
-          <h1 class="page-title">Transactions</h1>
+          <h1 class="page-title flex items-center gap-2">
+            Transactions
+            <a
+              href="https://specs.anoma.net/v1.0.0/arch/system/state/resource_machine/data_structures/transaction/transaction.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="tooltip tooltip-right"
+              data-tip="A transaction represents a proposed state update consisting of actions that group resources"
+            >
+              <.icon name="hero-question-mark-circle" class="w-5 h-5 text-base-content/40 hover:text-primary" />
+            </a>
+          </h1>
           <p class="text-sm text-base-content/70 mt-1">
             All indexed Anoma transactions
           </p>
@@ -226,6 +256,8 @@ defmodule AnomaExplorerWeb.TransactionsLive do
 
           <.pagination page={@page} has_more={@has_more} loading={@loading} />
         </div>
+
+        <.resources_modal resources={@selected_resources} />
       <% end %>
     </Layouts.app>
     """
@@ -404,18 +436,22 @@ defmodule AnomaExplorerWeb.TransactionsLive do
                   <span class="font-mono text-sm">{tx["blockNumber"]}</span>
                 </td>
                 <td>
-                  <span
-                    class="badge badge-outline badge-sm text-error border-error/50"
-                    title="Consumed"
+                  <button
+                    phx-click="show_resources"
+                    phx-value-tx-id={tx["id"]}
+                    phx-value-tags={Jason.encode!(tx["tags"] || [])}
+                    phx-value-logic-refs={Jason.encode!(tx["logicRefs"] || [])}
+                    class="flex items-center gap-1.5 cursor-pointer hover:text-primary"
+                    title="View resources"
                   >
-                    {consumed}
-                  </span>
-                  <span
-                    class="badge badge-outline badge-sm text-success border-success/50"
-                    title="Created"
-                  >
-                    {created}
-                  </span>
+                    <span class="badge badge-outline badge-sm text-error border-error/50">
+                      {consumed}
+                    </span>
+                    <span class="badge badge-outline badge-sm text-success border-success/50">
+                      {created}
+                    </span>
+                    <.icon name="hero-arrow-top-right-on-square" class="w-3 h-3 text-base-content/50" />
+                  </button>
                 </td>
                 <td class="hidden lg:table-cell text-base-content/60 text-sm">
                   {format_timestamp(tx["timestamp"])}
@@ -442,6 +478,92 @@ defmodule AnomaExplorerWeb.TransactionsLive do
         Next <.icon name="hero-chevron-right" class="w-4 h-4" />
       </button>
     </div>
+    """
+  end
+
+  defp resources_modal(assigns) do
+    ~H"""
+    <%= if @resources do %>
+      <div class="modal modal-open" phx-click="close_resources_modal">
+        <div class="modal-box max-w-2xl" phx-click-away="close_resources_modal">
+          <button
+            class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+            phx-click="close_resources_modal"
+          >
+            <.icon name="hero-x-mark" class="w-5 h-5" />
+          </button>
+
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <h3 class="text-lg font-semibold">Resources</h3>
+                <span class="badge badge-outline">{length(@resources.tags)} total</span>
+              </div>
+              <a href={"/transactions/#{@resources.tx_id}"} class="btn btn-ghost btn-sm">
+                View Transaction <.icon name="hero-arrow-right" class="w-4 h-4" />
+              </a>
+            </div>
+
+            <%= if @resources.tags == [] do %>
+              <div class="text-base-content/50 text-center py-4">No resources</div>
+            <% else %>
+              <div class="overflow-x-auto">
+                <table class="data-table w-full">
+                  <thead>
+                    <tr>
+                      <th>Index</th>
+                      <th>Type</th>
+                      <th>Tag</th>
+                      <th>Logic Ref</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <%= for {tag, idx} <- Enum.with_index(@resources.tags) do %>
+                      <% is_consumed = rem(idx, 2) == 0 %>
+                      <% logic_ref = Enum.at(@resources.logic_refs, idx) %>
+                      <tr>
+                        <td>
+                          <span class="text-sm text-base-content/60">{idx}</span>
+                        </td>
+                        <td>
+                          <%= if is_consumed do %>
+                            <div class="flex items-center gap-1 text-sm">
+                              <.icon
+                                name="hero-arrow-right-start-on-rectangle"
+                                class="w-3 h-3 text-base-content/50"
+                              />
+                              <span class="text-base-content/70">Consumed</span>
+                            </div>
+                          <% else %>
+                            <div class="flex items-center gap-1 text-sm">
+                              <.icon name="hero-plus-circle" class="w-3 h-3 text-base-content/50" />
+                              <span class="text-base-content/70">Created</span>
+                            </div>
+                          <% end %>
+                        </td>
+                        <td>
+                          <div class="flex items-center gap-1">
+                            <code class="hash-display text-xs">{truncate_hash(tag)}</code>
+                            <.copy_button :if={tag} text={tag} tooltip="Copy tag" />
+                          </div>
+                        </td>
+                        <td>
+                          <div class="flex items-center gap-1">
+                            <code class="hash-display text-xs">{truncate_hash(logic_ref)}</code>
+                            <.copy_button :if={logic_ref} text={logic_ref} tooltip="Copy logic ref" />
+                          </div>
+                        </td>
+                      </tr>
+                    <% end %>
+                  </tbody>
+                </table>
+              </div>
+            <% end %>
+          </div>
+        </div>
+        <div class="modal-backdrop bg-black/50"></div>
+      </div>
+    <% end %>
     """
   end
 

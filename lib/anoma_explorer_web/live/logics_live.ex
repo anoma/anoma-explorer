@@ -188,7 +188,18 @@ defmodule AnomaExplorerWeb.LogicsLive do
     <Layouts.app flash={@flash} current_path="/logics">
       <div class="page-header">
         <div>
-          <h1 class="page-title">Logic Inputs</h1>
+          <h1 class="page-title flex items-center gap-2">
+            Logic Inputs
+            <a
+              href="https://specs.anoma.net/v1.0.0/arch/system/state/resource_machine/data_structures/action/resource_logic_proof.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="tooltip tooltip-right"
+              data-tip="Resource logic proofs verify that user constraints are satisfied for each resource"
+            >
+              <.icon name="hero-question-mark-circle" class="w-5 h-5 text-base-content/40 hover:text-primary" />
+            </a>
+          </h1>
           <p class="text-sm text-base-content/70 mt-1">All indexed logic inputs with proofs</p>
         </div>
       </div>

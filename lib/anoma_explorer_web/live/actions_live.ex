@@ -178,7 +178,18 @@ defmodule AnomaExplorerWeb.ActionsLive do
     <Layouts.app flash={@flash} current_path="/actions">
       <div class="page-header">
         <div>
-          <h1 class="page-title">Actions</h1>
+          <h1 class="page-title flex items-center gap-2">
+            Actions
+            <a
+              href="https://specs.anoma.net/v1.0.0/arch/system/state/resource_machine/data_structures/action/index.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="tooltip tooltip-right"
+              data-tip="Actions group resources with the same execution context within a transaction"
+            >
+              <.icon name="hero-question-mark-circle" class="w-5 h-5 text-base-content/40 hover:text-primary" />
+            </a>
+          </h1>
           <p class="text-sm text-base-content/70 mt-1">All indexed Anoma actions</p>
         </div>
       </div>

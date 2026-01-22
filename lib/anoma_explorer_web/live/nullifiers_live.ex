@@ -158,7 +158,18 @@ defmodule AnomaExplorerWeb.NullifiersLive do
     <Layouts.app flash={@flash} current_path="/nullifiers">
       <div class="page-header">
         <div>
-          <h1 class="page-title">Nullifiers</h1>
+          <h1 class="page-title flex items-center gap-2">
+            Nullifiers
+            <a
+              href="https://specs.anoma.net/v1.0.0/arch/system/state/resource_machine/data_structures/resource/computable_components/nullifier.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="tooltip tooltip-right"
+              data-tip="Nullifiers are added to the global nullifier set when resources are consumed"
+            >
+              <.icon name="hero-question-mark-circle" class="w-5 h-5 text-base-content/40 hover:text-primary" />
+            </a>
+          </h1>
           <p class="text-sm text-base-content/70 mt-1">
             All consumed nullifiers from compliance units
           </p>

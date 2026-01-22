@@ -205,7 +205,18 @@ defmodule AnomaExplorerWeb.ResourcesLive do
     <Layouts.app flash={@flash} current_path="/resources">
       <div class="page-header">
         <div>
-          <h1 class="page-title">Resources</h1>
+          <h1 class="page-title flex items-center gap-2">
+            Resources
+            <a
+              href="https://specs.anoma.net/v1.0.0/arch/system/state/resource_machine/data_structures/resource/index.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="tooltip tooltip-right"
+              data-tip="Resources are the atomic unit of ARM state - immutable, created once and consumed once"
+            >
+              <.icon name="hero-question-mark-circle" class="w-5 h-5 text-base-content/40 hover:text-primary" />
+            </a>
+          </h1>
           <p class="text-sm text-base-content/70 mt-1">
             All indexed Anoma resources
           </p>
