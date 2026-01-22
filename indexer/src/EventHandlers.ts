@@ -309,31 +309,10 @@ ProtocolAdapter.TransactionExecuted.handler(
       const tagLower = tag.toLowerCase();
 
       // Find linked compliance unit and logic input
-      let consumedInComplianceUnit_id: string | undefined;
-      let createdInComplianceUnit_id: string | undefined;
+      // Note: complianceUnit_id will be set by ActionExecuted handler
+      // We use isConsumed to determine which side of the compliance unit this resource is on
+      let complianceUnit_id: string | undefined;
       let logicInput_id: string | undefined;
-
-      if (isConsumed) {
-        // This is a nullifier - look up in nullifier map
-        const cuKey = nullifierToComplianceUnit.get(tagLower);
-        if (cuKey) {
-          // Need to construct full ID with actual action ID
-          // For now we mark this as a placeholder to be updated
-          consumedInComplianceUnit_id = undefined; // Will be set by linking phase
-        }
-      } else {
-        // This is a commitment - look up in commitment map
-        const cuKey = commitmentToComplianceUnit.get(tagLower);
-        if (cuKey) {
-          createdInComplianceUnit_id = undefined; // Will be set by linking phase
-        }
-      }
-
-      // Logic input by tag
-      const liKey = tagToLogicInput.get(tagLower);
-      if (liKey) {
-        logicInput_id = undefined; // Will be set by linking phase
-      }
 
       // Check if resource already exists (created by earlier ResourcePayload event)
       const existingResource = await context.Resource.get(resourceId);
@@ -348,12 +327,7 @@ ProtocolAdapter.TransactionExecuted.handler(
           logicRef: logicRef || existingResource.logicRef,
           // Keep existing links if already set
           logicInput_id: existingResource.logicInput_id || logicInput_id,
-          consumedInComplianceUnit_id:
-            existingResource.consumedInComplianceUnit_id ||
-            consumedInComplianceUnit_id,
-          createdInComplianceUnit_id:
-            existingResource.createdInComplianceUnit_id ||
-            createdInComplianceUnit_id,
+          complianceUnit_id: existingResource.complianceUnit_id || complianceUnit_id,
         };
         context.Resource.set(updatedResource);
       } else {
@@ -372,8 +346,7 @@ ProtocolAdapter.TransactionExecuted.handler(
           transaction_id: txId,
           logicRef: logicRef || undefined,
           logicInput_id: logicInput_id,
-          consumedInComplianceUnit_id: consumedInComplianceUnit_id,
-          createdInComplianceUnit_id: createdInComplianceUnit_id,
+          complianceUnit_id: complianceUnit_id,
         };
         context.Resource.set(resourceEntity);
       }
@@ -497,11 +470,12 @@ ProtocolAdapter.ActionExecuted.handler(
 
         context.ComplianceUnit.set(complianceEntity);
 
-        // Update resources with compliance unit links if they exist
+        // Update resources with compliance unit link if they exist
+        // The isConsumed field on the resource determines which side of the unit it's on
         if (consumedResource) {
           const updatedResource: Resource = {
             ...consumedResource,
-            consumedInComplianceUnit_id: complianceUnitId,
+            complianceUnit_id: complianceUnitId,
           };
           context.Resource.set(updatedResource);
         }
@@ -509,7 +483,7 @@ ProtocolAdapter.ActionExecuted.handler(
         if (createdResource) {
           const updatedResource: Resource = {
             ...createdResource,
-            createdInComplianceUnit_id: complianceUnitId,
+            complianceUnit_id: complianceUnitId,
           };
           context.Resource.set(updatedResource);
         }
@@ -607,8 +581,7 @@ ProtocolAdapter.ResourcePayload.handler(
         transaction_id: txId,
         logicRef: undefined, // Will be set by TransactionExecuted
         logicInput_id: undefined,
-        consumedInComplianceUnit_id: undefined,
-        createdInComplianceUnit_id: undefined,
+        complianceUnit_id: undefined,
       };
       context.Resource.set(resourceEntity);
     }

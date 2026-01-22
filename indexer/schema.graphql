@@ -127,8 +127,7 @@ type Resource {
   # Relationships
   transaction: Transaction!
   logicInput: LogicInput
-  consumedInComplianceUnit: ComplianceUnit
-  createdInComplianceUnit: ComplianceUnit
+  complianceUnit: ComplianceUnit # The compliance unit this resource belongs to (use isConsumed to determine side)
   discoveryPayloads: [DiscoveryPayload!]! @derivedFrom(field: "resource")
   applicationPayloads: [ApplicationPayload!]! @derivedFrom(field: "resource")
 }
