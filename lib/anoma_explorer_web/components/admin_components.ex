@@ -192,4 +192,87 @@ defmodule AnomaExplorerWeb.AdminComponents do
     </div>
     """
   end
+
+  @doc """
+  Renders an admin status card with improved visual design.
+
+  Shows the current authorization state with a card-based layout featuring
+  a lock icon that reflects the ADMIN_SECRET_KEY protection status.
+
+  ## Attributes
+
+  - `:authorized` - Whether the user is authorized (required)
+  - `:authorized_at` - Timestamp when authorization was granted (optional)
+  - `:timeout_ms` - Timeout duration in milliseconds (required)
+
+  ## Examples
+
+      <.admin_status_card
+        authorized={@admin_authorized}
+        authorized_at={@admin_authorized_at}
+        timeout_ms={@admin_timeout_ms}
+      />
+  """
+  attr :authorized, :boolean, required: true
+  attr :authorized_at, :integer, default: nil
+  attr :timeout_ms, :integer, required: true
+
+  def admin_status_card(assigns) do
+    admin_enabled = AdminAuth.admin_enabled?()
+
+    remaining_minutes =
+      if assigns.authorized && assigns.authorized_at do
+        elapsed = System.system_time(:millisecond) - assigns.authorized_at
+        max(0, div(assigns.timeout_ms - elapsed, 60_000))
+      else
+        0
+      end
+
+    assigns =
+      assigns
+      |> assign(:remaining_minutes, remaining_minutes)
+      |> assign(:admin_enabled, admin_enabled)
+
+    ~H"""
+    <div :if={@admin_enabled} class="shrink-0">
+      <%= if @authorized do %>
+        <div class="flex items-center gap-3 px-4 py-3 bg-success/10 border border-success/20 rounded-xl">
+          <div class="p-2 bg-success/20 rounded-lg">
+            <.icon name="hero-lock-open" class="w-5 h-5 text-success" />
+          </div>
+          <div class="flex flex-col">
+            <span class="text-sm font-medium text-success">Unlocked</span>
+            <span class="text-xs text-base-content/60">{@remaining_minutes}m remaining</span>
+          </div>
+          <button
+            phx-click="admin_logout"
+            class="ml-2 p-1.5 rounded-lg hover:bg-base-content/10 transition-colors"
+            title="Revoke admin access"
+          >
+            <.icon name="hero-x-mark" class="w-4 h-4 text-base-content/50" />
+          </button>
+        </div>
+      <% else %>
+        <button
+          phx-click="admin_show_unlock_modal"
+          class="flex items-center gap-3 px-4 py-3 bg-base-200/80 border border-base-300 rounded-xl hover:bg-base-200 hover:border-primary/30 transition-all cursor-pointer group"
+          title="Click to unlock with ADMIN_SECRET_KEY"
+        >
+          <div class="p-2 bg-base-300/80 rounded-lg group-hover:bg-primary/10 transition-colors">
+            <.icon
+              name="hero-lock-closed"
+              class="w-5 h-5 text-base-content/60 group-hover:text-primary transition-colors"
+            />
+          </div>
+          <div class="flex flex-col text-left">
+            <span class="text-sm font-medium text-base-content/80 group-hover:text-base-content transition-colors">
+              Protected
+            </span>
+            <span class="text-xs text-base-content/50">Click to unlock</span>
+          </div>
+        </button>
+      <% end %>
+    </div>
+    """
+  end
 end

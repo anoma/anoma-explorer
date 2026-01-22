@@ -144,18 +144,30 @@ defmodule AnomaExplorerWeb.IndexerLive do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_path="/settings/indexer">
-      <div class="page-header">
-        <div>
-          <h1 class="page-title">Indexer Settings</h1>
-          <p class="text-sm text-base-content/70 mt-1">
+      <div class="flex items-start justify-between gap-6 mb-8">
+        <div class="flex-1">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="p-2.5 bg-primary/10 rounded-xl">
+              <.icon name="hero-server-stack" class="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <h1 class="text-2xl font-bold text-base-content">Indexer Settings</h1>
+            </div>
+          </div>
+          <p class="text-sm text-base-content/60 ml-[52px]">
             Configure the
-            <a href="https://envio.dev" target="_blank" rel="noopener" class="link link-primary">
+            <a
+              href="https://envio.dev"
+              target="_blank"
+              rel="noopener"
+              class="link link-primary hover:link-primary/80"
+            >
               Envio Hyperindex
             </a>
             GraphQL endpoint for indexed blockchain data
           </p>
         </div>
-        <.admin_status
+        <.admin_status_card
           authorized={@admin_authorized}
           authorized_at={@admin_authorized_at}
           timeout_ms={@admin_timeout_ms}
