@@ -10,7 +10,6 @@ defmodule AnomaExplorer.Application do
     children = [
       AnomaExplorerWeb.Telemetry,
       AnomaExplorer.Repo,
-      {DNSCluster, query: Application.get_env(:anoma_explorer, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: AnomaExplorer.PubSub},
       # GraphQL response cache for faster repeated queries
       AnomaExplorer.Indexer.Cache,

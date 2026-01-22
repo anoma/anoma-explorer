@@ -63,7 +63,6 @@ def application do
       {:telemetry_poller, "~> 1.3.0"},
       {:gettext, "~> 0.26 or ~> 1.0"},
       {:jason, "~> 1.4"},
-      {:dns_cluster, "~> 0.2"},
       # HTTP server
       {:plug_cowboy, "~> 2.7"},
       # Testing

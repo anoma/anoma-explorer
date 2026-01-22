@@ -75,8 +75,6 @@ if config_env() == :prod do
 
   host = System.get_env("PHX_HOST") || "example.com"
 
-  config :anoma_explorer, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
-
   # Build check_origin list - include configured host and common patterns
   check_origin =
     if host == "example.com" do
