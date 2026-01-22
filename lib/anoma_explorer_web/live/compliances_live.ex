@@ -29,6 +29,7 @@ defmodule AnomaExplorerWeb.CompliancesLive do
       |> assign(:filters, @default_filters)
       |> assign(:filter_version, 0)
       |> assign(:show_filters, false)
+      |> assign(:selected_chain, nil)
 
     if connected?(socket) and Client.configured?() do
       send(self(), :load_compliances)
@@ -116,6 +117,17 @@ defmodule AnomaExplorerWeb.CompliancesLive do
     end
   end
 
+  @impl true
+  def handle_event("show_chain_info", %{"chain-id" => chain_id}, socket) do
+    chain_id = String.to_integer(chain_id)
+    {:noreply, assign(socket, :selected_chain, Networks.chain_info(chain_id))}
+  end
+
+  @impl true
+  def handle_event("close_chain_modal", _params, socket) do
+    {:noreply, assign(socket, :selected_chain, nil)}
+  end
+
   defp load_compliances(socket) do
     page_size = 20
     filters = socket.assigns.filters
@@ -175,7 +187,10 @@ defmodule AnomaExplorerWeb.CompliancesLive do
               class="tooltip tooltip-right"
               data-tip="Compliance units define the scope of compliance proofs, linking consumed and created resources"
             >
-              <.icon name="hero-question-mark-circle" class="w-5 h-5 text-base-content/40 hover:text-primary" />
+              <.icon
+                name="hero-question-mark-circle"
+                class="w-5 h-5 text-base-content/40 hover:text-primary"
+              />
             </a>
           </h1>
           <p class="text-sm text-base-content/70 mt-1">
@@ -206,6 +221,8 @@ defmodule AnomaExplorerWeb.CompliancesLive do
 
           <.pagination page={@page} has_more={@has_more} loading={@loading} />
         </div>
+
+        <.chain_info_modal chain={@selected_chain} />
       <% end %>
     </Layouts.app>
     """
@@ -230,7 +247,11 @@ defmodule AnomaExplorerWeb.CompliancesLive do
 
   defp filter_form(assigns) do
     ~H"""
-    <form id={"filter-form-#{@filter_version}"} phx-submit="apply_filters" class="mb-6 p-4 bg-base-200/50 rounded-lg">
+    <form
+      id={"filter-form-#{@filter_version}"}
+      phx-submit="apply_filters"
+      class="mb-6 p-4 bg-base-200/50 rounded-lg"
+    >
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <label class="text-xs text-base-content/60 uppercase tracking-wide mb-1 block">
@@ -366,12 +387,7 @@ defmodule AnomaExplorerWeb.CompliancesLive do
                 </td>
                 <td>
                   <%= if unit["action"] do %>
-                    <span
-                      class="text-sm text-base-content/70"
-                      title={"Chain ID: #{unit["action"]["chainId"]}"}
-                    >
-                      {Networks.short_name(unit["action"]["chainId"])}
-                    </span>
+                    <.network_button chain_id={unit["action"]["chainId"]} />
                   <% else %>
                     -
                   <% end %>
@@ -380,7 +396,10 @@ defmodule AnomaExplorerWeb.CompliancesLive do
                   <%= if unit["action"] do %>
                     <div class="flex items-center gap-1">
                       <span class="font-mono text-sm">{unit["action"]["blockNumber"]}</span>
-                      <.copy_button text={to_string(unit["action"]["blockNumber"])} tooltip="Copy block number" />
+                      <.copy_button
+                        text={to_string(unit["action"]["blockNumber"])}
+                        tooltip="Copy block number"
+                      />
                     </div>
                   <% else %>
                     -

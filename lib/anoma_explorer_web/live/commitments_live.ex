@@ -32,6 +32,7 @@ defmodule AnomaExplorerWeb.CommitmentsLive do
       |> assign(:filter_version, 0)
       |> assign(:show_filters, false)
       |> assign(:chains, Networks.list_chains())
+      |> assign(:selected_chain, nil)
 
     if connected?(socket) and Client.configured?() do
       send(self(), :load_commitments)
@@ -119,6 +120,17 @@ defmodule AnomaExplorerWeb.CommitmentsLive do
     end
   end
 
+  @impl true
+  def handle_event("show_chain_info", %{"chain-id" => chain_id}, socket) do
+    chain_id = String.to_integer(chain_id)
+    {:noreply, assign(socket, :selected_chain, Networks.chain_info(chain_id))}
+  end
+
+  @impl true
+  def handle_event("close_chain_modal", _params, socket) do
+    {:noreply, assign(socket, :selected_chain, nil)}
+  end
+
   defp load_commitments(socket) do
     page_size = 20
     filters = socket.assigns.filters
@@ -194,7 +206,10 @@ defmodule AnomaExplorerWeb.CommitmentsLive do
               class="tooltip tooltip-right"
               data-tip="Commitments are added to the global commitment tree when resources are created"
             >
-              <.icon name="hero-question-mark-circle" class="w-5 h-5 text-base-content/40 hover:text-primary" />
+              <.icon
+                name="hero-question-mark-circle"
+                class="w-5 h-5 text-base-content/40 hover:text-primary"
+              />
             </a>
           </h1>
           <p class="text-sm text-base-content/70 mt-1">
@@ -215,7 +230,12 @@ defmodule AnomaExplorerWeb.CommitmentsLive do
 
         <div class="stat-card">
           <.filter_toggle show_filters={@show_filters} filter_count={active_filter_count(@filters)} />
-          <.filter_form :if={@show_filters} filters={@filters} chains={@chains} filter_version={@filter_version} />
+          <.filter_form
+            :if={@show_filters}
+            filters={@filters}
+            chains={@chains}
+            filter_version={@filter_version}
+          />
 
           <%= if @loading and @commitments == [] do %>
             <.loading_skeleton />
@@ -225,6 +245,8 @@ defmodule AnomaExplorerWeb.CommitmentsLive do
 
           <.pagination page={@page} has_more={@has_more} loading={@loading} />
         </div>
+
+        <.chain_info_modal chain={@selected_chain} />
       <% end %>
     </Layouts.app>
     """
@@ -249,7 +271,11 @@ defmodule AnomaExplorerWeb.CommitmentsLive do
 
   defp filter_form(assigns) do
     ~H"""
-    <form id={"filter-form-#{@filter_version}"} phx-submit="apply_filters" class="mb-6 p-4 bg-base-200/50 rounded-lg">
+    <form
+      id={"filter-form-#{@filter_version}"}
+      phx-submit="apply_filters"
+      class="mb-6 p-4 bg-base-200/50 rounded-lg"
+    >
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div>
           <label class="text-xs text-base-content/60 uppercase tracking-wide mb-1 block">Root</label>
@@ -395,17 +421,15 @@ defmodule AnomaExplorerWeb.CommitmentsLive do
                   </div>
                 </td>
                 <td>
-                  <span
-                    class="text-sm text-base-content/70"
-                    title={"Chain ID: #{commitment["chainId"]}"}
-                  >
-                    {Networks.short_name(commitment["chainId"])}
-                  </span>
+                  <.network_button chain_id={commitment["chainId"]} />
                 </td>
                 <td>
                   <div class="flex items-center gap-1">
                     <span class="font-mono text-sm">{commitment["blockNumber"]}</span>
-                    <.copy_button text={to_string(commitment["blockNumber"])} tooltip="Copy block number" />
+                    <.copy_button
+                      text={to_string(commitment["blockNumber"])}
+                      tooltip="Copy block number"
+                    />
                   </div>
                 </td>
                 <td class="hidden lg:table-cell text-base-content/60 text-sm">

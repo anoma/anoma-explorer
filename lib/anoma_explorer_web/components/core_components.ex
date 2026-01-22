@@ -645,6 +645,113 @@ defmodule AnomaExplorerWeb.CoreComponents do
   end
 
   @doc """
+  Renders a clickable network name button that triggers a modal.
+
+  ## Examples
+
+      <.network_button chain_id={tx["chainId"]} />
+  """
+  attr :chain_id, :integer, required: true
+
+  def network_button(assigns) do
+    alias AnomaExplorer.Indexer.Networks
+
+    ~H"""
+    <button
+      phx-click="show_chain_info"
+      phx-value-chain-id={@chain_id}
+      class="text-sm cursor-pointer hover:text-primary hover:underline"
+      title={"Chain ID: #{@chain_id}"}
+    >
+      {Networks.short_name(@chain_id)}
+    </button>
+    """
+  end
+
+  @doc """
+  Renders a modal with network/chain information.
+
+  ## Examples
+
+      <.chain_info_modal chain={@selected_chain} />
+  """
+  attr :chain, :map, default: nil
+
+  def chain_info_modal(assigns) do
+    ~H"""
+    <%= if @chain do %>
+      <div class="modal modal-open" phx-click="close_chain_modal">
+        <div class="modal-box" phx-click-away="close_chain_modal">
+          <button
+            class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+            phx-click="close_chain_modal"
+          >
+            <.icon name="hero-x-mark" class="w-5 h-5" />
+          </button>
+
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="text-lg font-semibold">Network Details</h3>
+              <div class="flex items-center gap-2">
+                <span class="badge badge-info">Mainnet</span>
+                <%= if @chain.explorer do %>
+                  <a
+                    href={@chain.explorer}
+                    target="_blank"
+                    rel="noopener"
+                    class="btn btn-ghost btn-sm"
+                  >
+                    View Explorer <.icon name="hero-arrow-top-right-on-square" class="w-4 h-4" />
+                  </a>
+                <% end %>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="text-xs text-base-content/60 uppercase tracking-wider">Name</label>
+                <p class="text-sm">{@chain.short}</p>
+              </div>
+              <div>
+                <label class="text-xs text-base-content/60 uppercase tracking-wider">
+                  Display Name
+                </label>
+                <p class="text-sm">{@chain.name}</p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="text-xs text-base-content/60 uppercase tracking-wider">Chain ID</label>
+                <p class="text-sm">
+                  <span class="badge badge-outline badge-sm">{@chain.chain_id}</span>
+                </p>
+              </div>
+              <div>
+                <label class="text-xs text-base-content/60 uppercase tracking-wider">Status</label>
+                <p class="text-sm">
+                  <span class="badge badge-success badge-sm">Active</span>
+                </p>
+              </div>
+            </div>
+
+            <%= if @chain.explorer do %>
+              <div>
+                <label class="text-xs text-base-content/60 uppercase tracking-wider">
+                  Explorer URL
+                </label>
+                <p class="text-sm break-all text-base-content/70">{@chain.explorer}</p>
+              </div>
+            <% end %>
+          </div>
+        </div>
+        <div class="modal-backdrop bg-black/50"></div>
+      </div>
+    <% end %>
+    """
+  end
+
+  @doc """
   Translates an error message using gettext.
   """
   def translate_error({msg, opts}) do

@@ -37,7 +37,8 @@ defmodule AnomaExplorerWeb.ResourcesLive do
      |> assign(:filter_version, 0)
      |> assign(:show_filters, false)
      |> assign(:configured, Client.configured?())
-     |> assign(:chains, Networks.list_chains())}
+     |> assign(:chains, Networks.list_chains())
+     |> assign(:selected_chain, nil)}
   end
 
   @impl true
@@ -131,6 +132,17 @@ defmodule AnomaExplorerWeb.ResourcesLive do
     end
   end
 
+  @impl true
+  def handle_event("show_chain_info", %{"chain-id" => chain_id}, socket) do
+    chain_id = String.to_integer(chain_id)
+    {:noreply, assign(socket, :selected_chain, Networks.chain_info(chain_id))}
+  end
+
+  @impl true
+  def handle_event("close_chain_modal", _params, socket) do
+    {:noreply, assign(socket, :selected_chain, nil)}
+  end
+
   defp load_resources(socket) do
     if not Client.configured?() do
       socket
@@ -219,7 +231,10 @@ defmodule AnomaExplorerWeb.ResourcesLive do
               class="tooltip tooltip-right"
               data-tip="Resources are the atomic unit of ARM state - immutable, created once and consumed once"
             >
-              <.icon name="hero-question-mark-circle" class="w-5 h-5 text-base-content/40 hover:text-primary" />
+              <.icon
+                name="hero-question-mark-circle"
+                class="w-5 h-5 text-base-content/40 hover:text-primary"
+              />
             </a>
           </h1>
           <p class="text-sm text-base-content/70 mt-1">
@@ -244,7 +259,12 @@ defmodule AnomaExplorerWeb.ResourcesLive do
             show_filters={@show_filters}
             filter_count={active_filter_count(@filters)}
           />
-          <.filter_form :if={@show_filters} filters={@filters} chains={@chains} filter_version={@filter_version} />
+          <.filter_form
+            :if={@show_filters}
+            filters={@filters}
+            chains={@chains}
+            filter_version={@filter_version}
+          />
 
           <%= if @loading and @resources == [] do %>
             <.loading_skeleton />
@@ -254,6 +274,8 @@ defmodule AnomaExplorerWeb.ResourcesLive do
 
           <.pagination page={@page} has_more={@has_more} loading={@loading} />
         </div>
+
+        <.chain_info_modal chain={@selected_chain} />
       <% end %>
     </Layouts.app>
     """
@@ -302,7 +324,11 @@ defmodule AnomaExplorerWeb.ResourcesLive do
 
   defp filter_form(assigns) do
     ~H"""
-    <form id={"filter-form-#{@filter_version}"} phx-submit="apply_filters" class="mb-6 p-4 bg-base-200/50 rounded-lg">
+    <form
+      id={"filter-form-#{@filter_version}"}
+      phx-submit="apply_filters"
+      class="mb-6 p-4 bg-base-200/50 rounded-lg"
+    >
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div>
           <label class="text-xs text-base-content/60 uppercase tracking-wide mb-1 block">Tag</label>
@@ -479,12 +505,7 @@ defmodule AnomaExplorerWeb.ResourcesLive do
                   <% end %>
                 </td>
                 <td>
-                  <span
-                    class="text-sm text-base-content/70"
-                    title={"Chain ID: #{resource["chainId"]}"}
-                  >
-                    {Networks.short_name(resource["chainId"])}
-                  </span>
+                  <.network_button chain_id={resource["chainId"]} />
                 </td>
                 <td class="hidden md:table-cell">
                   <div class="flex items-center gap-1">
@@ -499,7 +520,10 @@ defmodule AnomaExplorerWeb.ResourcesLive do
                 <td class="hidden lg:table-cell">
                   <div class="flex items-center gap-1">
                     <span class="font-mono text-sm">{resource["blockNumber"]}</span>
-                    <.copy_button text={to_string(resource["blockNumber"])} tooltip="Copy block number" />
+                    <.copy_button
+                      text={to_string(resource["blockNumber"])}
+                      tooltip="Copy block number"
+                    />
                   </div>
                 </td>
                 <td>

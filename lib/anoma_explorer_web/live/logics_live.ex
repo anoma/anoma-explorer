@@ -29,6 +29,7 @@ defmodule AnomaExplorerWeb.LogicsLive do
       |> assign(:filters, @default_filters)
       |> assign(:filter_version, 0)
       |> assign(:show_filters, false)
+      |> assign(:selected_chain, nil)
 
     if connected?(socket) and Client.configured?() do
       send(self(), :load_logics)
@@ -136,6 +137,17 @@ defmodule AnomaExplorerWeb.LogicsLive do
     end
   end
 
+  @impl true
+  def handle_event("show_chain_info", %{"chain-id" => chain_id}, socket) do
+    chain_id = String.to_integer(chain_id)
+    {:noreply, assign(socket, :selected_chain, Networks.chain_info(chain_id))}
+  end
+
+  @impl true
+  def handle_event("close_chain_modal", _params, socket) do
+    {:noreply, assign(socket, :selected_chain, nil)}
+  end
+
   defp load_logics(socket) do
     page_size = 20
     filters = socket.assigns.filters
@@ -202,7 +214,10 @@ defmodule AnomaExplorerWeb.LogicsLive do
               class="tooltip tooltip-right"
               data-tip="Resource logic proofs verify that user constraints are satisfied for each resource"
             >
-              <.icon name="hero-question-mark-circle" class="w-5 h-5 text-base-content/40 hover:text-primary" />
+              <.icon
+                name="hero-question-mark-circle"
+                class="w-5 h-5 text-base-content/40 hover:text-primary"
+              />
             </a>
           </h1>
           <p class="text-sm text-base-content/70 mt-1">All indexed logic inputs with proofs</p>
@@ -235,6 +250,8 @@ defmodule AnomaExplorerWeb.LogicsLive do
 
           <.pagination page={@page} has_more={@has_more} loading={@loading} />
         </div>
+
+        <.chain_info_modal chain={@selected_chain} />
       <% end %>
     </Layouts.app>
     """
@@ -283,7 +300,11 @@ defmodule AnomaExplorerWeb.LogicsLive do
 
   defp filter_form(assigns) do
     ~H"""
-    <form id={"filter-form-#{@filter_version}"} phx-submit="apply_filters" class="mb-6 p-4 bg-base-200/50 rounded-lg">
+    <form
+      id={"filter-form-#{@filter_version}"}
+      phx-submit="apply_filters"
+      class="mb-6 p-4 bg-base-200/50 rounded-lg"
+    >
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label class="text-xs text-base-content/60 uppercase tracking-wide mb-1 block">Tag</label>
@@ -422,12 +443,7 @@ defmodule AnomaExplorerWeb.LogicsLive do
                 </td>
                 <td>
                   <%= if logic["action"] do %>
-                    <span
-                      class="text-sm text-base-content/70"
-                      title={"Chain ID: #{logic["action"]["chainId"]}"}
-                    >
-                      {Networks.short_name(logic["action"]["chainId"])}
-                    </span>
+                    <.network_button chain_id={logic["action"]["chainId"]} />
                   <% else %>
                     -
                   <% end %>

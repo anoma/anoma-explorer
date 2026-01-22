@@ -48,7 +48,8 @@ defmodule AnomaExplorerWeb.TransactionsLive do
      |> assign(:filters, filters)
      |> assign(:filter_version, 0)
      |> assign(:chains, Networks.list_chains())
-     |> assign(:selected_resources, nil)}
+     |> assign(:selected_resources, nil)
+     |> assign(:selected_chain, nil)}
   end
 
   @impl true
@@ -152,6 +153,17 @@ defmodule AnomaExplorerWeb.TransactionsLive do
     {:noreply, assign(socket, :selected_resources, nil)}
   end
 
+  @impl true
+  def handle_event("show_chain_info", %{"chain-id" => chain_id}, socket) do
+    chain_id = String.to_integer(chain_id)
+    {:noreply, assign(socket, :selected_chain, Networks.chain_info(chain_id))}
+  end
+
+  @impl true
+  def handle_event("close_chain_modal", _params, socket) do
+    {:noreply, assign(socket, :selected_chain, nil)}
+  end
+
   defp load_transactions(socket) do
     if not Client.configured?() do
       socket
@@ -230,7 +242,10 @@ defmodule AnomaExplorerWeb.TransactionsLive do
               class="tooltip tooltip-right"
               data-tip="A transaction represents a proposed state update consisting of actions that group resources"
             >
-              <.icon name="hero-question-mark-circle" class="w-5 h-5 text-base-content/40 hover:text-primary" />
+              <.icon
+                name="hero-question-mark-circle"
+                class="w-5 h-5 text-base-content/40 hover:text-primary"
+              />
             </a>
           </h1>
           <p class="text-sm text-base-content/70 mt-1">
@@ -251,7 +266,12 @@ defmodule AnomaExplorerWeb.TransactionsLive do
 
         <div class="stat-card">
           <.filter_toggle show_filters={@show_filters} filter_count={active_filter_count(@filters)} />
-          <.filter_form :if={@show_filters} filters={@filters} chains={@chains} filter_version={@filter_version} />
+          <.filter_form
+            :if={@show_filters}
+            filters={@filters}
+            chains={@chains}
+            filter_version={@filter_version}
+          />
 
           <%= if @loading and @transactions == [] do %>
             <.loading_skeleton />
@@ -263,6 +283,7 @@ defmodule AnomaExplorerWeb.TransactionsLive do
         </div>
 
         <.resources_modal resources={@selected_resources} />
+        <.chain_info_modal chain={@selected_chain} />
       <% end %>
     </Layouts.app>
     """
@@ -287,7 +308,11 @@ defmodule AnomaExplorerWeb.TransactionsLive do
 
   defp filter_form(assigns) do
     ~H"""
-    <form id={"filter-form-#{@filter_version}"} phx-submit="apply_filters" class="mb-6 p-4 bg-base-200/50 rounded-lg">
+    <form
+      id={"filter-form-#{@filter_version}"}
+      phx-submit="apply_filters"
+      class="mb-6 p-4 bg-base-200/50 rounded-lg"
+    >
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div>
           <label class="text-xs text-base-content/60 uppercase tracking-wide mb-1 block">
@@ -436,9 +461,7 @@ defmodule AnomaExplorerWeb.TransactionsLive do
                   </div>
                 </td>
                 <td>
-                  <span class="text-sm text-base-content/70" title={"Chain ID: #{tx["chainId"]}"}>
-                    {Networks.short_name(tx["chainId"])}
-                  </span>
+                  <.network_button chain_id={tx["chainId"]} />
                 </td>
                 <td>
                   <div class="flex items-center gap-1">

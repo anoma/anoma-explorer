@@ -10,6 +10,18 @@ defmodule AnomaExplorerWeb.Router do
     plug :put_secure_browser_headers
   end
 
+  pipeline :api do
+    plug :accepts, ["json"]
+  end
+
+  # Health check endpoints (no auth required)
+  scope "/health", AnomaExplorerWeb do
+    pipe_through :api
+
+    get "/", HealthController, :index
+    get "/ready", HealthController, :ready
+  end
+
   scope "/", AnomaExplorerWeb do
     pipe_through :browser
 
