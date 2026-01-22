@@ -6,12 +6,15 @@ defmodule AnomaExplorer.Indexer.Client do
   and execute GraphQL queries against the indexed blockchain data.
   """
 
+  alias AnomaExplorer.Settings
+
   @doc """
   Returns the configured Envio GraphQL URL, or nil if not set.
+  Checks database first, then falls back to environment variable.
   """
   @spec graphql_url() :: String.t() | nil
   def graphql_url do
-    Application.get_env(:anoma_explorer, :envio_graphql_url)
+    Settings.get_envio_url()
   end
 
   @doc """
@@ -19,6 +22,6 @@ defmodule AnomaExplorer.Indexer.Client do
   """
   @spec configured?() :: boolean()
   def configured? do
-    graphql_url() != nil
+    graphql_url() != nil && graphql_url() != ""
   end
 end

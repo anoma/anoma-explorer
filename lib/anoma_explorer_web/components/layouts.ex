@@ -59,6 +59,16 @@ defmodule AnomaExplorerWeb.Layouts do
               <span>Dashboard</span>
             </a>
 
+            <a href="/transactions" class={nav_class(@current_path, "/transactions")} title="Transactions">
+              <.icon name="hero-document-text" class="w-5 h-5" />
+              <span>Transactions</span>
+            </a>
+
+            <a href="/resources" class={nav_class(@current_path, "/resources")} title="Resources">
+              <.icon name="hero-cube" class="w-5 h-5" />
+              <span>Resources</span>
+            </a>
+
             <div class="px-4 mb-2 mt-6 sidebar-section-label">
               <span class="text-xs font-medium text-base-content/60 uppercase tracking-wider">
                 Settings
@@ -78,6 +88,11 @@ defmodule AnomaExplorerWeb.Layouts do
             <a href="/settings/api-keys" class={nav_class(@current_path, "/settings/api-keys")} title="Environment">
               <.icon name="hero-cog-6-tooth" class="w-5 h-5" />
               <span>Environment</span>
+            </a>
+
+            <a href="/settings/indexer" class={nav_class(@current_path, "/settings/indexer")} title="Indexer">
+              <.icon name="hero-server-stack" class="w-5 h-5" />
+              <span>Indexer</span>
             </a>
           </nav>
 
@@ -116,7 +131,14 @@ defmodule AnomaExplorerWeb.Layouts do
   defp nav_class(current_path, target_path) do
     base = "sidebar-nav-item"
 
-    if current_path == target_path do
+    is_active =
+      cond do
+        current_path == target_path -> true
+        target_path != "/" and String.starts_with?(current_path, target_path) -> true
+        true -> false
+      end
+
+    if is_active do
       "#{base} active"
     else
       base

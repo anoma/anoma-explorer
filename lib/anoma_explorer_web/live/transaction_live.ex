@@ -1,0 +1,314 @@
+defmodule AnomaExplorerWeb.TransactionLive do
+  @moduledoc """
+  LiveView for displaying a single transaction's details.
+  """
+  use AnomaExplorerWeb, :live_view
+
+  alias AnomaExplorerWeb.Layouts
+  alias AnomaExplorer.Indexer.GraphQL
+
+  @impl true
+  def mount(%{"id" => id}, _session, socket) do
+    if connected?(socket), do: send(self(), {:load_data, id})
+
+    {:ok,
+     socket
+     |> assign(:page_title, "Transaction")
+     |> assign(:transaction, nil)
+     |> assign(:loading, true)
+     |> assign(:error, nil)
+     |> assign(:tx_id, id)}
+  end
+
+  @impl true
+  def handle_info({:load_data, id}, socket) do
+    case GraphQL.get_transaction(id) do
+      {:ok, transaction} ->
+        {:noreply,
+         socket
+         |> assign(:transaction, transaction)
+         |> assign(:loading, false)
+         |> assign(:page_title, "Transaction #{truncate_hash(transaction["txHash"])}")}
+
+      {:error, :not_found} ->
+        {:noreply,
+         socket
+         |> assign(:loading, false)
+         |> assign(:error, "Transaction not found")}
+
+      {:error, reason} ->
+        {:noreply,
+         socket
+         |> assign(:loading, false)
+         |> assign(:error, "Error loading transaction: #{inspect(reason)}")}
+    end
+  end
+
+  @impl true
+  def render(assigns) do
+    ~H"""
+    <Layouts.app flash={@flash} current_path="/transactions">
+      <div class="page-header">
+        <div class="flex items-center gap-3">
+          <a href="/transactions" class="btn btn-ghost btn-sm">
+            <.icon name="hero-arrow-left" class="w-4 h-4" />
+          </a>
+          <div>
+            <h1 class="page-title">Transaction Details</h1>
+            <p class="text-sm text-base-content/70 mt-1">
+              <%= if @transaction, do: truncate_hash(@transaction["txHash"]), else: "Loading..." %>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <%= if @error do %>
+        <div class="alert alert-error mb-6">
+          <.icon name="hero-exclamation-triangle" class="h-5 w-5" />
+          <span><%= @error %></span>
+        </div>
+      <% end %>
+
+      <%= if @loading do %>
+        <.loading_skeleton />
+      <% else %>
+        <%= if @transaction do %>
+          <.transaction_header tx={@transaction} />
+          <.tags_section tags={@transaction["tags"]} logic_refs={@transaction["logicRefs"]} />
+          <.resources_section resources={@transaction["resources"] || []} />
+          <.actions_section actions={@transaction["actions"] || []} />
+        <% end %>
+      <% end %>
+    </Layouts.app>
+    """
+  end
+
+  defp loading_skeleton(assigns) do
+    ~H"""
+    <div class="space-y-6 animate-pulse">
+      <div class="stat-card">
+        <div class="h-6 bg-base-300 rounded w-48 mb-4"></div>
+        <div class="space-y-2">
+          <div class="h-4 bg-base-300 rounded w-full"></div>
+          <div class="h-4 bg-base-300 rounded w-3/4"></div>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
+  defp transaction_header(assigns) do
+    ~H"""
+    <div class="stat-card mb-6">
+      <h2 class="text-lg font-semibold mb-4">Overview</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1">Transaction Hash</div>
+          <div class="flex items-center gap-2">
+            <code class="hash-display text-sm break-all"><%= @tx["txHash"] %></code>
+            <button
+              type="button"
+              phx-click={JS.dispatch("phx:copy", detail: %{text: @tx["txHash"]})}
+              class="btn btn-ghost btn-xs"
+              title="Copy"
+            >
+              <.icon name="hero-clipboard-document" class="w-3 h-3" />
+            </button>
+          </div>
+        </div>
+        <div>
+          <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1">Block Number</div>
+          <div class="font-mono"><%= @tx["blockNumber"] %></div>
+        </div>
+        <div>
+          <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1">Chain ID</div>
+          <div><span class="badge badge-outline"><%= @tx["chainId"] %></span></div>
+        </div>
+        <div>
+          <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1">Timestamp</div>
+          <div><%= format_timestamp(@tx["timestamp"]) %></div>
+        </div>
+        <%= if @tx["contractAddress"] do %>
+          <div class="md:col-span-2">
+            <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1">Contract Address</div>
+            <code class="hash-display text-sm"><%= @tx["contractAddress"] %></code>
+          </div>
+        <% end %>
+      </div>
+    </div>
+    """
+  end
+
+  defp tags_section(assigns) do
+    ~H"""
+    <div class="stat-card mb-6">
+      <h2 class="text-lg font-semibold mb-4">
+        Tags & Logic Refs
+        <span class="badge badge-ghost ml-2"><%= length(@tags || []) %></span>
+      </h2>
+      <%= if (@tags || []) == [] do %>
+        <div class="text-base-content/50 text-center py-4">No tags</div>
+      <% else %>
+        <div class="overflow-x-auto">
+          <table class="data-table w-full">
+            <thead>
+              <tr>
+                <th>Index</th>
+                <th>Type</th>
+                <th>Tag</th>
+                <th>Logic Ref</th>
+              </tr>
+            </thead>
+            <tbody>
+              <%= for {tag, idx} <- Enum.with_index(@tags || []) do %>
+                <% is_consumed = rem(idx, 2) == 0 %>
+                <% logic_ref = Enum.at(@logic_refs || [], idx) %>
+                <tr>
+                  <td>
+                    <span class="badge badge-ghost badge-sm"><%= idx %></span>
+                  </td>
+                  <td>
+                    <%= if is_consumed do %>
+                      <span class="badge badge-error badge-sm">Consumed</span>
+                    <% else %>
+                      <span class="badge badge-success badge-sm">Created</span>
+                    <% end %>
+                  </td>
+                  <td>
+                    <code class="hash-display text-xs"><%= truncate_hash(tag) %></code>
+                  </td>
+                  <td>
+                    <code class="hash-display text-xs"><%= truncate_hash(logic_ref) %></code>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% end %>
+    </div>
+    """
+  end
+
+  defp resources_section(assigns) do
+    ~H"""
+    <div class="stat-card mb-6">
+      <h2 class="text-lg font-semibold mb-4">
+        Resources
+        <span class="badge badge-ghost ml-2"><%= length(@resources) %></span>
+      </h2>
+      <%= if @resources == [] do %>
+        <div class="text-base-content/50 text-center py-4">No resources</div>
+      <% else %>
+        <div class="overflow-x-auto">
+          <table class="data-table w-full">
+            <thead>
+              <tr>
+                <th>Tag</th>
+                <th>Status</th>
+                <th>Logic Ref</th>
+                <th>Quantity</th>
+                <th>Decoding</th>
+              </tr>
+            </thead>
+            <tbody>
+              <%= for resource <- @resources do %>
+                <tr class="hover:bg-base-200/50 cursor-pointer" phx-click={JS.navigate("/resources/#{resource["id"]}")}>
+                  <td>
+                    <code class="hash-display text-xs"><%= truncate_hash(resource["tag"]) %></code>
+                  </td>
+                  <td>
+                    <%= if resource["isConsumed"] do %>
+                      <span class="badge badge-error badge-sm">Consumed</span>
+                    <% else %>
+                      <span class="badge badge-success badge-sm">Created</span>
+                    <% end %>
+                  </td>
+                  <td>
+                    <code class="hash-display text-xs"><%= truncate_hash(resource["logicRef"]) %></code>
+                  </td>
+                  <td>
+                    <%= resource["quantity"] || "-" %>
+                  </td>
+                  <td>
+                    <.decoding_badge status={resource["decodingStatus"]} />
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% end %>
+    </div>
+    """
+  end
+
+  defp actions_section(assigns) do
+    ~H"""
+    <div class="stat-card">
+      <h2 class="text-lg font-semibold mb-4">
+        Actions
+        <span class="badge badge-ghost ml-2"><%= length(@actions) %></span>
+      </h2>
+      <%= if @actions == [] do %>
+        <div class="text-base-content/50 text-center py-4">No actions</div>
+      <% else %>
+        <div class="overflow-x-auto">
+          <table class="data-table w-full">
+            <thead>
+              <tr>
+                <th>Action Tree Root</th>
+                <th>Tag Count</th>
+              </tr>
+            </thead>
+            <tbody>
+              <%= for action <- @actions do %>
+                <tr>
+                  <td>
+                    <code class="hash-display text-xs"><%= truncate_hash(action["actionTreeRoot"]) %></code>
+                  </td>
+                  <td>
+                    <span class="badge badge-ghost"><%= action["tagCount"] %></span>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% end %>
+    </div>
+    """
+  end
+
+  defp decoding_badge(assigns) do
+    ~H"""
+    <%= case @status do %>
+      <% "success" -> %>
+        <span class="badge badge-success badge-sm">Decoded</span>
+      <% "failed" -> %>
+        <span class="badge badge-error badge-sm">Failed</span>
+      <% "pending" -> %>
+        <span class="badge badge-warning badge-sm">Pending</span>
+      <% _ -> %>
+        <span class="badge badge-ghost badge-sm"><%= @status || "-" %></span>
+    <% end %>
+    """
+  end
+
+  defp truncate_hash(nil), do: "-"
+
+  defp truncate_hash(hash) when byte_size(hash) > 20 do
+    String.slice(hash, 0, 10) <> "..." <> String.slice(hash, -8, 8)
+  end
+
+  defp truncate_hash(hash), do: hash
+
+  defp format_timestamp(nil), do: "-"
+
+  defp format_timestamp(ts) when is_integer(ts) do
+    case DateTime.from_unix(ts) do
+      {:ok, dt} -> Calendar.strftime(dt, "%Y-%m-%d %H:%M:%S UTC")
+      _ -> "-"
+    end
+  end
+end

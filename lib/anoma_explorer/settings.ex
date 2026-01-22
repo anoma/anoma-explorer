@@ -12,6 +12,7 @@ defmodule AnomaExplorer.Settings do
   alias AnomaExplorer.Settings.Protocol
   alias AnomaExplorer.Settings.ContractAddress
   alias AnomaExplorer.Settings.Network
+  alias AnomaExplorer.Settings.AppSetting
   alias AnomaExplorer.Settings.Cache
 
   @pubsub AnomaExplorer.PubSub
@@ -346,6 +347,72 @@ defmodule AnomaExplorer.Settings do
   @spec list_active_addresses() :: [ContractAddress.t()]
   def list_active_addresses do
     list_contract_addresses(active: true, preload: [:protocol])
+  end
+
+  # ============================================
+  # App Settings (Key-Value Store)
+  # ============================================
+
+  @envio_url_key "envio_graphql_url"
+
+  @doc """
+  Gets an app setting by key.
+  """
+  @spec get_app_setting(String.t()) :: String.t() | nil
+  def get_app_setting(key) do
+    case Repo.get_by(AppSetting, key: key) do
+      nil -> nil
+      setting -> setting.value
+    end
+  end
+
+  @doc """
+  Sets an app setting. Creates or updates the setting.
+  """
+  @spec set_app_setting(String.t(), String.t(), String.t() | nil) ::
+          {:ok, AppSetting.t()} | {:error, Ecto.Changeset.t()}
+  def set_app_setting(key, value, description \\ nil) do
+    case Repo.get_by(AppSetting, key: key) do
+      nil ->
+        %AppSetting{}
+        |> AppSetting.changeset(%{key: key, value: value, description: description})
+        |> Repo.insert()
+
+      setting ->
+        setting
+        |> AppSetting.changeset(%{value: value, description: description})
+        |> Repo.update()
+    end
+    |> tap_ok(&broadcast_change({:app_setting_updated, &1}))
+  end
+
+  @doc """
+  Deletes an app setting by key.
+  """
+  @spec delete_app_setting(String.t()) :: {:ok, AppSetting.t()} | {:error, :not_found}
+  def delete_app_setting(key) do
+    case Repo.get_by(AppSetting, key: key) do
+      nil -> {:error, :not_found}
+      setting -> Repo.delete(setting)
+    end
+  end
+
+  @doc """
+  Gets the Envio GraphQL URL.
+  Falls back to env var if not set in database.
+  """
+  @spec get_envio_url() :: String.t() | nil
+  def get_envio_url do
+    get_app_setting(@envio_url_key) ||
+      Application.get_env(:anoma_explorer, :envio_graphql_url)
+  end
+
+  @doc """
+  Sets the Envio GraphQL URL.
+  """
+  @spec set_envio_url(String.t()) :: {:ok, AppSetting.t()} | {:error, Ecto.Changeset.t()}
+  def set_envio_url(url) do
+    set_app_setting(@envio_url_key, url, "Envio Hyperindex GraphQL endpoint URL")
   end
 
   # ============================================
