@@ -22,8 +22,9 @@ defmodule AnomaExplorerWeb.IndexerLive do
      |> assign(:url, url)
      |> assign(:url_input, url)
      |> assign(:status, nil)
-     |> assign(:testing, false)
-     |> assign(:saving, false)}
+     |> assign(:saving, false)
+     |> assign(:auto_test_timer, nil)
+     |> assign(:auto_testing, false)}
   end
 
   # Admin authorization events
@@ -37,7 +38,25 @@ defmodule AnomaExplorerWeb.IndexerLive do
   end
 
   def handle_event("update_url", %{"url" => url}, socket) do
-    {:noreply, assign(socket, :url_input, url)}
+    # Cancel any pending auto-test timer
+    if socket.assigns.auto_test_timer do
+      Process.cancel_timer(socket.assigns.auto_test_timer)
+    end
+
+    # Schedule auto-test after 2 seconds of inactivity
+    timer =
+      if url != "" do
+        Process.send_after(self(), {:auto_test_connection, url}, 2000)
+      else
+        nil
+      end
+
+    {:noreply,
+     socket
+     |> assign(:url_input, url)
+     |> assign(:status, nil)
+     |> assign(:auto_test_timer, timer)
+     |> assign(:auto_testing, url != "")}
   end
 
   @impl true
@@ -63,19 +82,6 @@ defmodule AnomaExplorerWeb.IndexerLive do
   end
 
   @impl true
-  def handle_event("test_connection", _params, socket) do
-    url = socket.assigns.url_input
-
-    if url == "" do
-      {:noreply, assign(socket, :status, {:error, "No URL configured"})}
-    else
-      socket = assign(socket, :testing, true)
-      send(self(), {:test_connection, url})
-      {:noreply, socket}
-    end
-  end
-
-  @impl true
   def handle_event("global_search", %{"query" => query}, socket) do
     query = String.trim(query)
 
@@ -87,13 +93,19 @@ defmodule AnomaExplorerWeb.IndexerLive do
   end
 
   @impl true
-  def handle_info({:test_connection, url}, socket) do
-    status = test_graphql_endpoint(url)
+  def handle_info({:auto_test_connection, url}, socket) do
+    # Only auto-test if the URL hasn't changed since the timer was set
+    if socket.assigns.url_input == url do
+      status = test_graphql_endpoint(url)
 
-    {:noreply,
-     socket
-     |> assign(:testing, false)
-     |> assign(:status, status)}
+      {:noreply,
+       socket
+       |> assign(:status, status)
+       |> assign(:auto_test_timer, nil)
+       |> assign(:auto_testing, false)}
+    else
+      {:noreply, socket}
+    end
   end
 
   @impl true
@@ -188,30 +200,33 @@ defmodule AnomaExplorerWeb.IndexerLive do
             <label class="label">
               <span class="label-text">Envio GraphQL URL</span>
             </label>
-            <div class="flex gap-2">
-              <input
-                type="url"
-                name="url"
-                value={@url_input}
-                placeholder="https://indexer.dev.hyperindex.xyz/xxx/v1/graphql"
-                class="input input-bordered flex-1 font-mono text-sm"
-              />
-              <button
-                type="button"
-                phx-click="test_connection"
-                disabled={@testing}
-                class="btn btn-outline"
-              >
-                <%= if @testing do %>
-                  <span class="loading loading-spinner loading-sm"></span> Testing...
-                <% else %>
-                  Test Connection
-                <% end %>
-              </button>
+            <div class="flex gap-2 items-center">
+              <div class="relative flex-1">
+                <input
+                  type="url"
+                  name="url"
+                  value={@url_input}
+                  placeholder="https://indexer.dev.hyperindex.xyz/xxx/v1/graphql"
+                  class="input input-bordered w-full font-mono text-sm pr-8"
+                />
+                <div class="absolute right-2 top-1/2 -translate-y-1/2">
+                  <%= if @auto_testing do %>
+                    <span class="loading loading-spinner loading-xs text-base-content/50"></span>
+                  <% else %>
+                    <%= if @status do %>
+                      <div class={[
+                        "w-3 h-3 rounded-full",
+                        if(elem(@status, 0) == :ok, do: "bg-success", else: "bg-error")
+                      ]} title={elem(@status, 1)}>
+                      </div>
+                    <% end %>
+                  <% end %>
+                </div>
+              </div>
               <.protected_button
                 authorized={@admin_authorized}
                 type="submit"
-                disabled={@saving || @url_input == @url}
+                disabled={@saving}
                 class="btn btn-primary"
               >
                 <%= if @saving do %>
