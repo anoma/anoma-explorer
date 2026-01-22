@@ -368,7 +368,11 @@ defmodule AnomaExplorerWeb.CommitmentsLive do
                 <td>
                   <div class="flex items-center gap-1">
                     <code class="hash-display text-xs">{truncate_hash(commitment["root"])}</code>
-                    <.copy_button :if={commitment["root"]} text={commitment["root"]} tooltip="Copy root" />
+                    <.copy_button
+                      :if={commitment["root"]}
+                      text={commitment["root"]}
+                      tooltip="Copy root"
+                    />
                   </div>
                 </td>
                 <td>

@@ -286,14 +286,13 @@ defmodule AnomaExplorerWeb.Layouts do
 
   def global_search(assigns) do
     ~H"""
-    <form
-      id={@id}
-      phx-submit="global_search"
-      class="relative flex items-center w-full"
-    >
+    <form id={@id} phx-submit="global_search" class="relative flex items-center w-full">
       <div class="relative w-full group">
         <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
-          <.icon name="hero-magnifying-glass" class="w-5 h-5 text-base-content/40 group-focus-within:text-primary transition-colors" />
+          <.icon
+            name="hero-magnifying-glass"
+            class="w-5 h-5 text-base-content/40 group-focus-within:text-primary transition-colors"
+          />
         </div>
         <input
           type="text"
@@ -326,7 +325,10 @@ defmodule AnomaExplorerWeb.Layouts do
         data-phx-theme="light"
         title="Light mode"
       >
-        <.icon name="hero-sun-micro" class="w-4 h-4 text-base-content/60 [[data-theme=light]_&]:text-amber-500" />
+        <.icon
+          name="hero-sun-micro"
+          class="w-4 h-4 text-base-content/60 [[data-theme=light]_&]:text-amber-500"
+        />
       </button>
       <button
         class="p-1.5 rounded-full transition-all duration-200 [[data-theme=dark]_&]:bg-base-100 [[data-theme=dark]_&]:shadow-sm hover:bg-base-100/50"
@@ -334,7 +336,10 @@ defmodule AnomaExplorerWeb.Layouts do
         data-phx-theme="dark"
         title="Dark mode"
       >
-        <.icon name="hero-moon-micro" class="w-4 h-4 text-base-content/60 [[data-theme=dark]_&]:text-indigo-400" />
+        <.icon
+          name="hero-moon-micro"
+          class="w-4 h-4 text-base-content/60 [[data-theme=dark]_&]:text-indigo-400"
+        />
       </button>
     </div>
     """

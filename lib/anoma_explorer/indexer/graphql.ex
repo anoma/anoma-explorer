@@ -593,9 +593,17 @@ defmodule AnomaExplorer.Indexer.GraphQL do
 
     conditions =
       case Keyword.get(opts, :logic_ref) do
-        nil -> conditions
-        "" -> conditions
-        ref -> conditions ++ ["_or: [{consumedLogicRef: {_ilike: \"%#{escape_string(ref)}%\"}}, {createdLogicRef: {_ilike: \"%#{escape_string(ref)}%\"}}]"]
+        nil ->
+          conditions
+
+        "" ->
+          conditions
+
+        ref ->
+          conditions ++
+            [
+              "_or: [{consumedLogicRef: {_ilike: \"%#{escape_string(ref)}%\"}}, {createdLogicRef: {_ilike: \"%#{escape_string(ref)}%\"}}]"
+            ]
       end
 
     Enum.join(conditions, ", ")

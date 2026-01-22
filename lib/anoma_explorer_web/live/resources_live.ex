@@ -489,10 +489,7 @@ defmodule AnomaExplorerWeb.ResourcesLive do
                       >
                         {truncate_hash(resource["transaction"]["txHash"])}
                       </a>
-                      <.copy_button
-                        text={resource["transaction"]["txHash"]}
-                        tooltip="Copy tx hash"
-                      />
+                      <.copy_button text={resource["transaction"]["txHash"]} tooltip="Copy tx hash" />
                     </div>
                   <% else %>
                     -

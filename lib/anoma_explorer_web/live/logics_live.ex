@@ -364,10 +364,7 @@ defmodule AnomaExplorerWeb.LogicsLive do
               <tr class="hover:bg-base-200/50">
                 <td>
                   <div class="flex items-center gap-1">
-                    <a
-                      href={"/logics/#{logic["id"]}"}
-                      class="hash-display text-xs hover:text-primary"
-                    >
+                    <a href={"/logics/#{logic["id"]}"} class="hash-display text-xs hover:text-primary">
                       {truncate_hash(logic["tag"])}
                     </a>
                     <.copy_button :if={logic["tag"]} text={logic["tag"]} tooltip="Copy tag" />

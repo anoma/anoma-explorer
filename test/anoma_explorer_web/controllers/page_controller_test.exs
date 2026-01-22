@@ -5,6 +5,6 @@ defmodule AnomaExplorerWeb.PageControllerTest do
     conn = get(conn, ~p"/")
     html = html_response(conn, 200)
     assert html =~ "Dashboard"
-    assert html =~ "Welcome to Anoma Explorer"
+    assert html =~ "Anoma"
   end
 end

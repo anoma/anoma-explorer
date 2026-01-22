@@ -211,11 +211,11 @@ defmodule AnomaExplorerWeb.PlaygroundLive do
     1 => "https://etherscan.io",
     8453 => "https://basescan.org",
     84532 => "https://sepolia.basescan.org",
-    11155111 => "https://sepolia.etherscan.io",
+    11_155_111 => "https://sepolia.etherscan.io",
     42161 => "https://arbiscan.io",
-    421614 => "https://sepolia.arbiscan.io",
+    421_614 => "https://sepolia.arbiscan.io",
     10 => "https://optimistic.etherscan.io",
-    11155420 => "https://sepolia-optimism.etherscan.io"
+    11_155_420 => "https://sepolia-optimism.etherscan.io"
   }
 
   # JSON rendering with linkable fields
@@ -280,15 +280,30 @@ defmodule AnomaExplorerWeb.PlaygroundLive do
 
   defp render_value(value, _context, _indent) when is_binary(value) do
     escaped = Phoenix.HTML.html_escape(value)
-    [Phoenix.HTML.raw(~s(<span class="hljs-string">)), "\"", escaped, "\"", Phoenix.HTML.raw("</span>")]
+
+    [
+      Phoenix.HTML.raw(~s(<span class="hljs-string">)),
+      "\"",
+      escaped,
+      "\"",
+      Phoenix.HTML.raw("</span>")
+    ]
   end
 
   defp render_value(value, _context, _indent) when is_number(value) do
-    [Phoenix.HTML.raw(~s(<span class="hljs-number">)), to_string(value), Phoenix.HTML.raw("</span>")]
+    [
+      Phoenix.HTML.raw(~s(<span class="hljs-number">)),
+      to_string(value),
+      Phoenix.HTML.raw("</span>")
+    ]
   end
 
   defp render_value(value, _context, _indent) when is_boolean(value) do
-    [Phoenix.HTML.raw(~s(<span class="hljs-literal">)), to_string(value), Phoenix.HTML.raw("</span>")]
+    [
+      Phoenix.HTML.raw(~s(<span class="hljs-literal">)),
+      to_string(value),
+      Phoenix.HTML.raw("</span>")
+    ]
   end
 
   defp render_value(nil, _context, _indent) do
@@ -297,7 +312,14 @@ defmodule AnomaExplorerWeb.PlaygroundLive do
 
   defp render_key(key) do
     escaped = Phoenix.HTML.html_escape(key)
-    [Phoenix.HTML.raw(~s(<span class="hljs-attr">)), "\"", escaped, "\"", Phoenix.HTML.raw("</span>")]
+
+    [
+      Phoenix.HTML.raw(~s(<span class="hljs-attr">)),
+      "\"",
+      escaped,
+      "\"",
+      Phoenix.HTML.raw("</span>")
+    ]
   end
 
   # Render field values with potential links
@@ -306,26 +328,35 @@ defmodule AnomaExplorerWeb.PlaygroundLive do
     render_linked_string(value, link)
   end
 
-  defp render_field_value("txHash", value, chain_id, _indent) when is_binary(value) and not is_nil(chain_id) do
+  defp render_field_value("txHash", value, chain_id, _indent)
+       when is_binary(value) and not is_nil(chain_id) do
     link = "/transactions/#{chain_id}_#{value}_transaction"
     render_linked_string(value, link)
   end
 
-  defp render_field_value("logicRef", value, chain_id, _indent) when is_binary(value) and not is_nil(chain_id) do
+  defp render_field_value("logicRef", value, chain_id, _indent)
+       when is_binary(value) and not is_nil(chain_id) do
     link = "/logics/#{chain_id}_#{value}_logic"
     render_linked_string(value, link)
   end
 
-  defp render_field_value("blockNumber", value, chain_id, _indent) when is_integer(value) and not is_nil(chain_id) do
+  defp render_field_value("blockNumber", value, chain_id, _indent)
+       when is_integer(value) and not is_nil(chain_id) do
     case Map.get(@block_explorers, chain_id) do
       nil ->
-        [Phoenix.HTML.raw(~s(<span class="hljs-number">)), to_string(value), Phoenix.HTML.raw("</span>")]
+        [
+          Phoenix.HTML.raw(~s(<span class="hljs-number">)),
+          to_string(value),
+          Phoenix.HTML.raw("</span>")
+        ]
 
       explorer_url ->
         link = "#{explorer_url}/block/#{value}"
 
         [
-          Phoenix.HTML.raw(~s(<a href="#{link}" target="_blank" rel="noopener" class="hljs-number underline hover:text-primary">)),
+          Phoenix.HTML.raw(
+            ~s(<a href="#{link}" target="_blank" rel="noopener" class="hljs-number underline hover:text-primary">)
+          ),
           to_string(value),
           Phoenix.HTML.raw("</a>")
         ]
@@ -349,14 +380,23 @@ defmodule AnomaExplorerWeb.PlaygroundLive do
 
   defp render_linked_string(value, nil) do
     escaped = Phoenix.HTML.html_escape(value)
-    [Phoenix.HTML.raw(~s(<span class="hljs-string">)), "\"", escaped, "\"", Phoenix.HTML.raw("</span>")]
+
+    [
+      Phoenix.HTML.raw(~s(<span class="hljs-string">)),
+      "\"",
+      escaped,
+      "\"",
+      Phoenix.HTML.raw("</span>")
+    ]
   end
 
   defp render_linked_string(value, link) do
     escaped = Phoenix.HTML.html_escape(value)
 
     [
-      Phoenix.HTML.raw(~s(<span class="hljs-string">"<a href="#{link}" class="underline hover:text-primary">)),
+      Phoenix.HTML.raw(
+        ~s(<span class="hljs-string">"<a href="#{link}" class="underline hover:text-primary">)
+      ),
       escaped,
       Phoenix.HTML.raw("</a>\"</span>")
     ]
@@ -441,17 +481,11 @@ defmodule AnomaExplorerWeb.PlaygroundLive do
           <button type="button" phx-click="clear" class="btn btn-ghost btn-sm gap-1">
             <.icon name="hero-arrow-path" class="w-4 h-4" /> Reset
           </button>
-          <button
-            type="submit"
-            class="btn btn-primary btn-sm gap-2 shadow-sm"
-            disabled={@loading}
-          >
+          <button type="submit" class="btn btn-primary btn-sm gap-2 shadow-sm" disabled={@loading}>
             <%= if @loading do %>
-              <span class="loading loading-spinner loading-xs"></span>
-              Running...
+              <span class="loading loading-spinner loading-xs"></span> Running...
             <% else %>
-              <.icon name="hero-play" class="w-4 h-4" />
-              Execute
+              <.icon name="hero-play" class="w-4 h-4" /> Execute
             <% end %>
           </button>
         </form>

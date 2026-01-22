@@ -546,7 +546,10 @@ defmodule AnomaExplorerWeb.CoreComponents do
         JS.dispatch("phx:copy", detail: %{text: @text})
         |> JS.remove_class("opacity-50", to: "#copy-toast")
         |> JS.add_class("opacity-100", to: "#copy-toast")
-        |> JS.show(to: "#copy-toast", transition: {"ease-out duration-200", "opacity-0", "opacity-100"})
+        |> JS.show(
+          to: "#copy-toast",
+          transition: {"ease-out duration-200", "opacity-0", "opacity-100"}
+        )
         |> JS.hide(
           to: "#copy-toast",
           time: 1500,
@@ -561,7 +564,10 @@ defmodule AnomaExplorerWeb.CoreComponents do
       ]}
       title={@tooltip}
     >
-      <.icon name="hero-clipboard-document" class={[@size == "xs" && "w-3 h-3", @size == "sm" && "w-4 h-4"]} />
+      <.icon
+        name="hero-clipboard-document"
+        class={[@size == "xs" && "w-3 h-3", @size == "sm" && "w-4 h-4"]}
+      />
     </button>
     """
   end
@@ -631,7 +637,9 @@ defmodule AnomaExplorerWeb.CoreComponents do
       @class
     ]}>
       <.icon name="hero-wrench-screwdriver" class="h-4 w-4 shrink-0 text-base-content/50" />
-      <span>Under construction — some data may not appear as expected, or may show missing values.</span>
+      <span>
+        Under construction — some data may not appear as expected, or may show missing values.
+      </span>
     </div>
     """
   end

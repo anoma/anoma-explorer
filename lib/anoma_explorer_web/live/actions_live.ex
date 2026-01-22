@@ -389,10 +389,7 @@ defmodule AnomaExplorerWeb.ActionsLive do
                       >
                         {truncate_hash(action["transaction"]["txHash"])}
                       </a>
-                      <.copy_button
-                        text={action["transaction"]["txHash"]}
-                        tooltip="Copy tx hash"
-                      />
+                      <.copy_button text={action["transaction"]["txHash"]} tooltip="Copy tx hash" />
                     </div>
                   <% else %>
                     -

@@ -21,16 +21,22 @@ networks:
     - name: ProtocolAdapter
       address:
         - "0x212f275c6dd4829cd84abdf767b0df4a9cb9ef60"
-  - id: 8453
+  - id: 1
     start_block: 0
     contracts:
     - name: ProtocolAdapter
       address:
-        - "0x212f275c6dd4829cd84abdf767b0df4a9cb9ef60"
+        - "0xdd4f4f0875da48ef6d8f32acb890ec81f435ff3a"
   - id: 10
     start_block: 0
     contracts:
     - name: ProtocolAdapter
       address:
         - "0x212f275c6dd4829cd84abdf767b0df4a9cb9ef60"
+  - id: 11155111
+    start_block: 0
+    contracts:
+    - name: ProtocolAdapter
+      address:
+        - "0xc63336a48d0f60fad70ed027dfb256908bbd5e37"
 unordered_multichain_mode: true

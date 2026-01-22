@@ -162,10 +162,7 @@ defmodule AnomaExplorerWeb.ComplianceLive do
                 >
                   {truncate_hash(@unit["action"]["transaction"]["txHash"])}
                 </a>
-                <.copy_button
-                  text={@unit["action"]["transaction"]["txHash"]}
-                  tooltip="Copy tx hash"
-                />
+                <.copy_button text={@unit["action"]["transaction"]["txHash"]} tooltip="Copy tx hash" />
               </div>
             </div>
           <% end %>
@@ -179,8 +176,7 @@ defmodule AnomaExplorerWeb.ComplianceLive do
     ~H"""
     <div class="stat-card mb-6">
       <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
-        <span class="badge badge-outline badge-sm text-error border-error/50">Consumed</span>
-        Input
+        <span class="badge badge-outline badge-sm text-error border-error/50">Consumed</span> Input
       </h2>
       <div class="grid grid-cols-1 gap-4">
         <div>
@@ -297,22 +293,14 @@ defmodule AnomaExplorerWeb.ComplianceLive do
           <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1">Delta X</div>
           <div class="flex items-center gap-2">
             <code class="hash-display text-sm break-all">{@unit["unitDeltaX"] || "-"}</code>
-            <.copy_button
-              :if={@unit["unitDeltaX"]}
-              text={@unit["unitDeltaX"]}
-              tooltip="Copy delta X"
-            />
+            <.copy_button :if={@unit["unitDeltaX"]} text={@unit["unitDeltaX"]} tooltip="Copy delta X" />
           </div>
         </div>
         <div>
           <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1">Delta Y</div>
           <div class="flex items-center gap-2">
             <code class="hash-display text-sm break-all">{@unit["unitDeltaY"] || "-"}</code>
-            <.copy_button
-              :if={@unit["unitDeltaY"]}
-              text={@unit["unitDeltaY"]}
-              tooltip="Copy delta Y"
-            />
+            <.copy_button :if={@unit["unitDeltaY"]} text={@unit["unitDeltaY"]} tooltip="Copy delta Y" />
           </div>
         </div>
       </div>

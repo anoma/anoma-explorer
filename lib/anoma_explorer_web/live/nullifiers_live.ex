@@ -310,7 +310,9 @@ defmodule AnomaExplorerWeb.NullifiersLive do
                 </td>
                 <td>
                   <div class="flex items-center gap-1">
-                    <code class="hash-display text-xs">{truncate_hash(unit["consumedLogicRef"])}</code>
+                    <code class="hash-display text-xs">
+                      {truncate_hash(unit["consumedLogicRef"])}
+                    </code>
                     <.copy_button
                       :if={unit["consumedLogicRef"]}
                       text={unit["consumedLogicRef"]}

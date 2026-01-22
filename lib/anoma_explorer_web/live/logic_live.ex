@@ -187,10 +187,7 @@ defmodule AnomaExplorerWeb.LogicLive do
                 >
                   {truncate_hash(@logic["action"]["transaction"]["txHash"])}
                 </a>
-                <.copy_button
-                  text={@logic["action"]["transaction"]["txHash"]}
-                  tooltip="Copy tx hash"
-                />
+                <.copy_button text={@logic["action"]["transaction"]["txHash"]} tooltip="Copy tx hash" />
               </div>
             </div>
           <% end %>
