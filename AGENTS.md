@@ -2,6 +2,9 @@ This is a web application written using the Phoenix web framework.
 
 ## Project guidelines
 
+- Every change must pass all existing tests before committing (`mix test`)
+- If there are no tests covering modified code, report it to the user
+- Make atomic commits: each commit should contain one logical change
 - Use `mix precommit` alias when you are done with all changes and fix any pending issues
 - Elixir version: `~> 1.17` or `~> 1.18` (see `.tool-versions` for exact versions)
 - Use the already included and available `Finch` HTTP client (not Req). **Avoid** `:httpoison`, `:tesla`, and `:httpc`
@@ -19,7 +22,6 @@ Required for production (see `.env.example`):
 Optional:
 - `PORT` - Server port (default: 4000)
 - `POOL_SIZE` - Database pool size (default: 10)
-- `DNS_CLUSTER_QUERY` - For production clustering
 - `ECTO_IPV6` - Enable IPv6 for database connections
 
 ### Deployment (Render.com)
