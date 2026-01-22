@@ -15,10 +15,10 @@ field_selection:
   transaction_fields:
     - "hash"
     - "from"
-    - "gas"
-    - "gasPrice"
-    - "gasUsed"
+    - "to"
     - "value"
+    - "gasUsed"
+    - "status"
     - "input"
 networks:
   - id: 42161
