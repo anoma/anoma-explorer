@@ -12,8 +12,8 @@ defmodule AnomaExplorer.Application do
       AnomaExplorer.Repo,
       {DNSCluster, query: Application.get_env(:anoma_explorer, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: AnomaExplorer.PubSub},
-      # HTTP client pool
-      {Finch, name: AnomaExplorer.Finch},
+      # GraphQL response cache for faster repeated queries
+      AnomaExplorer.Indexer.Cache,
       # Settings cache (must be after Repo)
       AnomaExplorer.Settings.Cache,
       # Contract monitoring manager (reacts to settings changes)
