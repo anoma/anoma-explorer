@@ -161,6 +161,7 @@ type Resource {
 # ============================================
 
 # Unified Payload type for all payload events (Discovery, External, Application)
+# Note: blockNumber, chainId, timestamp can be accessed via resource.transaction
 type Payload {
   id: ID!
   kind: PayloadKind!  # Discriminator for payload type
@@ -168,9 +169,6 @@ type Payload {
   index: Int!
   blob: String!
   deletionCriterion: DeletionCriterion
-  blockNumber: Int!
-  chainId: Int!
-  timestamp: Int!
 
   resource: Resource
 }

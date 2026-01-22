@@ -593,6 +593,7 @@ ProtocolAdapter.ResourcePayload.handler(
 
 /**
  * Creates a Payload entity with the specified kind.
+ * Note: blockNumber, chainId, timestamp are accessible via resource.transaction
  */
 function createPayloadEntity(
   event: {
@@ -614,9 +615,6 @@ function createPayloadEntity(
     index: Number(event.params.index),
     blob: event.params.blob,
     deletionCriterion: undefined, // Would need to decode from blob structure
-    blockNumber: event.block.number,
-    chainId: event.chainId,
-    timestamp: event.block.timestamp,
     resource_id: resourceId,
   };
 }
