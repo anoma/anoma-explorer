@@ -10,12 +10,14 @@ import Config
 config :anoma_explorer,
   ecto_repos: [AnomaExplorer.Repo],
   generators: [timestamp_type: :utc_datetime],
-  env: config_env()
+  env: config_env(),
+  # Default Envio Hyperindex GraphQL endpoint
+  envio_graphql_url: "https://indexer.dev.hyperindex.xyz/4d9cdd0/v1/graphql"
 
 # Configure the endpoint
 config :anoma_explorer, AnomaExplorerWeb.Endpoint,
   url: [host: "localhost"],
-  adapter: Bandit.PhoenixAdapter,
+  adapter: Phoenix.Endpoint.Cowboy2Adapter,
   render_errors: [
     formats: [html: AnomaExplorerWeb.ErrorHTML, json: AnomaExplorerWeb.ErrorJSON],
     layout: false
