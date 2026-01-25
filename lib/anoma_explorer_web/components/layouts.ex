@@ -217,9 +217,6 @@ defmodule AnomaExplorerWeb.Layouts do
         </div>
       </main>
 
-      <!-- Floating Disclaimer Banner -->
-      <.disclaimer_banner />
-
       <.flash_group flash={@flash} />
       <.copy_toast />
     </div>
