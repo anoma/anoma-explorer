@@ -205,14 +205,8 @@ defmodule AnomaExplorerWeb.HomeLive do
 
   defp loading_skeleton(assigns) do
     ~H"""
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-      <%= for _ <- 1..4 do %>
-        <div class="stat-card animate-pulse">
-          <div class="h-4 bg-base-300 rounded w-20 mb-2"></div>
-          <div class="h-8 bg-base-300 rounded w-16"></div>
-        </div>
-      <% end %>
-    </div>
+    <.loading_blocks message="Loading dashboard data..." />
+    <.table_skeleton rows={5} columns={8} />
     """
   end
 

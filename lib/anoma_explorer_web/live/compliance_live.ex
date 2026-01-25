@@ -101,13 +101,7 @@ defmodule AnomaExplorerWeb.ComplianceLive do
 
   defp loading_skeleton(assigns) do
     ~H"""
-    <div class="stat-card animate-pulse">
-      <div class="space-y-4">
-        <div class="h-6 bg-base-300 rounded w-1/4"></div>
-        <div class="h-4 bg-base-300 rounded w-3/4"></div>
-        <div class="h-4 bg-base-300 rounded w-1/2"></div>
-      </div>
-    </div>
+    <.loading_blocks message="Loading compliance details..." class="py-12" />
     """
   end
 

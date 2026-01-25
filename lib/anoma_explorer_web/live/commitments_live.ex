@@ -357,11 +357,7 @@ defmodule AnomaExplorerWeb.CommitmentsLive do
 
   defp loading_skeleton(assigns) do
     ~H"""
-    <div class="animate-pulse space-y-3">
-      <%= for _ <- 1..5 do %>
-        <div class="h-12 bg-base-300 rounded"></div>
-      <% end %>
-    </div>
+    <.loading_blocks message="Loading commitments..." class="py-12" />
     """
   end
 

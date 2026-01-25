@@ -104,15 +104,7 @@ defmodule AnomaExplorerWeb.ResourceLive do
 
   defp loading_skeleton(assigns) do
     ~H"""
-    <div class="space-y-6 animate-pulse">
-      <div class="stat-card">
-        <div class="h-6 bg-base-300 rounded w-48 mb-4"></div>
-        <div class="space-y-2">
-          <div class="h-4 bg-base-300 rounded w-full"></div>
-          <div class="h-4 bg-base-300 rounded w-3/4"></div>
-        </div>
-      </div>
-    </div>
+    <.loading_blocks message="Loading resource details..." class="py-12" />
     """
   end
 
