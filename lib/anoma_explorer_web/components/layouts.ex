@@ -21,7 +21,7 @@ defmodule AnomaExplorerWeb.Layouts do
 
   def app(assigns) do
     ~H"""
-    <div class="min-h-screen bg-base-100" id="app-container">
+    <div class="min-h-screen bg-base-100" id="app-container" phx-hook="SidebarState">
       <!-- Sidebar -->
       <aside id="sidebar" class="sidebar">
         <div class="flex flex-col h-full">
@@ -52,10 +52,10 @@ defmodule AnomaExplorerWeb.Layouts do
               </span>
             </div>
 
-            <a href="/" class={nav_class(@current_path, "/")} title="Dashboard">
+            <.link navigate="/" class={nav_class(@current_path, "/")} title="Dashboard">
               <.icon name="hero-home" class="w-5 h-5" />
               <span>Dashboard</span>
-            </a>
+            </.link>
 
             <div class="px-4 mb-2 mt-4 sidebar-section-label">
               <span class="text-xs font-medium text-base-content/60 uppercase tracking-wider">
@@ -63,33 +63,33 @@ defmodule AnomaExplorerWeb.Layouts do
               </span>
             </div>
 
-            <a
-              href="/transactions"
+            <.link
+              navigate="/transactions"
               class={nav_class(@current_path, "/transactions")}
               title="Transactions"
             >
               <.icon name="hero-document-text" class="w-5 h-5" />
               <span>Transactions</span>
-            </a>
+            </.link>
 
-            <a href="/actions" class={nav_class(@current_path, "/actions")} title="Actions">
+            <.link navigate="/actions" class={nav_class(@current_path, "/actions")} title="Actions">
               <.icon name="hero-bolt" class="w-5 h-5" />
               <span>Actions</span>
-            </a>
+            </.link>
 
-            <a
-              href="/compliances"
+            <.link
+              navigate="/compliances"
               class={nav_class(@current_path, "/compliances")}
               title="Compliance Units"
             >
               <.icon name="hero-shield-check" class="w-5 h-5" />
               <span>Compliances</span>
-            </a>
+            </.link>
 
-            <a href="/resources" class={nav_class(@current_path, "/resources")} title="Resources">
+            <.link navigate="/resources" class={nav_class(@current_path, "/resources")} title="Resources">
               <.icon name="hero-cube" class="w-5 h-5" />
               <span>Resources</span>
-            </a>
+            </.link>
 
             <div class="px-4 mb-2 mt-4 sidebar-section-label">
               <span class="text-[10px] font-medium text-base-content/40 uppercase tracking-wider">
@@ -97,24 +97,24 @@ defmodule AnomaExplorerWeb.Layouts do
               </span>
             </div>
 
-            <a
-              href="/commitments"
+            <.link
+              navigate="/commitments"
               class={nav_class(@current_path, "/commitments")}
               title="Commitment Tree Roots"
             >
               <.icon name="hero-finger-print" class="w-5 h-5" />
               <span>Commitments</span>
-            </a>
+            </.link>
 
-            <a href="/nullifiers" class={nav_class(@current_path, "/nullifiers")} title="Nullifiers">
+            <.link navigate="/nullifiers" class={nav_class(@current_path, "/nullifiers")} title="Nullifiers">
               <.icon name="hero-no-symbol" class="w-5 h-5" />
               <span>Nullifiers</span>
-            </a>
+            </.link>
 
-            <a href="/logics" class={nav_class(@current_path, "/logics")} title="Logic Inputs">
+            <.link navigate="/logics" class={nav_class(@current_path, "/logics")} title="Logic Inputs">
               <.icon name="hero-cpu-chip" class="w-5 h-5" />
               <span>Logics</span>
-            </a>
+            </.link>
 
             <div class="px-4 mb-2 mt-4 sidebar-section-label">
               <span class="text-xs font-medium text-base-content/60 uppercase tracking-wider">
@@ -122,14 +122,14 @@ defmodule AnomaExplorerWeb.Layouts do
               </span>
             </div>
 
-            <a
-              href="/playground"
+            <.link
+              navigate="/playground"
               class={nav_class(@current_path, "/playground")}
               title="GraphQL Playground"
             >
               <.icon name="hero-command-line" class="w-5 h-5" />
               <span>Playground</span>
-            </a>
+            </.link>
 
             <div class="px-4 mb-2 mt-4 sidebar-section-label">
               <span class="text-xs font-medium text-base-content/60 uppercase tracking-wider">
@@ -137,24 +137,24 @@ defmodule AnomaExplorerWeb.Layouts do
               </span>
             </div>
 
-            <a
-              href="/settings/indexer"
+            <.link
+              navigate="/settings/indexer"
               class={nav_class(@current_path, "/settings/indexer")}
               title="Indexer"
             >
               <.icon name="hero-server-stack" class="w-5 h-5" />
               <span>Indexer</span>
-            </a>
+            </.link>
 
             <%= if show_dev_tools?() do %>
-              <a
-                href="/settings/api-keys"
+              <.link
+                navigate="/settings/api-keys"
                 class={nav_class(@current_path, "/settings/api-keys")}
                 title="Environment"
               >
                 <.icon name="hero-cog-6-tooth" class="w-5 h-5" />
                 <span>Environment</span>
-              </a>
+              </.link>
             <% end %>
 
             <div class="px-4 mb-2 mt-4 sidebar-section-label">
@@ -163,23 +163,23 @@ defmodule AnomaExplorerWeb.Layouts do
               </span>
             </div>
 
-            <a
-              href="/settings/contracts"
+            <.link
+              navigate="/settings/contracts"
               class={nav_class(@current_path, "/settings/contracts")}
               title="Contracts"
             >
               <.icon name="hero-document-text" class="w-5 h-5" />
               <span>Contracts</span>
-            </a>
+            </.link>
 
-            <a
-              href="/settings/networks"
+            <.link
+              navigate="/settings/networks"
               class={nav_class(@current_path, "/settings/networks")}
               title="Networks"
             >
               <.icon name="hero-globe-alt" class="w-5 h-5" />
               <span>Networks</span>
-            </a>
+            </.link>
           </nav>
           
     <!-- Footer -->
