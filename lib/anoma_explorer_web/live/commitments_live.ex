@@ -420,20 +420,26 @@ defmodule AnomaExplorerWeb.CommitmentsLive do
                 <span class="hidden sm:inline">Transaction</span>
                 <span class="sm:hidden">Tx</span>
               </th>
+              <th class="hidden lg:table-cell" title="Timestamp">Time</th>
             </tr>
           </thead>
           <tbody>
             <%= for commitment <- @commitments do %>
               <tr class="hover:bg-base-200/50">
                 <td>
-                  <div class="flex items-center gap-1">
-                    <code class="hash-display text-xs">{Formatting.truncate_hash(commitment["root"])}</code>
-                    <.copy_button
-                      :if={commitment["root"]}
-                      text={commitment["root"]}
-                      tooltip="Copy root"
-                      class="hidden sm:inline-flex"
-                    />
+                  <div class="flex flex-col">
+                    <div class="flex items-center gap-1">
+                      <code class="hash-display text-xs">{Formatting.truncate_hash(commitment["root"])}</code>
+                      <.copy_button
+                        :if={commitment["root"]}
+                        text={commitment["root"]}
+                        tooltip="Copy root"
+                        class="hidden sm:inline-flex"
+                      />
+                    </div>
+                    <span class="text-xs text-base-content/50 lg:hidden">
+                      {Formatting.format_timestamp(commitment["timestamp"])}
+                    </span>
                   </div>
                 </td>
                 <td class="hidden sm:table-cell">
@@ -461,6 +467,9 @@ defmodule AnomaExplorerWeb.CommitmentsLive do
                   <% else %>
                     -
                   <% end %>
+                </td>
+                <td class="hidden lg:table-cell text-base-content/60 text-sm">
+                  {Formatting.format_timestamp(commitment["timestamp"])}
                 </td>
               </tr>
             <% end %>

@@ -466,6 +466,7 @@ defmodule AnomaExplorerWeb.HomeLive do
                 <th class="hidden sm:table-cell">Block</th>
                 <th class="hidden lg:table-cell">From</th>
                 <th>Resources</th>
+                <th class="hidden xl:table-cell">Time</th>
               </tr>
             </thead>
             <tbody>
@@ -476,11 +477,16 @@ defmodule AnomaExplorerWeb.HomeLive do
                 <% created = length(tags) - consumed %>
                 <tr>
                   <td>
-                    <div class="flex items-center gap-1">
-                      <a href={"/transactions/#{tx["id"]}"} class="hash-display hover:text-primary">
-                        {Formatting.truncate_hash(evm_tx["txHash"])}
-                      </a>
-                      <.copy_button text={evm_tx["txHash"]} tooltip="Copy full hash" />
+                    <div class="flex flex-col">
+                      <div class="flex items-center gap-1">
+                        <a href={"/transactions/#{tx["id"]}"} class="hash-display hover:text-primary">
+                          {Formatting.truncate_hash(evm_tx["txHash"])}
+                        </a>
+                        <.copy_button text={evm_tx["txHash"]} tooltip="Copy full hash" class="hidden sm:inline-flex" />
+                      </div>
+                      <span class="text-xs text-base-content/50 xl:hidden">
+                        {Formatting.format_timestamp(evm_tx["timestamp"])}
+                      </span>
                     </div>
                   </td>
                   <td class="hidden sm:table-cell">
@@ -525,6 +531,9 @@ defmodule AnomaExplorerWeb.HomeLive do
                         {created}
                       </span>
                     </button>
+                  </td>
+                  <td class="hidden xl:table-cell text-base-content/60 text-sm">
+                    {Formatting.format_timestamp(evm_tx["timestamp"])}
                   </td>
                 </tr>
               <% end %>

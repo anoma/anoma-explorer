@@ -410,25 +410,31 @@ defmodule AnomaExplorerWeb.ActionsLive do
                 <span class="hidden sm:inline">Transaction</span>
                 <span class="sm:hidden">Tx</span>
               </th>
+              <th class="hidden lg:table-cell" title="When the action was recorded">Time</th>
             </tr>
           </thead>
           <tbody>
             <%= for action <- @actions do %>
               <tr class="hover:bg-base-200/50">
                 <td>
-                  <div class="flex items-center gap-1">
-                    <a
-                      href={"/actions/#{action["id"]}"}
-                      class="hash-display text-xs hover:text-primary"
-                    >
-                      {Formatting.truncate_hash(action["actionTreeRoot"])}
-                    </a>
-                    <.copy_button
-                      :if={action["actionTreeRoot"]}
-                      text={action["actionTreeRoot"]}
-                      tooltip="Copy action tree root"
-                      class="hidden sm:inline-flex"
-                    />
+                  <div class="flex flex-col">
+                    <div class="flex items-center gap-1">
+                      <a
+                        href={"/actions/#{action["id"]}"}
+                        class="hash-display text-xs hover:text-primary"
+                      >
+                        {Formatting.truncate_hash(action["actionTreeRoot"])}
+                      </a>
+                      <.copy_button
+                        :if={action["actionTreeRoot"]}
+                        text={action["actionTreeRoot"]}
+                        tooltip="Copy action tree root"
+                        class="hidden sm:inline-flex"
+                      />
+                    </div>
+                    <span class="text-xs text-base-content/50 lg:hidden">
+                      {Formatting.format_timestamp(action["timestamp"])}
+                    </span>
                   </div>
                 </td>
                 <td class="hidden sm:table-cell">
@@ -461,6 +467,9 @@ defmodule AnomaExplorerWeb.ActionsLive do
                   <% else %>
                     -
                   <% end %>
+                </td>
+                <td class="hidden lg:table-cell text-base-content/60 text-sm">
+                  {Formatting.format_timestamp(action["timestamp"])}
                 </td>
               </tr>
             <% end %>

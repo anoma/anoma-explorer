@@ -458,6 +458,7 @@ defmodule AnomaExplorerWeb.TransactionsLive do
               <th class="hidden sm:table-cell" title="Block number where this transaction was included">Block</th>
               <th class="hidden lg:table-cell" title="Account address that sent this transaction">From</th>
               <th title="Count of nullifiers (consumed) and commitments (created)">Resources</th>
+              <th class="hidden xl:table-cell" title="When this transaction was included in a block">Time</th>
             </tr>
           </thead>
           <tbody>
@@ -468,11 +469,16 @@ defmodule AnomaExplorerWeb.TransactionsLive do
               <% created = length(tags) - consumed %>
               <tr class="hover:bg-base-200/50">
                 <td>
-                  <div class="flex items-center gap-1">
-                    <a href={"/transactions/#{tx["id"]}"} class="hash-display hover:text-primary">
-                      {Formatting.truncate_hash(evm_tx["txHash"])}
-                    </a>
-                    <.copy_button text={evm_tx["txHash"]} tooltip="Copy tx hash" />
+                  <div class="flex flex-col">
+                    <div class="flex items-center gap-1">
+                      <a href={"/transactions/#{tx["id"]}"} class="hash-display hover:text-primary">
+                        {Formatting.truncate_hash(evm_tx["txHash"])}
+                      </a>
+                      <.copy_button text={evm_tx["txHash"]} tooltip="Copy tx hash" class="hidden sm:inline-flex" />
+                    </div>
+                    <span class="text-xs text-base-content/50 xl:hidden">
+                      {Formatting.format_timestamp(evm_tx["timestamp"])}
+                    </span>
                   </div>
                 </td>
                 <td class="hidden sm:table-cell">
@@ -506,6 +512,9 @@ defmodule AnomaExplorerWeb.TransactionsLive do
                       {created}
                     </span>
                   </button>
+                </td>
+                <td class="hidden xl:table-cell text-base-content/60 text-sm">
+                  {Formatting.format_timestamp(evm_tx["timestamp"])}
                 </td>
               </tr>
             <% end %>
