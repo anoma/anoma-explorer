@@ -190,9 +190,18 @@ defmodule AnomaExplorer.Utils.Formatting do
     cond do
       diff < 0 -> "in the future"
       diff < 60 -> "#{diff}s ago"
-      diff < 3600 -> "#{div(diff, 60)}m ago"
-      diff < 86400 -> "#{div(diff, 3600)}h ago"
-      true -> "#{div(diff, 86400)}d ago"
+      diff < 3600 ->
+        minutes = div(diff, 60)
+        seconds = rem(diff, 60)
+        "#{minutes}m #{seconds}s ago"
+      diff < 86400 ->
+        hours = div(diff, 3600)
+        minutes = div(rem(diff, 3600), 60)
+        "#{hours}h #{minutes}m ago"
+      true ->
+        days = div(diff, 86400)
+        hours = div(rem(diff, 86400), 3600)
+        "#{days}d #{hours}h ago"
     end
   end
 

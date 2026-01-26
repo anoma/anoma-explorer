@@ -15,7 +15,7 @@ defmodule AnomaExplorerWeb.HomeLive do
   alias AnomaExplorerWeb.Live.Helpers.SharedHandlers
   alias AnomaExplorerWeb.Live.Helpers.SetupHandlers
 
-  @refresh_interval 30_000
+  @refresh_interval 5_000
 
   @impl true
   def mount(_params, _session, socket) do
@@ -378,21 +378,26 @@ defmodule AnomaExplorerWeb.HomeLive do
   end
 
   defp stats_warning(assigns) do
-    has_capped_value =
-      assigns.stats.transactions >= 1000 or
-        assigns.stats.resources >= 1000 or
-        assigns.stats.actions >= 1000 or
-        (assigns.stats[:compliances] || 0) >= 1000 or
-        (assigns.stats[:logics] || 0) >= 1000
+    limit = assigns.stats[:stats_limit] || 10_000
 
-    assigns = assign(assigns, :show_warning, has_capped_value)
+    has_capped_value =
+      assigns.stats.transactions >= limit or
+        assigns.stats.resources >= limit or
+        assigns.stats.actions >= limit or
+        (assigns.stats[:compliances] || 0) >= limit or
+        (assigns.stats[:logics] || 0) >= limit
+
+    assigns =
+      assigns
+      |> assign(:show_warning, has_capped_value)
+      |> assign(:limit, limit)
 
     ~H"""
     <%= if @show_warning do %>
       <div class="flex items-center gap-2 text-xs text-base-content/50 mb-6">
         <.icon name="hero-information-circle" class="w-4 h-4" />
         <span>
-          Stats showing 1,000 may be limited by the <a
+          Stats showing {Formatting.format_number(@limit)} may be limited by the <a
             href="/settings/indexer"
             class="link link-primary"
           >indexer API</a>. Actual counts could be higher.

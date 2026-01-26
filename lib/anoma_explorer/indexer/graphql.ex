@@ -72,7 +72,8 @@ defmodule AnomaExplorer.Indexer.GraphQL do
           created: integer(),
           actions: integer(),
           compliances: integer(),
-          logics: integer()
+          logics: integer(),
+          stats_limit: integer()
         }
 
   @doc """
@@ -92,14 +93,18 @@ defmodule AnomaExplorer.Indexer.GraphQL do
     end
   end
 
+  # Maximum number of items to fetch for counting
+  # Envio GraphQL API doesn't support aggregate queries, so we fetch items and count them
+  @stats_limit 10_000
+
   defp fetch_stats do
     query = """
     query {
-      transactions: Transaction(limit: 1000) { id }
-      resources: Resource(limit: 1000) { id isConsumed }
-      actions: Action(limit: 1000) { id }
-      compliances: ComplianceUnit(limit: 1000) { id }
-      logics: LogicInput(limit: 1000) { id }
+      transactions: Transaction(limit: #{@stats_limit}) { id }
+      resources: Resource(limit: #{@stats_limit}) { id isConsumed }
+      actions: Action(limit: #{@stats_limit}) { id }
+      compliances: ComplianceUnit(limit: #{@stats_limit}) { id }
+      logics: LogicInput(limit: #{@stats_limit}) { id }
     }
     """
 
@@ -116,7 +121,8 @@ defmodule AnomaExplorer.Indexer.GraphQL do
            created: length(resources) - consumed,
            actions: length(data["actions"] || []),
            compliances: length(data["compliances"] || []),
-           logics: length(data["logics"] || [])
+           logics: length(data["logics"] || []),
+           stats_limit: @stats_limit
          }}
 
       error ->
