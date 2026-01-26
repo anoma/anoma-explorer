@@ -26,19 +26,42 @@ import topbar from "../vendor/topbar"
 
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 
+// Mobile detection helper
+function isMobile() {
+  return window.innerWidth <= 768
+}
+
 // Sidebar state management - shared helper function
 function applySidebarState() {
-  const isCollapsed = localStorage.getItem("sidebar-collapsed") === "true"
   const sidebar = document.getElementById("sidebar")
   const mainContent = document.getElementById("main-content")
   const collapseIcon = document.getElementById("collapse-icon")
   const expandIcon = document.getElementById("expand-icon")
+  const backdrop = document.getElementById("sidebar-backdrop")
 
-  if (isCollapsed) {
-    sidebar?.classList.add("collapsed")
-    mainContent?.classList.add("sidebar-collapsed")
-    collapseIcon?.classList.add("hidden")
-    expandIcon?.classList.remove("hidden")
+  if (isMobile()) {
+    // On mobile: sidebar is hidden by default, uses mobile-open class
+    sidebar?.classList.remove("collapsed")
+    sidebar?.classList.remove("mobile-open")
+    mainContent?.classList.remove("sidebar-collapsed")
+    backdrop?.classList.remove("visible")
+  } else {
+    // On desktop: use localStorage preference
+    const isCollapsed = localStorage.getItem("sidebar-collapsed") === "true"
+    sidebar?.classList.remove("mobile-open")
+    backdrop?.classList.remove("visible")
+
+    if (isCollapsed) {
+      sidebar?.classList.add("collapsed")
+      mainContent?.classList.add("sidebar-collapsed")
+      collapseIcon?.classList.add("hidden")
+      expandIcon?.classList.remove("hidden")
+    } else {
+      sidebar?.classList.remove("collapsed")
+      mainContent?.classList.remove("sidebar-collapsed")
+      collapseIcon?.classList.remove("hidden")
+      expandIcon?.classList.add("hidden")
+    }
   }
 }
 
@@ -140,20 +163,39 @@ window.toggleSidebar = function() {
   const mainContent = document.getElementById("main-content")
   const collapseIcon = document.getElementById("collapse-icon")
   const expandIcon = document.getElementById("expand-icon")
+  const backdrop = document.getElementById("sidebar-backdrop")
 
-  sidebar?.classList.toggle("collapsed")
-  mainContent?.classList.toggle("sidebar-collapsed")
-  collapseIcon?.classList.toggle("hidden")
-  expandIcon?.classList.toggle("hidden")
+  if (isMobile()) {
+    // Mobile: toggle mobile-open class
+    sidebar?.classList.toggle("mobile-open")
+    backdrop?.classList.toggle("visible")
+  } else {
+    // Desktop: toggle collapsed class
+    sidebar?.classList.toggle("collapsed")
+    mainContent?.classList.toggle("sidebar-collapsed")
+    collapseIcon?.classList.toggle("hidden")
+    expandIcon?.classList.toggle("hidden")
 
-  // Persist state
-  const isNowCollapsed = sidebar?.classList.contains("collapsed")
-  localStorage.setItem("sidebar-collapsed", isNowCollapsed ? "true" : "false")
+    // Persist state (desktop only)
+    const isNowCollapsed = sidebar?.classList.contains("collapsed")
+    localStorage.setItem("sidebar-collapsed", isNowCollapsed ? "true" : "false")
+  }
+}
+
+// Close mobile sidebar when clicking backdrop
+window.closeMobileSidebar = function() {
+  const sidebar = document.getElementById("sidebar")
+  const backdrop = document.getElementById("sidebar-backdrop")
+  sidebar?.classList.remove("mobile-open")
+  backdrop?.classList.remove("visible")
 }
 
 // Apply sidebar state on page load and LiveView navigation
 document.addEventListener("DOMContentLoaded", applySidebarState)
 window.addEventListener("phx:page-loading-stop", applySidebarState)
+
+// Re-apply sidebar state on window resize (mobile/desktop transition)
+window.addEventListener("resize", applySidebarState)
 
 // Show progress bar on live navigation and form submits
 topbar.config({barColors: {0: "#29d"}, shadowColor: "rgba(0, 0, 0, .3)"})

@@ -275,7 +275,41 @@ defmodule AnomaExplorerWeb.HomeLive do
   defp stats_grid(assigns) do
     ~H"""
     <div class="mb-4">
-      <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-3">
+      <!-- Mobile: Compact inline stats (non-prominent) -->
+      <div class="sm:hidden">
+        <div class="flex flex-wrap gap-x-3 gap-y-1 text-sm px-1 py-2">
+          <a href="/transactions" class="flex items-center gap-1 hover:text-primary">
+            <span class="text-base-content/50">Tx:</span>
+            <span class="font-medium">{Formatting.format_number(@stats.transactions)}</span>
+          </a>
+          <a href="/actions" class="flex items-center gap-1 hover:text-primary">
+            <span class="text-base-content/50">Act:</span>
+            <span class="font-medium">{Formatting.format_number(@stats.actions)}</span>
+          </a>
+          <a href="/compliances" class="flex items-center gap-1 hover:text-primary">
+            <span class="text-base-content/50">Comp:</span>
+            <span class="font-medium">{Formatting.format_number(@stats.compliances)}</span>
+          </a>
+          <a href="/resources" class="flex items-center gap-1 hover:text-primary">
+            <span class="text-base-content/50">Res:</span>
+            <span class="font-medium">{Formatting.format_number(@stats.resources)}</span>
+          </a>
+          <a href="/commitments" class="flex items-center gap-1 hover:text-primary">
+            <span class="text-base-content/50">Comm:</span>
+            <span class="font-medium">{Formatting.format_number(@stats.created)}</span>
+          </a>
+          <a href="/nullifiers" class="flex items-center gap-1 hover:text-primary">
+            <span class="text-base-content/50">Null:</span>
+            <span class="font-medium">{Formatting.format_number(@stats.consumed)}</span>
+          </a>
+          <a href="/logics" class="flex items-center gap-1 hover:text-primary">
+            <span class="text-base-content/50">Logic:</span>
+            <span class="font-medium">{Formatting.format_number(@stats.logics)}</span>
+          </a>
+        </div>
+      </div>
+      <!-- Desktop: Card-based stats -->
+      <div class="hidden sm:grid sm:grid-cols-4 md:grid-cols-7 gap-2 sm:gap-3">
         <.stat_card
           label="Transactions"
           value={@stats.transactions}
@@ -428,9 +462,9 @@ defmodule AnomaExplorerWeb.HomeLive do
             <thead>
               <tr>
                 <th>Tx Hash</th>
-                <th>Network</th>
-                <th>Block</th>
-                <th class="hidden md:table-cell">From</th>
+                <th class="hidden sm:table-cell">Network</th>
+                <th class="hidden sm:table-cell">Block</th>
+                <th class="hidden lg:table-cell">From</th>
                 <th>Resources</th>
                 <th class="hidden xl:table-cell">Time</th>
               </tr>
@@ -450,10 +484,10 @@ defmodule AnomaExplorerWeb.HomeLive do
                       <.copy_button text={evm_tx["txHash"]} tooltip="Copy full hash" />
                     </div>
                   </td>
-                  <td>
+                  <td class="hidden sm:table-cell">
                     <.network_button chain_id={evm_tx["chainId"]} />
                   </td>
-                  <td>
+                  <td class="hidden sm:table-cell">
                     <div class="flex items-center gap-1">
                       <%= if block_url = Networks.block_url(evm_tx["chainId"], evm_tx["blockNumber"]) do %>
                         <a
@@ -470,7 +504,7 @@ defmodule AnomaExplorerWeb.HomeLive do
                       <.copy_button text={to_string(evm_tx["blockNumber"])} tooltip="Copy block number" />
                     </div>
                   </td>
-                  <td class="hidden md:table-cell">
+                  <td class="hidden lg:table-cell">
                     <div class="flex items-center gap-1">
                       <span class="hash-display text-sm">{Formatting.truncate_hash(evm_tx["from"])}</span>
                       <.copy_button :if={evm_tx["from"]} text={evm_tx["from"]} tooltip="Copy address" />

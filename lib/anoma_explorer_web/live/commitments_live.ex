@@ -413,11 +413,14 @@ defmodule AnomaExplorerWeb.CommitmentsLive do
         <table class="data-table w-full">
           <thead>
             <tr>
-              <th>Root</th>
-              <th>Network</th>
-              <th>Block</th>
-              <th class="hidden lg:table-cell">Time</th>
-              <th>Transaction</th>
+              <th title="Merkle root of the commitment tree">Root</th>
+              <th class="hidden sm:table-cell" title="Blockchain network">Network</th>
+              <th class="hidden sm:table-cell" title="Block number">Block</th>
+              <th class="hidden lg:table-cell" title="Timestamp">Time</th>
+              <th title="Transaction hash">
+                <span class="hidden sm:inline">Transaction</span>
+                <span class="sm:hidden">Tx</span>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -430,13 +433,14 @@ defmodule AnomaExplorerWeb.CommitmentsLive do
                       :if={commitment["root"]}
                       text={commitment["root"]}
                       tooltip="Copy root"
+                      class="hidden sm:inline-flex"
                     />
                   </div>
                 </td>
-                <td>
+                <td class="hidden sm:table-cell">
                   <.network_button chain_id={commitment["chainId"]} />
                 </td>
-                <td>
+                <td class="hidden sm:table-cell">
                   <div class="flex items-center gap-1">
                     <span class="font-mono text-sm">{commitment["blockNumber"]}</span>
                     <.copy_button
@@ -452,7 +456,11 @@ defmodule AnomaExplorerWeb.CommitmentsLive do
                   <%= if commitment["txHash"] do %>
                     <div class="flex items-center gap-1">
                       <code class="hash-display text-xs">{Formatting.truncate_hash(commitment["txHash"])}</code>
-                      <.copy_button text={commitment["txHash"]} tooltip="Copy tx hash" />
+                      <.copy_button
+                        text={commitment["txHash"]}
+                        tooltip="Copy tx hash"
+                        class="hidden sm:inline-flex"
+                      />
                     </div>
                   <% else %>
                     -

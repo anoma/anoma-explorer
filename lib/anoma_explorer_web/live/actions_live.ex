@@ -399,12 +399,18 @@ defmodule AnomaExplorerWeb.ActionsLive do
         <table class="data-table w-full">
           <thead>
             <tr>
-              <th title="Merkle root uniquely identifying the action and all its contents">Action Tree Root</th>
-              <th title="Blockchain network where this action was recorded">Network</th>
-              <th title="Total number of resource tags (nullifiers + commitments)">Tag Count</th>
-              <th title="Blockchain block number">Block</th>
+              <th title="Merkle root uniquely identifying the action and all its contents">
+                <span class="hidden sm:inline">Action Root</span>
+                <span class="sm:hidden">Root</span>
+              </th>
+              <th class="hidden sm:table-cell" title="Blockchain network where this action was recorded">Network</th>
+              <th title="Total number of resource tags (nullifiers + commitments)">Tags</th>
+              <th class="hidden sm:table-cell" title="Blockchain block number">Block</th>
               <th class="hidden lg:table-cell" title="When the action was recorded">Time</th>
-              <th title="EVM transaction that submitted this action">Transaction</th>
+              <th title="EVM transaction that submitted this action">
+                <span class="hidden sm:inline">Transaction</span>
+                <span class="sm:hidden">Tx</span>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -422,16 +428,17 @@ defmodule AnomaExplorerWeb.ActionsLive do
                       :if={action["actionTreeRoot"]}
                       text={action["actionTreeRoot"]}
                       tooltip="Copy action tree root"
+                      class="hidden sm:inline-flex"
                     />
                   </div>
                 </td>
-                <td>
+                <td class="hidden sm:table-cell">
                   <.network_button chain_id={action["chainId"]} />
                 </td>
                 <td>
                   <span class="badge badge-ghost badge-sm">{action["tagCount"]}</span>
                 </td>
-                <td>
+                <td class="hidden sm:table-cell">
                   <div class="flex items-center gap-1">
                     <span class="font-mono text-sm">{action["blockNumber"]}</span>
                     <.copy_button text={to_string(action["blockNumber"])} tooltip="Copy block number" />
@@ -449,7 +456,11 @@ defmodule AnomaExplorerWeb.ActionsLive do
                       >
                         {Formatting.truncate_hash(action["transaction"]["evmTransaction"]["txHash"])}
                       </a>
-                      <.copy_button text={action["transaction"]["evmTransaction"]["txHash"]} tooltip="Copy tx hash" />
+                      <.copy_button
+                        text={action["transaction"]["evmTransaction"]["txHash"]}
+                        tooltip="Copy tx hash"
+                        class="hidden sm:inline-flex"
+                      />
                     </div>
                   <% else %>
                     -

@@ -454,9 +454,9 @@ defmodule AnomaExplorerWeb.TransactionsLive do
           <thead>
             <tr>
               <th title="Unique identifier of this EVM transaction on the blockchain">Tx Hash</th>
-              <th title="Blockchain network where this transaction was recorded">Network</th>
-              <th title="Block number where this transaction was included">Block</th>
-              <th class="hidden md:table-cell" title="Account address that sent this transaction">From</th>
+              <th class="hidden sm:table-cell" title="Blockchain network where this transaction was recorded">Network</th>
+              <th class="hidden sm:table-cell" title="Block number where this transaction was included">Block</th>
+              <th class="hidden lg:table-cell" title="Account address that sent this transaction">From</th>
               <th title="Count of nullifiers (consumed) and commitments (created)">Resources</th>
               <th class="hidden xl:table-cell" title="When this transaction was included in a block">Time</th>
             </tr>
@@ -476,16 +476,16 @@ defmodule AnomaExplorerWeb.TransactionsLive do
                     <.copy_button text={evm_tx["txHash"]} tooltip="Copy tx hash" />
                   </div>
                 </td>
-                <td>
+                <td class="hidden sm:table-cell">
                   <.network_button chain_id={evm_tx["chainId"]} />
                 </td>
-                <td>
+                <td class="hidden sm:table-cell">
                   <div class="flex items-center gap-1">
                     <span class="font-mono text-sm">{evm_tx["blockNumber"]}</span>
                     <.copy_button text={to_string(evm_tx["blockNumber"])} tooltip="Copy block number" />
                   </div>
                 </td>
-                <td class="hidden md:table-cell">
+                <td class="hidden lg:table-cell">
                   <div class="flex items-center gap-1">
                     <span class="hash-display text-sm">{Formatting.truncate_hash(evm_tx["from"])}</span>
                     <.copy_button :if={evm_tx["from"]} text={evm_tx["from"]} tooltip="Copy address" />

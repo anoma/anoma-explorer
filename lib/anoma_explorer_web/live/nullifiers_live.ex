@@ -342,12 +342,18 @@ defmodule AnomaExplorerWeb.NullifiersLive do
         <table class="data-table w-full">
           <thead>
             <tr>
-              <th>Nullifier</th>
-              <th>Logic Ref</th>
-              <th>Consumed Resource</th>
-              <th>Network</th>
-              <th>Block</th>
-              <th>Transaction</th>
+              <th title="Hash proving the input resource was consumed">
+                <span class="hidden sm:inline">Nullifier</span>
+                <span class="sm:hidden">ID</span>
+              </th>
+              <th class="hidden md:table-cell" title="Reference to the logic circuit">Logic Ref</th>
+              <th class="hidden lg:table-cell" title="The resource that was consumed">Resource</th>
+              <th class="hidden sm:table-cell" title="Blockchain network">Network</th>
+              <th class="hidden sm:table-cell" title="Block number">Block</th>
+              <th title="Transaction hash">
+                <span class="hidden sm:inline">Transaction</span>
+                <span class="sm:hidden">Tx</span>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -365,10 +371,11 @@ defmodule AnomaExplorerWeb.NullifiersLive do
                       :if={unit["consumedNullifier"]}
                       text={unit["consumedNullifier"]}
                       tooltip="Copy nullifier"
+                      class="hidden sm:inline-flex"
                     />
                   </div>
                 </td>
-                <td>
+                <td class="hidden md:table-cell">
                   <div class="flex items-center gap-1">
                     <code class="hash-display text-xs">
                       {Formatting.truncate_hash(unit["consumedLogicRef"])}
@@ -380,7 +387,7 @@ defmodule AnomaExplorerWeb.NullifiersLive do
                     />
                   </div>
                 </td>
-                <td>
+                <td class="hidden lg:table-cell">
                   <%= if unit["consumedResource"] do %>
                     <div class="flex items-center gap-1">
                       <a
@@ -399,14 +406,14 @@ defmodule AnomaExplorerWeb.NullifiersLive do
                     -
                   <% end %>
                 </td>
-                <td>
+                <td class="hidden sm:table-cell">
                   <%= if unit["action"] do %>
                     <.network_button chain_id={unit["action"]["chainId"]} />
                   <% else %>
                     -
                   <% end %>
                 </td>
-                <td>
+                <td class="hidden sm:table-cell">
                   <%= if unit["action"] do %>
                     <div class="flex items-center gap-1">
                       <span class="font-mono text-sm">{unit["action"]["blockNumber"]}</span>
@@ -431,6 +438,7 @@ defmodule AnomaExplorerWeb.NullifiersLive do
                       <.copy_button
                         text={unit["action"]["transaction"]["evmTransaction"]["txHash"]}
                         tooltip="Copy tx hash"
+                        class="hidden sm:inline-flex"
                       />
                     </div>
                   <% else %>

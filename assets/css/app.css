@@ -408,3 +408,101 @@
   @apply bg-base-300 rounded;
   animation: pulse 2s ease-in-out infinite;
 }
+
+/* ============================================
+   MOBILE RESPONSIVE STYLES
+   ============================================ */
+
+/* Mobile sidebar - hidden by default, overlay when open */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    z-index: 50;
+    transition: transform 0.3s ease-in-out;
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .main-content {
+    margin-left: 0 !important;
+  }
+
+  .main-content.sidebar-collapsed {
+    margin-left: 0 !important;
+  }
+
+  /* Mobile sidebar backdrop */
+  .sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 40;
+    display: none;
+  }
+
+  .sidebar-backdrop.visible {
+    display: block;
+  }
+}
+
+/* Mobile hamburger menu button - visible only on mobile */
+.mobile-menu-btn {
+  display: none;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  transition: background-color 0.2s;
+}
+
+.mobile-menu-btn:hover {
+  background-color: var(--color-base-200);
+}
+
+@media (max-width: 768px) {
+  .mobile-menu-btn {
+    display: block;
+  }
+}
+
+/* Compact tables on mobile */
+@media (max-width: 640px) {
+  .data-table th,
+  .data-table td {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .data-table th {
+    padding: 0.5rem;
+  }
+
+  /* Compact hash display on mobile */
+  .hash-display {
+    font-size: 0.75rem;
+  }
+
+  /* Compact copy button on mobile */
+  .copy-btn {
+    padding: 0.125rem;
+  }
+}
+
+/* Reduced spacing on mobile */
+@media (max-width: 640px) {
+  .page-header {
+    margin-bottom: 1rem;
+  }
+
+  .stat-card {
+    padding: 0.75rem;
+  }
+}
+
+/* Search bar adjustments on mobile */
+@media (max-width: 640px) {
+  #global-search input {
+    padding: 0.5rem 0.75rem 0.5rem 2.25rem;
+    font-size: 0.875rem;
+  }
+}

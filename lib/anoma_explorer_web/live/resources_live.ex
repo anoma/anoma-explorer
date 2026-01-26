@@ -481,12 +481,17 @@ defmodule AnomaExplorerWeb.ResourcesLive do
         <table class="data-table w-full">
           <thead>
             <tr>
-              <th title="Unique identifier - nullifier hash (if consumed) or commitment hash (if created)">Resource ID</th>
-              <th title="Resource type: Nullifier (consumed input) or Commitment (created output)">Type</th>
-              <th title="Blockchain network where this resource exists">Network</th>
+              <th title="Unique identifier - nullifier hash (if consumed) or commitment hash (if created)">
+                <span class="hidden sm:inline">Resource ID</span>
+                <span class="sm:hidden">ID</span>
+              </th>
+              <th class="hidden sm:table-cell" title="Blockchain network where this resource exists">Network</th>
               <th class="hidden md:table-cell" title="Reference to the logic circuit that validates this resource">Logic Ref</th>
               <th class="hidden lg:table-cell" title="Block number where this resource was recorded">Block</th>
-              <th title="EVM transaction that created or consumed this resource">Transaction</th>
+              <th title="EVM transaction that created or consumed this resource">
+                <span class="hidden sm:inline">Transaction</span>
+                <span class="sm:hidden">Tx</span>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -494,27 +499,21 @@ defmodule AnomaExplorerWeb.ResourcesLive do
               <tr class="hover:bg-base-200/50">
                 <td>
                   <div class="flex items-center gap-1">
+                    <%= if resource["isConsumed"] do %>
+                      <span class="text-error text-xs" title="Nullifier">N</span>
+                    <% else %>
+                      <span class="text-success text-xs" title="Commitment">C</span>
+                    <% end %>
                     <a
                       href={"/resources/#{resource["id"]}"}
                       class="hash-display text-xs hover:text-primary"
                     >
                       {Formatting.truncate_hash(resource["tag"])}
                     </a>
-                    <.copy_button :if={resource["tag"]} text={resource["tag"]} tooltip="Copy resource ID" />
+                    <.copy_button :if={resource["tag"]} text={resource["tag"]} tooltip="Copy resource ID" class="hidden sm:inline-flex" />
                   </div>
                 </td>
-                <td>
-                  <%= if resource["isConsumed"] do %>
-                    <span class="badge badge-outline badge-sm text-error border-error/50" title="Nullifier - resource consumed as input">
-                      Nullifier
-                    </span>
-                  <% else %>
-                    <span class="badge badge-outline badge-sm text-success border-success/50" title="Commitment - new resource created as output">
-                      Commitment
-                    </span>
-                  <% end %>
-                </td>
-                <td>
+                <td class="hidden sm:table-cell">
                   <.network_button chain_id={resource["chainId"]} />
                 </td>
                 <td class="hidden md:table-cell">
@@ -545,7 +544,7 @@ defmodule AnomaExplorerWeb.ResourcesLive do
                       >
                         {Formatting.truncate_hash(resource["transaction"]["evmTransaction"]["txHash"])}
                       </a>
-                      <.copy_button text={resource["transaction"]["evmTransaction"]["txHash"]} tooltip="Copy tx hash" />
+                      <.copy_button text={resource["transaction"]["evmTransaction"]["txHash"]} tooltip="Copy tx hash" class="hidden sm:inline-flex" />
                     </div>
                   <% else %>
                     -

@@ -374,11 +374,17 @@ defmodule AnomaExplorerWeb.CompliancesLive do
         <table class="data-table w-full">
           <thead>
             <tr>
-              <th title="Hash proving the input resource was consumed - prevents double-spending">Consumed Nullifier</th>
-              <th title="Hash representing the new output resource added to the commitment tree">Created Commitment</th>
-              <th title="Blockchain network where this compliance unit was recorded">Network</th>
-              <th title="Block number where this compliance unit was included">Block</th>
-              <th title="EVM transaction containing this compliance unit">Transaction</th>
+              <th title="Hash proving the input resource was consumed - prevents double-spending">
+                <span class="hidden sm:inline">Nullifier</span>
+                <span class="sm:hidden">ID</span>
+              </th>
+              <th class="hidden md:table-cell" title="Hash representing the new output resource added to the commitment tree">Commitment</th>
+              <th class="hidden sm:table-cell" title="Blockchain network where this compliance unit was recorded">Network</th>
+              <th class="hidden sm:table-cell" title="Block number where this compliance unit was included">Block</th>
+              <th title="EVM transaction containing this compliance unit">
+                <span class="hidden sm:inline">Transaction</span>
+                <span class="sm:hidden">Tx</span>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -396,10 +402,11 @@ defmodule AnomaExplorerWeb.CompliancesLive do
                       :if={unit["consumedNullifier"]}
                       text={unit["consumedNullifier"]}
                       tooltip="Copy nullifier"
+                      class="hidden sm:inline-flex"
                     />
                   </div>
                 </td>
-                <td>
+                <td class="hidden md:table-cell">
                   <div class="flex items-center gap-1">
                     <code class="hash-display text-xs">
                       {Formatting.truncate_hash(unit["createdCommitment"])}
@@ -411,14 +418,14 @@ defmodule AnomaExplorerWeb.CompliancesLive do
                     />
                   </div>
                 </td>
-                <td>
+                <td class="hidden sm:table-cell">
                   <%= if unit["action"] do %>
                     <.network_button chain_id={unit["action"]["chainId"]} />
                   <% else %>
                     -
                   <% end %>
                 </td>
-                <td>
+                <td class="hidden sm:table-cell">
                   <%= if unit["action"] do %>
                     <div class="flex items-center gap-1">
                       <span class="font-mono text-sm">{unit["action"]["blockNumber"]}</span>
@@ -443,6 +450,7 @@ defmodule AnomaExplorerWeb.CompliancesLive do
                       <.copy_button
                         text={unit["action"]["transaction"]["evmTransaction"]["txHash"]}
                         tooltip="Copy tx hash"
+                        class="hidden sm:inline-flex"
                       />
                     </div>
                   <% else %>

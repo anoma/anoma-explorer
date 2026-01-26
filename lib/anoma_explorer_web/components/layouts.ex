@@ -22,6 +22,8 @@ defmodule AnomaExplorerWeb.Layouts do
   def app(assigns) do
     ~H"""
     <div class="min-h-screen bg-base-100" id="app-container" phx-hook="SidebarState">
+      <!-- Mobile sidebar backdrop -->
+      <div id="sidebar-backdrop" class="sidebar-backdrop" onclick="window.closeMobileSidebar()"></div>
       <!-- Sidebar -->
       <aside id="sidebar" class="sidebar">
         <div class="flex flex-col h-full">
@@ -208,11 +210,19 @@ defmodule AnomaExplorerWeb.Layouts do
       <main id="main-content" class="main-content min-h-screen">
         <!-- Search Header -->
         <div class="sticky top-0 z-10 bg-base-100/95 backdrop-blur-sm border-b border-base-200">
-          <div class="px-8 py-4">
+          <div class="px-4 sm:px-8 py-3 sm:py-4 flex items-center gap-3">
+            <!-- Mobile menu button -->
+            <button
+              class="mobile-menu-btn"
+              onclick="window.toggleSidebar()"
+              title="Toggle menu"
+            >
+              <.icon name="hero-bars-3" class="w-6 h-6" />
+            </button>
             <.global_search />
           </div>
         </div>
-        <div class="p-8">
+        <div class="p-4 sm:p-8">
           {render_slot(@inner_block)}
         </div>
       </main>

@@ -411,12 +411,17 @@ defmodule AnomaExplorerWeb.LogicsLive do
         <table class="data-table w-full">
           <thead>
             <tr>
-              <th title="Resource identifier - nullifier hash (consumed) or commitment hash (created)">Resource ID</th>
-              <th title="Resource type: Nullifier (consumed input) or Commitment (created output)">Type</th>
-              <th title="Reference to the logic circuit (verifying key) that validates this resource">Logic Ref</th>
-              <th title="Payload counts: A=Application, D=Discovery, E=External">Payloads</th>
-              <th title="Blockchain network where this logic input was recorded">Network</th>
-              <th title="Transaction containing this logic input">Transaction</th>
+              <th title="Resource identifier - nullifier hash (consumed) or commitment hash (created)">
+                <span class="hidden sm:inline">Resource ID</span>
+                <span class="sm:hidden">ID</span>
+              </th>
+              <th class="hidden md:table-cell" title="Reference to the logic circuit (verifying key) that validates this resource">Logic Ref</th>
+              <th class="hidden lg:table-cell" title="Payload counts: A=Application, D=Discovery, E=External">Payloads</th>
+              <th class="hidden sm:table-cell" title="Blockchain network where this logic input was recorded">Network</th>
+              <th title="Transaction containing this logic input">
+                <span class="hidden sm:inline">Transaction</span>
+                <span class="sm:hidden">Tx</span>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -424,6 +429,11 @@ defmodule AnomaExplorerWeb.LogicsLive do
               <tr class="hover:bg-base-200/50">
                 <td>
                   <div class="flex items-center gap-1">
+                    <%= if logic["isConsumed"] do %>
+                      <span class="text-error text-xs" title="Nullifier">N</span>
+                    <% else %>
+                      <span class="text-success text-xs" title="Commitment">C</span>
+                    <% end %>
                     <%= if logic["resource"] do %>
                       <a href={"/resources/#{logic["resource"]["id"]}"} class="hash-display text-xs hover:text-primary">
                         {Formatting.truncate_hash(logic["tag"])}
@@ -433,21 +443,10 @@ defmodule AnomaExplorerWeb.LogicsLive do
                         {Formatting.truncate_hash(logic["tag"])}
                       </a>
                     <% end %>
-                    <.copy_button :if={logic["tag"]} text={logic["tag"]} tooltip="Copy resource ID" />
+                    <.copy_button :if={logic["tag"]} text={logic["tag"]} tooltip="Copy resource ID" class="hidden sm:inline-flex" />
                   </div>
                 </td>
-                <td>
-                  <%= if logic["isConsumed"] do %>
-                    <span class="badge badge-outline badge-sm text-error border-error/50" title="Nullifier - resource consumed as input">
-                      Nullifier
-                    </span>
-                  <% else %>
-                    <span class="badge badge-outline badge-sm text-success border-success/50" title="Commitment - new resource created as output">
-                      Commitment
-                    </span>
-                  <% end %>
-                </td>
-                <td>
+                <td class="hidden md:table-cell">
                   <div class="flex items-center gap-1">
                     <code class="hash-display text-xs">{Formatting.truncate_hash(logic["logicRef"])}</code>
                     <.copy_button
@@ -457,7 +456,7 @@ defmodule AnomaExplorerWeb.LogicsLive do
                     />
                   </div>
                 </td>
-                <td>
+                <td class="hidden lg:table-cell">
                   <div class="flex gap-1">
                     <span class="badge badge-ghost badge-xs" title="Application payloads - app-specific data for the logic circuit">
                       A:{logic["applicationPayloadCount"] || 0}
@@ -470,7 +469,7 @@ defmodule AnomaExplorerWeb.LogicsLive do
                     </span>
                   </div>
                 </td>
-                <td>
+                <td class="hidden sm:table-cell">
                   <%= if logic["action"] do %>
                     <.network_button chain_id={logic["action"]["chainId"]} />
                   <% else %>
@@ -489,6 +488,7 @@ defmodule AnomaExplorerWeb.LogicsLive do
                       <.copy_button
                         text={logic["action"]["transaction"]["evmTransaction"]["txHash"]}
                         tooltip="Copy tx hash"
+                        class="hidden sm:inline-flex"
                       />
                     </div>
                   <% else %>
