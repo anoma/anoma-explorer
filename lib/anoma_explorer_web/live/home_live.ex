@@ -549,7 +549,7 @@ defmodule AnomaExplorerWeb.HomeLive do
     ~H"""
     <%= if @resources do %>
       <div class="modal modal-open" phx-click="close_resources_modal">
-        <div class="modal-box max-w-2xl" phx-click-away="close_resources_modal">
+        <div class="modal-box max-w-2xl max-h-[90vh]" phx-click-away="close_resources_modal">
           <button
             class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
             phx-click="close_resources_modal"
@@ -558,27 +558,27 @@ defmodule AnomaExplorerWeb.HomeLive do
           </button>
 
           <div class="space-y-4">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-3">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div class="flex items-center gap-2">
                 <h3 class="text-lg font-semibold">Resources</h3>
-                <span class="badge badge-outline">{length(@resources.tags)} total</span>
+                <span class="badge badge-outline badge-sm">{length(@resources.tags)}</span>
               </div>
-              <a href={"/transactions/#{@resources.tx_id}"} class="btn btn-ghost btn-sm">
-                View Transaction <.icon name="hero-arrow-right" class="w-4 h-4" />
+              <a href={"/transactions/#{@resources.tx_id}"} class="btn btn-ghost btn-xs sm:btn-sm">
+                View Tx <.icon name="hero-arrow-right" class="w-3 h-3 sm:w-4 sm:h-4" />
               </a>
             </div>
 
             <%= if @resources.tags == [] do %>
               <div class="text-base-content/50 text-center py-4">No resources</div>
             <% else %>
-              <div class="overflow-x-auto">
-                <table class="data-table w-full">
+              <div class="overflow-x-auto -mx-4 sm:mx-0">
+                <table class="data-table w-full text-sm">
                   <thead>
                     <tr>
-                      <th>Index</th>
+                      <th class="hidden sm:table-cell">Index</th>
                       <th>Type</th>
                       <th>Tag</th>
-                      <th>Logic Ref</th>
+                      <th class="hidden sm:table-cell">Logic Ref</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -586,32 +586,26 @@ defmodule AnomaExplorerWeb.HomeLive do
                       <% is_consumed = rem(idx, 2) == 0 %>
                       <% logic_ref = Enum.at(@resources.logic_refs, idx) %>
                       <tr>
-                        <td>
+                        <td class="hidden sm:table-cell">
                           <span class="text-sm text-base-content/60">{idx}</span>
                         </td>
                         <td>
                           <%= if is_consumed do %>
-                            <div class="flex items-center gap-1 text-sm">
-                              <.icon
-                                name="hero-arrow-right-start-on-rectangle"
-                                class="w-3 h-3 text-base-content/50"
-                              />
-                              <span class="text-base-content/70">Consumed</span>
-                            </div>
+                            <span class="text-error text-xs font-medium" title="Consumed">N</span>
                           <% else %>
-                            <div class="flex items-center gap-1 text-sm">
-                              <.icon name="hero-plus-circle" class="w-3 h-3 text-base-content/50" />
-                              <span class="text-base-content/70">Created</span>
-                            </div>
+                            <span class="text-success text-xs font-medium" title="Created">C</span>
                           <% end %>
                         </td>
                         <td>
-                          <div class="flex items-center gap-1">
+                          <div class="flex flex-col sm:flex-row sm:items-center gap-1">
                             <code class="hash-display text-xs">{Formatting.truncate_hash(tag)}</code>
-                            <.copy_button :if={tag} text={tag} tooltip="Copy tag" />
+                            <.copy_button :if={tag} text={tag} tooltip="Copy tag" class="hidden sm:inline-flex" />
+                            <span class="text-xs text-base-content/50 sm:hidden">
+                              Logic: {Formatting.truncate_hash(logic_ref)}
+                            </span>
                           </div>
                         </td>
-                        <td>
+                        <td class="hidden sm:table-cell">
                           <div class="flex items-center gap-1">
                             <code class="hash-display text-xs">{Formatting.truncate_hash(logic_ref)}</code>
                             <.copy_button :if={logic_ref} text={logic_ref} tooltip="Copy logic ref" />
