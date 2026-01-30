@@ -4,10 +4,11 @@ defmodule AnomaExplorerWeb.IndexerLive do
   """
   use AnomaExplorerWeb, :live_view
 
-  alias AnomaExplorerWeb.AdminAuth
-  alias AnomaExplorerWeb.Layouts
   alias AnomaExplorer.Indexer.Client
   alias AnomaExplorer.Settings
+
+  alias AnomaExplorerWeb.AdminAuth
+  alias AnomaExplorerWeb.Layouts
 
   on_mount {AdminAuth, :load_admin_state}
 

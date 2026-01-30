@@ -161,7 +161,7 @@ defmodule AnomaExplorer.Indexer.GraphQLTest do
         {:ok, %{"Transaction" => []}}
       end)
 
-      assert {:ok, []} = GraphQL.list_transactions(chain_id: 42161)
+      assert {:ok, []} = GraphQL.list_transactions(chain_id: 42_161)
     end
 
     test "applies block range filters" do

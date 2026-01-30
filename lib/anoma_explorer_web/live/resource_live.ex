@@ -4,10 +4,11 @@ defmodule AnomaExplorerWeb.ResourceLive do
   """
   use AnomaExplorerWeb, :live_view
 
-  alias AnomaExplorerWeb.Layouts
   alias AnomaExplorer.Indexer.GraphQL
   alias AnomaExplorer.Indexer.Networks
   alias AnomaExplorer.Utils.Formatting
+
+  alias AnomaExplorerWeb.Layouts
 
   @impl true
   def mount(%{"id" => id}, _session, socket) do

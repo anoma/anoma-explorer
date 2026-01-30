@@ -1,13 +1,14 @@
 defmodule AnomaExplorerWeb.SettingsLive do
   use AnomaExplorerWeb, :live_view
 
+  alias AnomaExplorer.ChainVerifier
   alias AnomaExplorer.Settings
+  alias AnomaExplorer.Settings.ContractAddress
+  alias AnomaExplorer.Settings.Protocol
+
   alias AnomaExplorerWeb.AdminAuth
 
   on_mount {AdminAuth, :load_admin_state}
-  alias AnomaExplorer.Settings.Protocol
-  alias AnomaExplorer.Settings.ContractAddress
-  alias AnomaExplorer.ChainVerifier
 
   @impl true
   def mount(_params, _session, socket) do

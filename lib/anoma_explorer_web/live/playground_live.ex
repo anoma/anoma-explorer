@@ -4,10 +4,11 @@ defmodule AnomaExplorerWeb.PlaygroundLive do
   """
   use AnomaExplorerWeb, :live_view
 
-  alias AnomaExplorerWeb.Layouts
-  alias AnomaExplorer.Indexer.GraphQL
   alias AnomaExplorer.Indexer.Client
+  alias AnomaExplorer.Indexer.GraphQL
+
   alias AnomaExplorerWeb.IndexerSetupComponents
+  alias AnomaExplorerWeb.Layouts
   alias AnomaExplorerWeb.Live.Helpers.SetupHandlers
 
   @default_query """
