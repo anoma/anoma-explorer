@@ -8,15 +8,10 @@ import Config
 config :anoma_explorer, AnomaExplorerWeb.Endpoint,
   cache_static_manifest: "priv/static/cache_manifest.json"
 
-# Force using SSL in production with HSTS enabled.
-# Health check endpoints are excluded to allow internal HTTP health probes.
-# Note `:force_ssl` is required to be set at compile-time.
-config :anoma_explorer, AnomaExplorerWeb.Endpoint,
-  force_ssl: [
-    rewrite_on: [:x_forwarded_proto],
-    hsts: true,
-    exclude: ["health", "health/ready"]
-  ]
+# SSL/HTTPS redirect is now configured via FORCE_SSL environment variable
+# in config/runtime.exs. Defaults to enabled (true) for security.
+# Set FORCE_SSL=false to disable HTTPS redirect (e.g., when behind a proxy
+# that handles TLS termination, or for health check endpoints).
 
 # Do not print debug messages in production
 config :logger, level: :info

@@ -89,6 +89,25 @@ if config_env() == :prod do
       ["https://#{host}", "https://www.#{host}"]
     end
 
+  # Force SSL/HTTPS redirect configuration
+  # FORCE_SSL=true (default): Redirects HTTP to HTTPS, enables HSTS
+  # FORCE_SSL=false: Disables redirect (useful when TLS terminates at load balancer)
+  force_ssl_enabled = System.get_env("FORCE_SSL", "true") == "true"
+
+  force_ssl_config =
+    if force_ssl_enabled do
+      [
+        rewrite_on: [:x_forwarded_proto],
+        hsts: true,
+        # Exclude health check paths from HTTPS redirect
+        exclude: fn conn ->
+          conn.request_path in ["/health", "/health/ready", "/healthz"]
+        end
+      ]
+    else
+      false
+    end
+
   config :anoma_explorer, AnomaExplorerWeb.Endpoint,
     url: [host: host, port: 443, scheme: "https"],
     http: [
@@ -99,7 +118,8 @@ if config_env() == :prod do
       ip: {0, 0, 0, 0, 0, 0, 0, 0}
     ],
     check_origin: check_origin,
-    secret_key_base: secret_key_base
+    secret_key_base: secret_key_base,
+    force_ssl: force_ssl_config
 
   # ## SSL Support
   #
