@@ -180,10 +180,13 @@ defmodule AnomaExplorerWeb.IndexerLive do
                     <span class="loading loading-spinner loading-xs text-base-content/50"></span>
                   <% else %>
                     <%= if @status do %>
-                      <div class={[
-                        "w-3 h-3 rounded-full",
-                        if(elem(@status, 0) == :ok, do: "bg-success", else: "bg-error")
-                      ]} title={elem(@status, 1)}>
+                      <div
+                        class={[
+                          "w-3 h-3 rounded-full",
+                          if(elem(@status, 0) == :ok, do: "bg-success", else: "bg-error")
+                        ]}
+                        title={elem(@status, 1)}
+                      >
                       </div>
                     <% end %>
                   <% end %>

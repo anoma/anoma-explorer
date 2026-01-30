@@ -491,13 +491,21 @@ defmodule AnomaExplorerWeb.CommitmentsLive do
                 <td>
                   <div class="flex items-center gap-1">
                     <%= if block_url = Networks.block_url(commitment["chainId"], commitment["blockNumber"]) do %>
-                      <a href={block_url} target="_blank" rel="noopener" class="font-mono text-sm link link-hover">
+                      <a
+                        href={block_url}
+                        target="_blank"
+                        rel="noopener"
+                        class="font-mono text-sm link link-hover"
+                      >
                         {commitment["blockNumber"]}
                       </a>
                     <% else %>
                       <span class="font-mono text-sm">{commitment["blockNumber"]}</span>
                     <% end %>
-                    <.copy_button text={to_string(commitment["blockNumber"])} tooltip="Copy block number" />
+                    <.copy_button
+                      text={to_string(commitment["blockNumber"])}
+                      tooltip="Copy block number"
+                    />
                   </div>
                 </td>
                 <td class="text-base-content/60 text-sm">
@@ -527,5 +535,4 @@ defmodule AnomaExplorerWeb.CommitmentsLive do
     </div>
     """
   end
-
 end

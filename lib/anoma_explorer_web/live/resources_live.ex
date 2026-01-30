@@ -56,6 +56,7 @@ defmodule AnomaExplorerWeb.ResourcesLive do
         {:ok, _} ->
           socket = load_resources(socket)
           {:noreply, assign(socket, :connection_status, :ok)}
+
         {:error, reason} ->
           {:noreply,
            socket
@@ -183,10 +184,12 @@ defmodule AnomaExplorerWeb.ResourcesLive do
     case SetupHandlers.handle_save_url(socket, url) do
       {:ok, socket} ->
         send(self(), :check_connection)
+
         {:noreply,
          socket
          |> assign(:configured, true)
          |> assign(:loading, true)}
+
       {:error, socket} ->
         {:noreply, socket}
     end
@@ -365,7 +368,12 @@ defmodule AnomaExplorerWeb.ResourcesLive do
     >
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div>
-          <label class="text-xs text-base-content/60 uppercase tracking-wide mb-1 block" title="Search by resource identifier (nullifier or commitment hash)">Resource ID</label>
+          <label
+            class="text-xs text-base-content/60 uppercase tracking-wide mb-1 block"
+            title="Search by resource identifier (nullifier or commitment hash)"
+          >
+            Resource ID
+          </label>
           <input
             type="text"
             name="filters[tag]"
@@ -487,10 +495,18 @@ defmodule AnomaExplorerWeb.ResourcesLive do
                 <% else %>
                   <span class="text-success text-xs shrink-0" title="Commitment">C</span>
                 <% end %>
-                <a href={"/resources/#{resource["id"]}"} class="font-mono text-sm hover:text-primary break-all">
+                <a
+                  href={"/resources/#{resource["id"]}"}
+                  class="font-mono text-sm hover:text-primary break-all"
+                >
                   {resource["tag"]}
                 </a>
-                <.copy_button :if={resource["tag"]} text={resource["tag"]} tooltip="Copy resource ID" class="shrink-0" />
+                <.copy_button
+                  :if={resource["tag"]}
+                  text={resource["tag"]}
+                  tooltip="Copy resource ID"
+                  class="shrink-0"
+                />
               </div>
               <%= if resource["logicRef"] do %>
                 <div class="flex items-center gap-1 text-xs text-base-content/60">
@@ -508,7 +524,10 @@ defmodule AnomaExplorerWeb.ResourcesLive do
                   >
                     {Formatting.truncate_hash(resource["transaction"]["evmTransaction"]["txHash"])}
                   </a>
-                  <.copy_button text={resource["transaction"]["evmTransaction"]["txHash"]} tooltip="Copy tx hash" />
+                  <.copy_button
+                    text={resource["transaction"]["evmTransaction"]["txHash"]}
+                    tooltip="Copy tx hash"
+                  />
                 </div>
               <% end %>
               <div class="flex items-center gap-1.5 text-xs text-base-content/50 flex-wrap">
@@ -538,7 +557,9 @@ defmodule AnomaExplorerWeb.ResourcesLive do
         <table class="data-table w-full">
           <thead>
             <tr>
-              <th title="Unique identifier - nullifier hash (if consumed) or commitment hash (if created)">Resource ID</th>
+              <th title="Unique identifier - nullifier hash (if consumed) or commitment hash (if created)">
+                Resource ID
+              </th>
               <th title="Blockchain network where this resource exists">Network</th>
               <th title="Block number where this resource was recorded">Block</th>
             </tr>
@@ -554,10 +575,17 @@ defmodule AnomaExplorerWeb.ResourcesLive do
                       <% else %>
                         <span class="text-success text-xs" title="Commitment">C</span>
                       <% end %>
-                      <a href={"/resources/#{resource["id"]}"} class="font-mono text-sm hover:text-primary">
+                      <a
+                        href={"/resources/#{resource["id"]}"}
+                        class="font-mono text-sm hover:text-primary"
+                      >
                         {resource["tag"]}
                       </a>
-                      <.copy_button :if={resource["tag"]} text={resource["tag"]} tooltip="Copy resource ID" />
+                      <.copy_button
+                        :if={resource["tag"]}
+                        text={resource["tag"]}
+                        tooltip="Copy resource ID"
+                      />
                     </div>
                     <%= if resource["logicRef"] do %>
                       <div class="flex items-center gap-1 text-xs text-base-content/50">
@@ -569,10 +597,16 @@ defmodule AnomaExplorerWeb.ResourcesLive do
                     <%= if resource["transaction"] do %>
                       <div class="flex items-center gap-1 text-xs text-base-content/50">
                         <span>tx:</span>
-                        <a href={"/transactions/#{resource["transaction"]["id"]}"} class="font-mono hover:text-primary">
+                        <a
+                          href={"/transactions/#{resource["transaction"]["id"]}"}
+                          class="font-mono hover:text-primary"
+                        >
                           {resource["transaction"]["evmTransaction"]["txHash"]}
                         </a>
-                        <.copy_button text={resource["transaction"]["evmTransaction"]["txHash"]} tooltip="Copy tx hash" />
+                        <.copy_button
+                          text={resource["transaction"]["evmTransaction"]["txHash"]}
+                          tooltip="Copy tx hash"
+                        />
                       </div>
                     <% end %>
                   </div>
@@ -583,13 +617,21 @@ defmodule AnomaExplorerWeb.ResourcesLive do
                 <td>
                   <div class="flex items-center gap-1">
                     <%= if block_url = Networks.block_url(resource["chainId"], resource["blockNumber"]) do %>
-                      <a href={block_url} target="_blank" rel="noopener" class="font-mono text-sm link link-hover">
+                      <a
+                        href={block_url}
+                        target="_blank"
+                        rel="noopener"
+                        class="font-mono text-sm link link-hover"
+                      >
                         {resource["blockNumber"]}
                       </a>
                     <% else %>
                       <span class="font-mono text-sm">{resource["blockNumber"]}</span>
                     <% end %>
-                    <.copy_button text={to_string(resource["blockNumber"])} tooltip="Copy block number" />
+                    <.copy_button
+                      text={to_string(resource["blockNumber"])}
+                      tooltip="Copy block number"
+                    />
                   </div>
                 </td>
               </tr>
@@ -616,5 +658,4 @@ defmodule AnomaExplorerWeb.ResourcesLive do
     </div>
     """
   end
-
 end

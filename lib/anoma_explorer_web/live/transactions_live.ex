@@ -458,7 +458,10 @@ defmodule AnomaExplorerWeb.TransactionsLive do
           <div class="p-3 rounded-lg bg-base-200/50 hover:bg-base-200 transition-colors">
             <div class="flex flex-col gap-1">
               <div class="flex items-start gap-1">
-                <a href={"/transactions/#{tx["id"]}"} class="font-mono text-sm hover:text-primary break-all">
+                <a
+                  href={"/transactions/#{tx["id"]}"}
+                  class="font-mono text-sm hover:text-primary break-all"
+                >
                   {evm_tx["txHash"]}
                 </a>
                 <.copy_button text={evm_tx["txHash"]} tooltip="Copy tx hash" class="shrink-0" />
@@ -466,7 +469,12 @@ defmodule AnomaExplorerWeb.TransactionsLive do
               <div class="flex items-start gap-1 text-xs text-base-content/60">
                 <span class="shrink-0">from:</span>
                 <span class="font-mono break-all">{evm_tx["from"]}</span>
-                <.copy_button :if={evm_tx["from"]} text={evm_tx["from"]} tooltip="Copy address" class="shrink-0" />
+                <.copy_button
+                  :if={evm_tx["from"]}
+                  text={evm_tx["from"]}
+                  tooltip="Copy address"
+                  class="shrink-0"
+                />
               </div>
               <div class="flex items-center gap-1.5 text-xs text-base-content/50 flex-wrap">
                 <span
@@ -530,7 +538,10 @@ defmodule AnomaExplorerWeb.TransactionsLive do
                 <td>
                   <div class="flex flex-col gap-0.5">
                     <div class="flex items-center gap-1">
-                      <a href={"/transactions/#{tx["id"]}"} class="font-mono text-sm hover:text-primary">
+                      <a
+                        href={"/transactions/#{tx["id"]}"}
+                        class="font-mono text-sm hover:text-primary"
+                      >
                         {evm_tx["txHash"]}
                       </a>
                       <.copy_button text={evm_tx["txHash"]} tooltip="Copy tx hash" />
@@ -637,10 +648,18 @@ defmodule AnomaExplorerWeb.TransactionsLive do
                 <table class="data-table w-full">
                   <thead>
                     <tr>
-                      <th title="Position in the array (even = nullifier, odd = commitment)">Index</th>
-                      <th title="Determined by index parity: even = Nullifier, odd = Commitment">Type</th>
-                      <th title="Resource identifier - nullifier hash or commitment hash">Resource ID</th>
-                      <th title="Reference to the logic circuit that validates this resource">Logic Ref</th>
+                      <th title="Position in the array (even = nullifier, odd = commitment)">
+                        Index
+                      </th>
+                      <th title="Determined by index parity: even = Nullifier, odd = Commitment">
+                        Type
+                      </th>
+                      <th title="Resource identifier - nullifier hash or commitment hash">
+                        Resource ID
+                      </th>
+                      <th title="Reference to the logic circuit that validates this resource">
+                        Logic Ref
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -653,7 +672,10 @@ defmodule AnomaExplorerWeb.TransactionsLive do
                         </td>
                         <td>
                           <%= if is_consumed do %>
-                            <div class="flex items-center gap-1 text-sm" title="Nullifier - resource consumed as input">
+                            <div
+                              class="flex items-center gap-1 text-sm"
+                              title="Nullifier - resource consumed as input"
+                            >
                               <.icon
                                 name="hero-arrow-right-start-on-rectangle"
                                 class="w-3 h-3 text-base-content/50"
@@ -661,7 +683,10 @@ defmodule AnomaExplorerWeb.TransactionsLive do
                               <span class="text-base-content/70">Nullifier</span>
                             </div>
                           <% else %>
-                            <div class="flex items-center gap-1 text-sm" title="Commitment - new resource created as output">
+                            <div
+                              class="flex items-center gap-1 text-sm"
+                              title="Commitment - new resource created as output"
+                            >
                               <.icon name="hero-plus-circle" class="w-3 h-3 text-base-content/50" />
                               <span class="text-base-content/70">Commitment</span>
                             </div>
@@ -675,7 +700,9 @@ defmodule AnomaExplorerWeb.TransactionsLive do
                         </td>
                         <td>
                           <div class="flex items-center gap-1">
-                            <code class="hash-display text-xs">{Formatting.truncate_hash(logic_ref)}</code>
+                            <code class="hash-display text-xs">
+                              {Formatting.truncate_hash(logic_ref)}
+                            </code>
                             <.copy_button :if={logic_ref} text={logic_ref} tooltip="Copy logic ref" />
                           </div>
                         </td>
@@ -692,5 +719,4 @@ defmodule AnomaExplorerWeb.TransactionsLive do
     <% end %>
     """
   end
-
 end

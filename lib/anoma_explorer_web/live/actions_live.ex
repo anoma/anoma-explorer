@@ -55,6 +55,7 @@ defmodule AnomaExplorerWeb.ActionsLive do
         {:ok, _} ->
           socket = load_actions(socket)
           {:noreply, assign(socket, :connection_status, :ok)}
+
         {:error, reason} ->
           {:noreply,
            socket
@@ -171,10 +172,12 @@ defmodule AnomaExplorerWeb.ActionsLive do
     case SetupHandlers.handle_save_url(socket, url) do
       {:ok, socket} ->
         send(self(), :check_connection)
+
         {:noreply,
          socket
          |> assign(:configured, true)
          |> assign(:loading, true)}
+
       {:error, socket} ->
         {:noreply, socket}
     end
@@ -399,7 +402,10 @@ defmodule AnomaExplorerWeb.ActionsLive do
           <div class="p-3 rounded-lg bg-base-200/50 hover:bg-base-200 transition-colors">
             <div class="flex flex-col gap-1">
               <div class="flex items-start gap-1">
-                <a href={"/actions/#{action["id"]}"} class="font-mono text-sm hover:text-primary break-all">
+                <a
+                  href={"/actions/#{action["id"]}"}
+                  class="font-mono text-sm hover:text-primary break-all"
+                >
                   {action["actionTreeRoot"]}
                 </a>
                 <.copy_button
@@ -455,7 +461,9 @@ defmodule AnomaExplorerWeb.ActionsLive do
         <table class="data-table w-full">
           <thead>
             <tr>
-              <th title="Merkle root uniquely identifying the action and all its contents">Action Root</th>
+              <th title="Merkle root uniquely identifying the action and all its contents">
+                Action Root
+              </th>
               <th title="Blockchain network where this action was recorded">Network</th>
               <th title="Total number of resource tags (nullifiers + commitments)">Tags</th>
               <th title="Blockchain block number">Block</th>
@@ -468,7 +476,10 @@ defmodule AnomaExplorerWeb.ActionsLive do
                 <td>
                   <div class="flex flex-col gap-0.5">
                     <div class="flex items-center gap-1">
-                      <a href={"/actions/#{action["id"]}"} class="font-mono text-sm hover:text-primary">
+                      <a
+                        href={"/actions/#{action["id"]}"}
+                        class="font-mono text-sm hover:text-primary"
+                      >
                         {action["actionTreeRoot"]}
                       </a>
                       <.copy_button
@@ -480,10 +491,16 @@ defmodule AnomaExplorerWeb.ActionsLive do
                     <%= if action["transaction"] do %>
                       <div class="flex items-center gap-1 text-xs text-base-content/50">
                         <span>tx:</span>
-                        <a href={"/transactions/#{action["transaction"]["id"]}"} class="font-mono hover:text-primary">
+                        <a
+                          href={"/transactions/#{action["transaction"]["id"]}"}
+                          class="font-mono hover:text-primary"
+                        >
                           {action["transaction"]["evmTransaction"]["txHash"]}
                         </a>
-                        <.copy_button text={action["transaction"]["evmTransaction"]["txHash"]} tooltip="Copy tx hash" />
+                        <.copy_button
+                          text={action["transaction"]["evmTransaction"]["txHash"]}
+                          tooltip="Copy tx hash"
+                        />
                       </div>
                     <% end %>
                   </div>
@@ -497,7 +514,12 @@ defmodule AnomaExplorerWeb.ActionsLive do
                 <td>
                   <div class="flex items-center gap-1">
                     <%= if block_url = Networks.block_url(action["chainId"], action["blockNumber"]) do %>
-                      <a href={block_url} target="_blank" rel="noopener" class="font-mono text-sm link link-hover">
+                      <a
+                        href={block_url}
+                        target="_blank"
+                        rel="noopener"
+                        class="font-mono text-sm link link-hover"
+                      >
                         {action["blockNumber"]}
                       </a>
                     <% else %>
@@ -533,5 +555,4 @@ defmodule AnomaExplorerWeb.ActionsLive do
     </div>
     """
   end
-
 end

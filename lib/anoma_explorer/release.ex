@@ -17,14 +17,15 @@ defmodule AnomaExplorer.Release do
     load_app()
 
     for repo <- repos() do
-      {:ok, _, _} =
-        Ecto.Migrator.with_repo(repo, fn _repo ->
-          seeds_file = Application.app_dir(@app, "priv/repo/seeds.exs")
+      {:ok, _, _} = Ecto.Migrator.with_repo(repo, fn _repo -> run_seeds() end)
+    end
+  end
 
-          if File.exists?(seeds_file) do
-            Code.eval_file(seeds_file)
-          end
-        end)
+  defp run_seeds do
+    seeds_file = Application.app_dir(@app, "priv/repo/seeds.exs")
+
+    if File.exists?(seeds_file) do
+      Code.eval_file(seeds_file)
     end
   end
 

@@ -74,7 +74,7 @@ defmodule AnomaExplorer.Indexer.Client do
       ]
     ]
 
-    case :httpc.request(:post, request, http_options, [body_format: :binary]) do
+    case :httpc.request(:post, request, http_options, body_format: :binary) do
       {:ok, {{_http_version, 200, _reason}, _headers, response_body}} ->
         case Jason.decode(response_body) do
           {:ok, %{"data" => _}} -> {:ok, "Connected successfully"}

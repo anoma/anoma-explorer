@@ -4,6 +4,7 @@ defmodule AnomaExplorerWeb.HomeLive do
   """
   use AnomaExplorerWeb, :live_view
 
+  alias AnomaExplorer.Indexer.Cache
   alias AnomaExplorer.Indexer.Client
   alias AnomaExplorer.Indexer.GraphQL
   alias AnomaExplorer.Indexer.Networks
@@ -83,7 +84,7 @@ defmodule AnomaExplorerWeb.HomeLive do
   @impl true
   def handle_info({:settings_changed, {:app_setting_updated, _}}, socket) do
     # Envio URL changed, clear cache and re-check connection
-    AnomaExplorer.Indexer.Cache.clear()
+    Cache.clear()
 
     {:noreply,
      socket
@@ -467,7 +468,10 @@ defmodule AnomaExplorerWeb.HomeLive do
             <div class="p-3 rounded-lg bg-base-200/50 hover:bg-base-200 transition-colors">
               <div class="flex flex-col gap-1">
                 <div class="flex items-start gap-1">
-                  <a href={"/transactions/#{tx["id"]}"} class="font-mono text-sm hover:text-primary break-all">
+                  <a
+                    href={"/transactions/#{tx["id"]}"}
+                    class="font-mono text-sm hover:text-primary break-all"
+                  >
                     {evm_tx["txHash"]}
                   </a>
                   <.copy_button text={evm_tx["txHash"]} tooltip="Copy tx hash" class="shrink-0" />
@@ -475,7 +479,12 @@ defmodule AnomaExplorerWeb.HomeLive do
                 <div class="flex items-start gap-1 text-xs text-base-content/60">
                   <span class="shrink-0">from:</span>
                   <span class="font-mono break-all">{evm_tx["from"]}</span>
-                  <.copy_button :if={evm_tx["from"]} text={evm_tx["from"]} tooltip="Copy address" class="shrink-0" />
+                  <.copy_button
+                    :if={evm_tx["from"]}
+                    text={evm_tx["from"]}
+                    tooltip="Copy address"
+                    class="shrink-0"
+                  />
                 </div>
                 <div class="flex items-center gap-1.5 text-xs text-base-content/50 flex-wrap">
                   <span
@@ -539,7 +548,10 @@ defmodule AnomaExplorerWeb.HomeLive do
                   <td>
                     <div class="flex flex-col gap-0.5">
                       <div class="flex items-center gap-1">
-                        <a href={"/transactions/#{tx["id"]}"} class="font-mono text-sm hover:text-primary">
+                        <a
+                          href={"/transactions/#{tx["id"]}"}
+                          class="font-mono text-sm hover:text-primary"
+                        >
                           {evm_tx["txHash"]}
                         </a>
                         <.copy_button text={evm_tx["txHash"]} tooltip="Copy tx hash" />
@@ -547,7 +559,11 @@ defmodule AnomaExplorerWeb.HomeLive do
                       <div class="flex items-center gap-1 text-xs text-base-content/50">
                         <span>from:</span>
                         <span class="font-mono">{evm_tx["from"]}</span>
-                        <.copy_button :if={evm_tx["from"]} text={evm_tx["from"]} tooltip="Copy address" />
+                        <.copy_button
+                          :if={evm_tx["from"]}
+                          text={evm_tx["from"]}
+                          tooltip="Copy address"
+                        />
                       </div>
                     </div>
                   </td>
@@ -568,7 +584,10 @@ defmodule AnomaExplorerWeb.HomeLive do
                       <% else %>
                         <span class="font-mono text-sm">{evm_tx["blockNumber"]}</span>
                       <% end %>
-                      <.copy_button text={to_string(evm_tx["blockNumber"])} tooltip="Copy block number" />
+                      <.copy_button
+                        text={to_string(evm_tx["blockNumber"])}
+                        tooltip="Copy block number"
+                      />
                     </div>
                   </td>
                   <td>
@@ -655,7 +674,12 @@ defmodule AnomaExplorerWeb.HomeLive do
                         <td>
                           <div class="flex flex-col sm:flex-row sm:items-center gap-1">
                             <code class="hash-display text-xs">{Formatting.truncate_hash(tag)}</code>
-                            <.copy_button :if={tag} text={tag} tooltip="Copy tag" class="hidden sm:inline-flex" />
+                            <.copy_button
+                              :if={tag}
+                              text={tag}
+                              tooltip="Copy tag"
+                              class="hidden sm:inline-flex"
+                            />
                             <span class="text-xs text-base-content/50 sm:hidden">
                               Logic: {Formatting.truncate_hash(logic_ref)}
                             </span>
@@ -663,7 +687,9 @@ defmodule AnomaExplorerWeb.HomeLive do
                         </td>
                         <td class="hidden sm:table-cell">
                           <div class="flex items-center gap-1">
-                            <code class="hash-display text-xs">{Formatting.truncate_hash(logic_ref)}</code>
+                            <code class="hash-display text-xs">
+                              {Formatting.truncate_hash(logic_ref)}
+                            </code>
                             <.copy_button :if={logic_ref} text={logic_ref} tooltip="Copy logic ref" />
                           </div>
                         </td>
@@ -680,5 +706,4 @@ defmodule AnomaExplorerWeb.HomeLive do
     <% end %>
     """
   end
-
 end

@@ -15,7 +15,11 @@ defmodule AnomaExplorer.Indexer.GraphQLTest do
 
   setup do
     # Configure to use mock HTTP client
-    Application.put_env(:anoma_explorer, :graphql_http_client, AnomaExplorer.GraphQLHTTPClientMock)
+    Application.put_env(
+      :anoma_explorer,
+      :graphql_http_client,
+      AnomaExplorer.GraphQLHTTPClientMock
+    )
 
     # Clear the cache before each test to avoid interference
     case GenServer.whereis(AnomaExplorer.Indexer.Cache) do
@@ -157,7 +161,7 @@ defmodule AnomaExplorer.Indexer.GraphQLTest do
 
       AnomaExplorer.GraphQLHTTPClientMock
       |> expect(:post_graphql, fn _url, query, _timeout, _connect_timeout ->
-        assert query =~ "chainId: {_eq: 42_161}"
+        assert query =~ "chainId: {_eq: 42161}"
         {:ok, %{"Transaction" => []}}
       end)
 

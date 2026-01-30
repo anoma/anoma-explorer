@@ -550,9 +550,15 @@ defmodule AnomaExplorer.Indexer.GraphQL do
     # Handle logic_ref with OR clause (matches consumed or created)
     conditions =
       case Keyword.get(opts, :logic_ref) do
-        nil -> conditions
-        "" -> conditions
-        ref -> conditions ++ [{:_or, :or, [{:consumedLogicRef, :ilike, ref}, {:createdLogicRef, :ilike, ref}]}]
+        nil ->
+          conditions
+
+        "" ->
+          conditions
+
+        ref ->
+          conditions ++
+            [{:_or, :or, [{:consumedLogicRef, :ilike, ref}, {:createdLogicRef, :ilike, ref}]}]
       end
 
     QueryBuilder.build_where(conditions)
@@ -1015,7 +1021,9 @@ defmodule AnomaExplorer.Indexer.GraphQL do
     :ssl.start()
 
     body = Jason.encode!(%{query: query})
-    request = {to_charlist(url), [{~c"content-type", ~c"application/json"}], ~c"application/json", body}
+
+    request =
+      {to_charlist(url), [{~c"content-type", ~c"application/json"}], ~c"application/json", body}
 
     http_options = [
       timeout: timeout,
@@ -1023,7 +1031,7 @@ defmodule AnomaExplorer.Indexer.GraphQL do
       ssl: ssl_options()
     ]
 
-    case :httpc.request(:post, request, http_options, [body_format: :binary]) do
+    case :httpc.request(:post, request, http_options, body_format: :binary) do
       {:ok, {{_http_version, 200, _reason}, _headers, response_body}} ->
         case Jason.decode(response_body) do
           {:ok, %{"data" => data}} ->
@@ -1039,7 +1047,9 @@ defmodule AnomaExplorer.Indexer.GraphQL do
         end
 
       {:ok, {{_http_version, status, _reason}, _headers, response_body}} ->
-        Logger.error("GraphQL HTTP error: status=#{status}, body=#{String.slice(to_string(response_body), 0, 200)}")
+        Logger.error(
+          "GraphQL HTTP error: status=#{status}, body=#{String.slice(to_string(response_body), 0, 200)}"
+        )
 
         {:error, {:http_error, status, response_body}}
 
@@ -1056,7 +1066,9 @@ defmodule AnomaExplorer.Indexer.GraphQL do
     :ssl.start()
 
     body = Jason.encode!(%{query: query})
-    request = {to_charlist(url), [{~c"content-type", ~c"application/json"}], ~c"application/json", body}
+
+    request =
+      {to_charlist(url), [{~c"content-type", ~c"application/json"}], ~c"application/json", body}
 
     http_options = [
       timeout: timeout,
@@ -1064,7 +1076,7 @@ defmodule AnomaExplorer.Indexer.GraphQL do
       ssl: ssl_options()
     ]
 
-    case :httpc.request(:post, request, http_options, [body_format: :binary]) do
+    case :httpc.request(:post, request, http_options, body_format: :binary) do
       {:ok, {{_http_version, 200, _reason}, _headers, response_body}} ->
         case Jason.decode(response_body) do
           {:ok, response} ->

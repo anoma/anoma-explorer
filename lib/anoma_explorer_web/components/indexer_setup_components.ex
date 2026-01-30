@@ -30,7 +30,10 @@ defmodule AnomaExplorerWeb.IndexerSetupComponents do
   attr :auto_testing, :boolean, default: false
   attr :saving, :boolean, default: false
   attr :title, :string, default: "Indexer Configuration Required"
-  attr :description, :string, default: "Configure the Envio GraphQL endpoint to view indexed data."
+
+  attr :description, :string,
+    default: "Configure the Envio GraphQL endpoint to view indexed data."
+
   attr :show_link_to_settings, :boolean, default: true
 
   def setup_required(assigns) do
@@ -100,7 +103,8 @@ defmodule AnomaExplorerWeb.IndexerSetupComponents do
 
           <%= if @show_link_to_settings do %>
             <p class="text-xs text-base-content/50 mt-3">
-              Or configure in <a href="/settings/indexer" class="link link-primary">Indexer Settings</a>
+              Or configure in
+              <a href="/settings/indexer" class="link link-primary">Indexer Settings</a>
             </p>
           <% end %>
         </div>

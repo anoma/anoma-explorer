@@ -32,7 +32,10 @@ defmodule AnomaExplorerWeb.TransactionLive do
          socket
          |> assign(:transaction, transaction)
          |> assign(:loading, false)
-         |> assign(:page_title, "Transaction #{Formatting.truncate_hash(transaction["evmTransaction"]["txHash"])}")}
+         |> assign(
+           :page_title,
+           "Transaction #{Formatting.truncate_hash(transaction["evmTransaction"]["txHash"])}"
+         )}
 
       {:error, :not_found} ->
         {:noreply,
@@ -81,7 +84,9 @@ defmodule AnomaExplorerWeb.TransactionLive do
           <div>
             <h1 class="page-title">Transaction Details</h1>
             <p class="text-sm text-base-content/70 mt-1">
-              {if @transaction, do: Formatting.truncate_hash(@transaction["evmTransaction"]["txHash"]), else: "Loading..."}
+              {if @transaction,
+                do: Formatting.truncate_hash(@transaction["evmTransaction"]["txHash"]),
+                else: "Loading..."}
             </p>
           </div>
         </div>
@@ -150,7 +155,10 @@ defmodule AnomaExplorerWeb.TransactionLive do
       <h2 class="text-lg font-semibold mb-4">Overview</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="md:col-span-2">
-          <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1" title="Unique identifier of this EVM transaction on the blockchain">
+          <div
+            class="text-xs text-base-content/60 uppercase tracking-wide mb-1"
+            title="Unique identifier of this EVM transaction on the blockchain"
+          >
             Transaction Hash
           </div>
           <div class="flex items-center gap-2">
@@ -169,17 +177,32 @@ defmodule AnomaExplorerWeb.TransactionLive do
           </div>
         </div>
         <div>
-          <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1" title="When this transaction was included in a block">Timestamp</div>
+          <div
+            class="text-xs text-base-content/60 uppercase tracking-wide mb-1"
+            title="When this transaction was included in a block"
+          >
+            Timestamp
+          </div>
           <div class="font-mono">{Formatting.format_timestamp_full(@evm_tx["timestamp"])}</div>
         </div>
         <div>
-          <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1" title="Blockchain network where this transaction was recorded">Network</div>
+          <div
+            class="text-xs text-base-content/60 uppercase tracking-wide mb-1"
+            title="Blockchain network where this transaction was recorded"
+          >
+            Network
+          </div>
           <div>
             <.network_button chain_id={@evm_tx["chainId"]} />
           </div>
         </div>
         <div>
-          <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1" title="Block number where this transaction was included">Block Number</div>
+          <div
+            class="text-xs text-base-content/60 uppercase tracking-wide mb-1"
+            title="Block number where this transaction was included"
+          >
+            Block Number
+          </div>
           <div class="flex items-center gap-2">
             <%= if @block_url do %>
               <a href={@block_url} target="_blank" class="font-mono hover:text-primary">
@@ -193,7 +216,12 @@ defmodule AnomaExplorerWeb.TransactionLive do
           </div>
         </div>
         <div>
-          <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1" title="Account address that sent and signed this transaction">From</div>
+          <div
+            class="text-xs text-base-content/60 uppercase tracking-wide mb-1"
+            title="Account address that sent and signed this transaction"
+          >
+            From
+          </div>
           <div class="flex items-center gap-2">
             <%= if @evm_tx["from"] do %>
               <code class="hash-display text-sm break-all">{@evm_tx["from"]}</code>
@@ -215,7 +243,10 @@ defmodule AnomaExplorerWeb.TransactionLive do
         </div>
         <%= if @tx["contractAddress"] do %>
           <div>
-            <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1" title="Anoma resource machine contract that processed this transaction">
+            <div
+              class="text-xs text-base-content/60 uppercase tracking-wide mb-1"
+              title="Anoma resource machine contract that processed this transaction"
+            >
               Contract Address
             </div>
             <div class="flex items-center gap-2">
@@ -242,7 +273,10 @@ defmodule AnomaExplorerWeb.TransactionLive do
   defp tags_section(assigns) do
     ~H"""
     <div class="stat-card mb-6">
-      <h2 class="text-lg font-semibold mb-4" title="All resource identifiers and their logic references in this transaction">
+      <h2
+        class="text-lg font-semibold mb-4"
+        title="All resource identifiers and their logic references in this transaction"
+      >
         Resource IDs & Logic Refs <span class="badge badge-ghost ml-2">{length(@tags || [])}</span>
       </h2>
       <%= if (@tags || []) == [] do %>
@@ -261,14 +295,23 @@ defmodule AnomaExplorerWeb.TransactionLive do
                 </div>
                 <div class="flex items-center gap-1 text-xs text-base-content/50">
                   <span class="font-mono break-all">{logic_ref}</span>
-                  <.copy_button :if={logic_ref} text={logic_ref} tooltip="Copy logic ref" class="shrink-0" />
+                  <.copy_button
+                    :if={logic_ref}
+                    text={logic_ref}
+                    tooltip="Copy logic ref"
+                    class="shrink-0"
+                  />
                 </div>
                 <div class="flex items-center gap-1.5">
                   <span class="badge badge-ghost badge-xs">{idx}</span>
                   <%= if is_consumed do %>
-                    <span class="badge badge-outline badge-xs text-error border-error/50">Nullifier</span>
+                    <span class="badge badge-outline badge-xs text-error border-error/50">
+                      Nullifier
+                    </span>
                   <% else %>
-                    <span class="badge badge-outline badge-xs text-success border-success/50">Commitment</span>
+                    <span class="badge badge-outline badge-xs text-success border-success/50">
+                      Commitment
+                    </span>
                   <% end %>
                 </div>
               </div>
@@ -309,11 +352,17 @@ defmodule AnomaExplorerWeb.TransactionLive do
                   </td>
                   <td>
                     <%= if is_consumed do %>
-                      <span class="badge badge-outline badge-sm text-error border-error/50" title="Nullifier - resource consumed as input">
+                      <span
+                        class="badge badge-outline badge-sm text-error border-error/50"
+                        title="Nullifier - resource consumed as input"
+                      >
                         Nullifier
                       </span>
                     <% else %>
-                      <span class="badge badge-outline badge-sm text-success border-success/50" title="Commitment - new resource created as output">
+                      <span
+                        class="badge badge-outline badge-sm text-success border-success/50"
+                        title="Commitment - new resource created as output"
+                      >
                         Commitment
                       </span>
                     <% end %>
@@ -331,7 +380,10 @@ defmodule AnomaExplorerWeb.TransactionLive do
   defp resources_section(assigns) do
     ~H"""
     <div class="stat-card mb-6">
-      <h2 class="text-lg font-semibold mb-4" title="Resources consumed and created in this transaction">
+      <h2
+        class="text-lg font-semibold mb-4"
+        title="Resources consumed and created in this transaction"
+      >
         Resources <span class="badge badge-ghost ml-2">{length(@resources)}</span>
       </h2>
       <%= if @resources == [] do %>
@@ -349,17 +401,31 @@ defmodule AnomaExplorerWeb.TransactionLive do
                   >
                     {resource["tag"]}
                   </a>
-                  <.copy_button :if={resource["tag"]} text={resource["tag"]} tooltip="Copy resource ID" class="shrink-0" />
+                  <.copy_button
+                    :if={resource["tag"]}
+                    text={resource["tag"]}
+                    tooltip="Copy resource ID"
+                    class="shrink-0"
+                  />
                 </div>
                 <div class="flex items-center gap-1 text-xs text-base-content/50">
                   <span class="font-mono break-all">{resource["logicRef"]}</span>
-                  <.copy_button :if={resource["logicRef"]} text={resource["logicRef"]} tooltip="Copy logic ref" class="shrink-0" />
+                  <.copy_button
+                    :if={resource["logicRef"]}
+                    text={resource["logicRef"]}
+                    tooltip="Copy logic ref"
+                    class="shrink-0"
+                  />
                 </div>
                 <div class="flex items-center">
                   <%= if resource["isConsumed"] do %>
-                    <span class="badge badge-outline badge-xs text-error border-error/50">Nullifier</span>
+                    <span class="badge badge-outline badge-xs text-error border-error/50">
+                      Nullifier
+                    </span>
                   <% else %>
-                    <span class="badge badge-outline badge-xs text-success border-success/50">Commitment</span>
+                    <span class="badge badge-outline badge-xs text-success border-success/50">
+                      Commitment
+                    </span>
                   <% end %>
                 </div>
               </div>
@@ -372,8 +438,12 @@ defmodule AnomaExplorerWeb.TransactionLive do
           <table class="data-table w-full">
             <thead>
               <tr>
-                <th title="Unique identifier - nullifier hash (if consumed) or commitment hash (if created)">Resource ID</th>
-                <th title="Resource type: Nullifier (consumed input) or Commitment (created output)">Type</th>
+                <th title="Unique identifier - nullifier hash (if consumed) or commitment hash (if created)">
+                  Resource ID
+                </th>
+                <th title="Resource type: Nullifier (consumed input) or Commitment (created output)">
+                  Type
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -388,22 +458,36 @@ defmodule AnomaExplorerWeb.TransactionLive do
                         >
                           {resource["tag"]}
                         </a>
-                        <.copy_button :if={resource["tag"]} text={resource["tag"]} tooltip="Copy resource ID" />
+                        <.copy_button
+                          :if={resource["tag"]}
+                          text={resource["tag"]}
+                          tooltip="Copy resource ID"
+                        />
                       </div>
                       <div class="flex items-center gap-1 text-xs text-base-content/50">
                         <span>logic:</span>
                         <code class="font-mono break-all">{resource["logicRef"]}</code>
-                        <.copy_button :if={resource["logicRef"]} text={resource["logicRef"]} tooltip="Copy logic ref" />
+                        <.copy_button
+                          :if={resource["logicRef"]}
+                          text={resource["logicRef"]}
+                          tooltip="Copy logic ref"
+                        />
                       </div>
                     </div>
                   </td>
                   <td>
                     <%= if resource["isConsumed"] do %>
-                      <span class="badge badge-outline badge-sm text-error border-error/50" title="Nullifier - resource consumed as input">
+                      <span
+                        class="badge badge-outline badge-sm text-error border-error/50"
+                        title="Nullifier - resource consumed as input"
+                      >
                         Nullifier
                       </span>
                     <% else %>
-                      <span class="badge badge-outline badge-sm text-success border-success/50" title="Commitment - new resource created as output">
+                      <span
+                        class="badge badge-outline badge-sm text-success border-success/50"
+                        title="Commitment - new resource created as output"
+                      >
                         Commitment
                       </span>
                     <% end %>
@@ -421,7 +505,10 @@ defmodule AnomaExplorerWeb.TransactionLive do
   defp actions_section(assigns) do
     ~H"""
     <div class="stat-card mb-6">
-      <h2 class="text-lg font-semibold mb-4" title="Atomic units of computation in this transaction, each containing compliance units and logic inputs">
+      <h2
+        class="text-lg font-semibold mb-4"
+        title="Atomic units of computation in this transaction, each containing compliance units and logic inputs"
+      >
         Actions <span class="badge badge-ghost ml-2">{length(@actions)}</span>
       </h2>
       <%= if @actions == [] do %>
@@ -431,7 +518,9 @@ defmodule AnomaExplorerWeb.TransactionLive do
           <table class="data-table w-full">
             <thead>
               <tr>
-                <th title="Merkle root uniquely identifying the action and all its contents">Action Tree Root</th>
+                <th title="Merkle root uniquely identifying the action and all its contents">
+                  Action Tree Root
+                </th>
                 <th title="Total number of resource tags (nullifiers + commitments)">Tag Count</th>
               </tr>
             </thead>
@@ -465,20 +554,4 @@ defmodule AnomaExplorerWeb.TransactionLive do
     </div>
     """
   end
-
-  defp decoding_badge(assigns) do
-    ~H"""
-    <%= case @status do %>
-      <% "success" -> %>
-        <span class="badge badge-outline badge-sm text-success border-success/50">Decoded</span>
-      <% "failed" -> %>
-        <span class="badge badge-outline badge-sm text-error border-error/50">Failed</span>
-      <% "pending" -> %>
-        <span class="badge badge-outline badge-sm text-warning border-warning/50">Pending</span>
-      <% _ -> %>
-        <span class="badge badge-outline badge-ghost badge-sm">{@status || "-"}</span>
-    <% end %>
-    """
-  end
-
 end

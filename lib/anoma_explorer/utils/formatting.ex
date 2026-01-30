@@ -188,16 +188,22 @@ defmodule AnomaExplorer.Utils.Formatting do
     diff = DateTime.diff(now, dt, :second)
 
     cond do
-      diff < 0 -> "in the future"
-      diff < 60 -> "#{diff}s ago"
+      diff < 0 ->
+        "in the future"
+
+      diff < 60 ->
+        "#{diff}s ago"
+
       diff < 3600 ->
         minutes = div(diff, 60)
         seconds = rem(diff, 60)
         "#{minutes}m #{seconds}s ago"
+
       diff < 86_400 ->
         hours = div(diff, 3600)
         minutes = div(rem(diff, 3600), 60)
         "#{hours}h #{minutes}m ago"
+
       true ->
         days = div(diff, 86_400)
         hours = div(rem(diff, 86_400), 3600)

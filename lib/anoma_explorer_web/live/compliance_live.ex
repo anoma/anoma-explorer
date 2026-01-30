@@ -112,7 +112,12 @@ defmodule AnomaExplorerWeb.ComplianceLive do
       <h2 class="text-lg font-semibold mb-4">Overview</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1" title="Position of this compliance unit within the action">Index</div>
+          <div
+            class="text-xs text-base-content/60 uppercase tracking-wide mb-1"
+            title="Position of this compliance unit within the action"
+          >
+            Index
+          </div>
           <div class="font-mono">{@unit["index"]}</div>
         </div>
         <%= if @unit["action"] do %>
@@ -156,9 +161,14 @@ defmodule AnomaExplorerWeb.ComplianceLive do
                   href={"/transactions/#{@unit["action"]["transaction"]["id"]}"}
                   class="hash-display text-sm hover:text-primary"
                 >
-                  {Formatting.truncate_hash(@unit["action"]["transaction"]["evmTransaction"]["txHash"])}
+                  {Formatting.truncate_hash(
+                    @unit["action"]["transaction"]["evmTransaction"]["txHash"]
+                  )}
                 </a>
-                <.copy_button text={@unit["action"]["transaction"]["evmTransaction"]["txHash"]} tooltip="Copy tx hash" />
+                <.copy_button
+                  text={@unit["action"]["transaction"]["evmTransaction"]["txHash"]}
+                  tooltip="Copy tx hash"
+                />
               </div>
             </div>
           <% end %>
@@ -171,19 +181,36 @@ defmodule AnomaExplorerWeb.ComplianceLive do
   defp consumed_section(assigns) do
     ~H"""
     <div class="stat-card mb-6">
-      <h2 class="text-lg font-semibold mb-4 flex items-center gap-2" title="The resource being spent/consumed in this compliance unit">
+      <h2
+        class="text-lg font-semibold mb-4 flex items-center gap-2"
+        title="The resource being spent/consumed in this compliance unit"
+      >
         <span class="badge badge-outline badge-sm text-error border-error/50">Nullifier</span> Input
       </h2>
       <div class="grid grid-cols-1 gap-4">
         <div>
-          <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1" title="Hash that proves this resource has been consumed - prevents double-spending">Nullifier</div>
+          <div
+            class="text-xs text-base-content/60 uppercase tracking-wide mb-1"
+            title="Hash that proves this resource has been consumed - prevents double-spending"
+          >
+            Nullifier
+          </div>
           <div class="flex items-center gap-2">
             <code class="hash-display text-sm break-all">{@unit["consumedNullifier"] || "-"}</code>
-            <.copy_button :if={@unit["consumedNullifier"]} text={@unit["consumedNullifier"]} tooltip="Copy nullifier" />
+            <.copy_button
+              :if={@unit["consumedNullifier"]}
+              text={@unit["consumedNullifier"]}
+              tooltip="Copy nullifier"
+            />
           </div>
         </div>
         <div>
-          <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1" title="Reference to the logic circuit that validates this resource's consumption">Logic Ref</div>
+          <div
+            class="text-xs text-base-content/60 uppercase tracking-wide mb-1"
+            title="Reference to the logic circuit that validates this resource's consumption"
+          >
+            Logic Ref
+          </div>
           <div class="flex items-center gap-2">
             <code class="hash-display text-sm break-all">{@unit["consumedLogicRef"] || "-"}</code>
             <.copy_button
@@ -194,7 +221,10 @@ defmodule AnomaExplorerWeb.ComplianceLive do
           </div>
         </div>
         <div>
-          <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1" title="Merkle root proving the consumed resource existed in the commitment tree">
+          <div
+            class="text-xs text-base-content/60 uppercase tracking-wide mb-1"
+            title="Merkle root proving the consumed resource existed in the commitment tree"
+          >
             Commitment Tree Root
           </div>
           <div class="flex items-center gap-2">
@@ -210,7 +240,12 @@ defmodule AnomaExplorerWeb.ComplianceLive do
         </div>
         <%= if @unit["consumedResource"] do %>
           <div>
-            <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1" title="Link to the full resource record if available">Resource</div>
+            <div
+              class="text-xs text-base-content/60 uppercase tracking-wide mb-1"
+              title="Link to the full resource record if available"
+            >
+              Resource
+            </div>
             <div class="flex items-center gap-1">
               <a
                 href={"/resources/#{@unit["consumedResource"]["id"]}"}
@@ -234,20 +269,37 @@ defmodule AnomaExplorerWeb.ComplianceLive do
   defp created_section(assigns) do
     ~H"""
     <div class="stat-card mb-6">
-      <h2 class="text-lg font-semibold mb-4 flex items-center gap-2" title="The new resource being created in this compliance unit">
+      <h2
+        class="text-lg font-semibold mb-4 flex items-center gap-2"
+        title="The new resource being created in this compliance unit"
+      >
         <span class="badge badge-outline badge-sm text-success border-success/50">Commitment</span>
         Output
       </h2>
       <div class="grid grid-cols-1 gap-4">
         <div>
-          <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1" title="Hash representing the newly created resource - added to the commitment tree">Commitment</div>
+          <div
+            class="text-xs text-base-content/60 uppercase tracking-wide mb-1"
+            title="Hash representing the newly created resource - added to the commitment tree"
+          >
+            Commitment
+          </div>
           <div class="flex items-center gap-2">
             <code class="hash-display text-sm break-all">{@unit["createdCommitment"] || "-"}</code>
-            <.copy_button :if={@unit["createdCommitment"]} text={@unit["createdCommitment"]} tooltip="Copy commitment" />
+            <.copy_button
+              :if={@unit["createdCommitment"]}
+              text={@unit["createdCommitment"]}
+              tooltip="Copy commitment"
+            />
           </div>
         </div>
         <div>
-          <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1" title="Reference to the logic circuit that validates this resource's creation">Logic Ref</div>
+          <div
+            class="text-xs text-base-content/60 uppercase tracking-wide mb-1"
+            title="Reference to the logic circuit that validates this resource's creation"
+          >
+            Logic Ref
+          </div>
           <div class="flex items-center gap-2">
             <code class="hash-display text-sm break-all">{@unit["createdLogicRef"] || "-"}</code>
             <.copy_button
@@ -259,7 +311,12 @@ defmodule AnomaExplorerWeb.ComplianceLive do
         </div>
         <%= if @unit["createdResource"] do %>
           <div>
-            <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1" title="Link to the full resource record">Resource</div>
+            <div
+              class="text-xs text-base-content/60 uppercase tracking-wide mb-1"
+              title="Link to the full resource record"
+            >
+              Resource
+            </div>
             <div class="flex items-center gap-1">
               <a
                 href={"/resources/#{@unit["createdResource"]["id"]}"}
@@ -283,17 +340,32 @@ defmodule AnomaExplorerWeb.ComplianceLive do
   defp delta_section(assigns) do
     ~H"""
     <div class="stat-card mb-6">
-      <h2 class="text-lg font-semibold mb-4" title="Value balance proof using secp256k1 elliptic curve points">Unit Delta</h2>
+      <h2
+        class="text-lg font-semibold mb-4"
+        title="Value balance proof using secp256k1 elliptic curve points"
+      >
+        Unit Delta
+      </h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1" title="X coordinate of the secp256k1 delta point for value balance verification">Delta X</div>
+          <div
+            class="text-xs text-base-content/60 uppercase tracking-wide mb-1"
+            title="X coordinate of the secp256k1 delta point for value balance verification"
+          >
+            Delta X
+          </div>
           <div class="flex items-center gap-2">
             <code class="hash-display text-sm break-all">{@unit["unitDeltaX"] || "-"}</code>
             <.copy_button :if={@unit["unitDeltaX"]} text={@unit["unitDeltaX"]} tooltip="Copy delta X" />
           </div>
         </div>
         <div>
-          <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1" title="Y coordinate of the secp256k1 delta point for value balance verification">Delta Y</div>
+          <div
+            class="text-xs text-base-content/60 uppercase tracking-wide mb-1"
+            title="Y coordinate of the secp256k1 delta point for value balance verification"
+          >
+            Delta Y
+          </div>
           <div class="flex items-center gap-2">
             <code class="hash-display text-sm break-all">{@unit["unitDeltaY"] || "-"}</code>
             <.copy_button :if={@unit["unitDeltaY"]} text={@unit["unitDeltaY"]} tooltip="Copy delta Y" />
@@ -306,5 +378,4 @@ defmodule AnomaExplorerWeb.ComplianceLive do
     </div>
     """
   end
-
 end

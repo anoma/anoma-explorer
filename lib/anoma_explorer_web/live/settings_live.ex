@@ -952,38 +952,39 @@ defmodule AnomaExplorerWeb.SettingsLive do
     end
   end
 
-  defp fallback_explorer_url(network, address) do
-    base_url =
-      case network do
-        # Ethereum
-        "eth-mainnet" -> "https://etherscan.io/address/"
-        "eth-sepolia" -> "https://sepolia.etherscan.io/address/"
-        # Base
-        "base-mainnet" -> "https://basescan.org/address/"
-        "base-sepolia" -> "https://sepolia.basescan.org/address/"
-        # Polygon
-        "polygon-mainnet" -> "https://polygonscan.com/address/"
-        "polygon-mumbai" -> "https://mumbai.polygonscan.com/address/"
-        # Arbitrum
-        "arbitrum-mainnet" -> "https://arbiscan.io/address/"
-        "arb-mainnet" -> "https://arbiscan.io/address/"
-        "arbitrum-sepolia" -> "https://sepolia.arbiscan.io/address/"
-        "arb-sepolia" -> "https://sepolia.arbiscan.io/address/"
-        # Optimism
-        "optimism-mainnet" -> "https://optimistic.etherscan.io/address/"
-        "op-mainnet" -> "https://optimistic.etherscan.io/address/"
-        "optimism-sepolia" -> "https://sepolia-optimism.etherscan.io/address/"
-        "op-sepolia" -> "https://sepolia-optimism.etherscan.io/address/"
-        # BSC
-        "bsc-mainnet" -> "https://bscscan.com/address/"
-        "bsc-testnet" -> "https://testnet.bscscan.com/address/"
-        # Avalanche
-        "avalanche-mainnet" -> "https://snowtrace.io/address/"
-        "avalanche-fuji" -> "https://testnet.snowtrace.io/address/"
-        _ -> nil
-      end
+  @explorer_urls %{
+    # Ethereum
+    "eth-mainnet" => "https://etherscan.io/address/",
+    "eth-sepolia" => "https://sepolia.etherscan.io/address/",
+    # Base
+    "base-mainnet" => "https://basescan.org/address/",
+    "base-sepolia" => "https://sepolia.basescan.org/address/",
+    # Polygon
+    "polygon-mainnet" => "https://polygonscan.com/address/",
+    "polygon-mumbai" => "https://mumbai.polygonscan.com/address/",
+    # Arbitrum
+    "arbitrum-mainnet" => "https://arbiscan.io/address/",
+    "arb-mainnet" => "https://arbiscan.io/address/",
+    "arbitrum-sepolia" => "https://sepolia.arbiscan.io/address/",
+    "arb-sepolia" => "https://sepolia.arbiscan.io/address/",
+    # Optimism
+    "optimism-mainnet" => "https://optimistic.etherscan.io/address/",
+    "op-mainnet" => "https://optimistic.etherscan.io/address/",
+    "optimism-sepolia" => "https://sepolia-optimism.etherscan.io/address/",
+    "op-sepolia" => "https://sepolia-optimism.etherscan.io/address/",
+    # BSC
+    "bsc-mainnet" => "https://bscscan.com/address/",
+    "bsc-testnet" => "https://testnet.bscscan.com/address/",
+    # Avalanche
+    "avalanche-mainnet" => "https://snowtrace.io/address/",
+    "avalanche-fuji" => "https://testnet.snowtrace.io/address/"
+  }
 
-    if base_url, do: base_url <> address, else: "#"
+  defp fallback_explorer_url(network, address) do
+    case Map.get(@explorer_urls, network) do
+      nil -> "#"
+      base_url -> base_url <> address
+    end
   end
 
   defp github_release_url(github_url, version) do

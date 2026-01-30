@@ -36,7 +36,11 @@ defmodule AnomaExplorer.Indexer.Networks do
       explorer: "https://mumbai.polygonscan.com"
     },
     80_002 => %{name: "Polygon Amoy", short: "Amoy", explorer: "https://amoy.polygonscan.com"},
-    84_531 => %{name: "Base Goerli", short: "Base Goerli", explorer: "https://goerli.basescan.org"},
+    84_531 => %{
+      name: "Base Goerli",
+      short: "Base Goerli",
+      explorer: "https://goerli.basescan.org"
+    },
     84_532 => %{name: "Base Sepolia", short: "Base Sep", explorer: "https://sepolia.basescan.org"},
     421_613 => %{
       name: "Arbitrum Goerli",

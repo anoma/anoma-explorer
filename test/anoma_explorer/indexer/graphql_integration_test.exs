@@ -210,7 +210,7 @@ defmodule AnomaExplorer.Indexer.GraphQLIntegrationTest do
               # Pages should not overlap (if there's enough data)
               page1_ids = Enum.map(page1, & &1["id"])
               page2_ids = Enum.map(page2, & &1["id"])
-              assert Enum.empty?(page1_ids -- page1_ids ++ page2_ids) or Enum.empty?(page2_ids)
+              assert Enum.empty?(page1_ids -- (page1_ids ++ page2_ids)) or Enum.empty?(page2_ids)
 
             {:error, _} ->
               :ok

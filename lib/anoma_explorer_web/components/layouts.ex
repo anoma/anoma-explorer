@@ -88,7 +88,11 @@ defmodule AnomaExplorerWeb.Layouts do
               <span>Compliances</span>
             </.link>
 
-            <.link navigate="/resources" class={nav_class(@current_path, "/resources")} title="Resources">
+            <.link
+              navigate="/resources"
+              class={nav_class(@current_path, "/resources")}
+              title="Resources"
+            >
               <.icon name="hero-cube" class="w-5 h-5" />
               <span>Resources</span>
             </.link>
@@ -108,7 +112,11 @@ defmodule AnomaExplorerWeb.Layouts do
               <span>Commitments</span>
             </.link>
 
-            <.link navigate="/nullifiers" class={nav_class(@current_path, "/nullifiers")} title="Nullifiers">
+            <.link
+              navigate="/nullifiers"
+              class={nav_class(@current_path, "/nullifiers")}
+              title="Nullifiers"
+            >
               <.icon name="hero-no-symbol" class="w-5 h-5" />
               <span>Nullifiers</span>
             </.link>

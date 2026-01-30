@@ -53,6 +53,7 @@ defmodule AnomaExplorerWeb.LogicsLive do
         {:ok, _} ->
           socket = load_logics(socket)
           {:noreply, assign(socket, :connection_status, :ok)}
+
         {:error, reason} ->
           {:noreply,
            socket
@@ -189,10 +190,12 @@ defmodule AnomaExplorerWeb.LogicsLive do
     case SetupHandlers.handle_save_url(socket, url) do
       {:ok, socket} ->
         send(self(), :check_connection)
+
         {:noreply,
          socket
          |> assign(:configured, true)
          |> assign(:loading, true)}
+
       {:error, socket} ->
         {:noreply, socket}
     end
@@ -419,15 +422,27 @@ defmodule AnomaExplorerWeb.LogicsLive do
                   <span class="text-success text-xs shrink-0" title="Commitment">C</span>
                 <% end %>
                 <%= if logic["resource"] do %>
-                  <a href={"/resources/#{logic["resource"]["id"]}"} class="font-mono text-sm hover:text-primary break-all">
+                  <a
+                    href={"/resources/#{logic["resource"]["id"]}"}
+                    class="font-mono text-sm hover:text-primary break-all"
+                  >
                     {logic["tag"]}
                   </a>
                 <% else %>
-                  <a href={"/logics/#{logic["id"]}"} class="font-mono text-sm hover:text-primary break-all" title="No linked resource">
+                  <a
+                    href={"/logics/#{logic["id"]}"}
+                    class="font-mono text-sm hover:text-primary break-all"
+                    title="No linked resource"
+                  >
                     {logic["tag"]}
                   </a>
                 <% end %>
-                <.copy_button :if={logic["tag"]} text={logic["tag"]} tooltip="Copy resource ID" class="shrink-0" />
+                <.copy_button
+                  :if={logic["tag"]}
+                  text={logic["tag"]}
+                  tooltip="Copy resource ID"
+                  class="shrink-0"
+                />
               </div>
               <%= if logic["logicRef"] do %>
                 <div class="flex items-center gap-1 text-xs text-base-content/60">
@@ -443,9 +458,14 @@ defmodule AnomaExplorerWeb.LogicsLive do
                     href={"/transactions/#{logic["action"]["transaction"]["id"]}"}
                     class="font-mono hover:text-primary"
                   >
-                    {Formatting.truncate_hash(logic["action"]["transaction"]["evmTransaction"]["txHash"])}
+                    {Formatting.truncate_hash(
+                      logic["action"]["transaction"]["evmTransaction"]["txHash"]
+                    )}
                   </a>
-                  <.copy_button text={logic["action"]["transaction"]["evmTransaction"]["txHash"]} tooltip="Copy tx hash" />
+                  <.copy_button
+                    text={logic["action"]["transaction"]["evmTransaction"]["txHash"]}
+                    tooltip="Copy tx hash"
+                  />
                 </div>
               <% end %>
               <div class="flex items-center gap-1.5 text-xs text-base-content/50 flex-wrap">
@@ -459,8 +479,12 @@ defmodule AnomaExplorerWeb.LogicsLive do
                   </span>
                   <span>•</span>
                 <% end %>
-                <span class="badge badge-ghost badge-xs">A:{logic["applicationPayloadCount"] || 0}</span>
-                <span class="badge badge-ghost badge-xs">D:{logic["discoveryPayloadCount"] || 0}</span>
+                <span class="badge badge-ghost badge-xs">
+                  A:{logic["applicationPayloadCount"] || 0}
+                </span>
+                <span class="badge badge-ghost badge-xs">
+                  D:{logic["discoveryPayloadCount"] || 0}
+                </span>
                 <span class="badge badge-ghost badge-xs">E:{logic["externalPayloadCount"] || 0}</span>
               </div>
             </div>
@@ -473,7 +497,9 @@ defmodule AnomaExplorerWeb.LogicsLive do
         <table class="data-table w-full">
           <thead>
             <tr>
-              <th title="Resource identifier - nullifier hash (consumed) or commitment hash (created)">Resource ID</th>
+              <th title="Resource identifier - nullifier hash (consumed) or commitment hash (created)">
+                Resource ID
+              </th>
               <th title="Payload counts: A=Application, D=Discovery, E=External">Payloads</th>
               <th title="Blockchain network where this logic input was recorded">Network</th>
             </tr>
@@ -490,11 +516,18 @@ defmodule AnomaExplorerWeb.LogicsLive do
                         <span class="text-success text-xs" title="Commitment">C</span>
                       <% end %>
                       <%= if logic["resource"] do %>
-                        <a href={"/resources/#{logic["resource"]["id"]}"} class="font-mono text-sm hover:text-primary">
+                        <a
+                          href={"/resources/#{logic["resource"]["id"]}"}
+                          class="font-mono text-sm hover:text-primary"
+                        >
                           {logic["tag"]}
                         </a>
                       <% else %>
-                        <a href={"/logics/#{logic["id"]}"} class="font-mono text-sm hover:text-primary" title="No linked resource">
+                        <a
+                          href={"/logics/#{logic["id"]}"}
+                          class="font-mono text-sm hover:text-primary"
+                          title="No linked resource"
+                        >
                           {logic["tag"]}
                         </a>
                       <% end %>
@@ -510,19 +543,31 @@ defmodule AnomaExplorerWeb.LogicsLive do
                     <%= if logic["action"] && logic["action"]["transaction"] do %>
                       <div class="flex items-center gap-1 text-xs text-base-content/50">
                         <span>tx:</span>
-                        <a href={"/transactions/#{logic["action"]["transaction"]["id"]}"} class="font-mono hover:text-primary">
+                        <a
+                          href={"/transactions/#{logic["action"]["transaction"]["id"]}"}
+                          class="font-mono hover:text-primary"
+                        >
                           {logic["action"]["transaction"]["evmTransaction"]["txHash"]}
                         </a>
-                        <.copy_button text={logic["action"]["transaction"]["evmTransaction"]["txHash"]} tooltip="Copy tx hash" />
+                        <.copy_button
+                          text={logic["action"]["transaction"]["evmTransaction"]["txHash"]}
+                          tooltip="Copy tx hash"
+                        />
                       </div>
                     <% end %>
                   </div>
                 </td>
                 <td>
                   <div class="flex gap-1">
-                    <span class="badge badge-ghost badge-xs" title="Application payloads">A:{logic["applicationPayloadCount"] || 0}</span>
-                    <span class="badge badge-ghost badge-xs" title="Discovery payloads">D:{logic["discoveryPayloadCount"] || 0}</span>
-                    <span class="badge badge-ghost badge-xs" title="External payloads">E:{logic["externalPayloadCount"] || 0}</span>
+                    <span class="badge badge-ghost badge-xs" title="Application payloads">
+                      A:{logic["applicationPayloadCount"] || 0}
+                    </span>
+                    <span class="badge badge-ghost badge-xs" title="Discovery payloads">
+                      D:{logic["discoveryPayloadCount"] || 0}
+                    </span>
+                    <span class="badge badge-ghost badge-xs" title="External payloads">
+                      E:{logic["externalPayloadCount"] || 0}
+                    </span>
                   </div>
                 </td>
                 <td>
@@ -556,5 +601,4 @@ defmodule AnomaExplorerWeb.LogicsLive do
     </div>
     """
   end
-
 end

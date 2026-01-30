@@ -376,7 +376,10 @@ defmodule AnomaExplorerWeb.CompliancesLive do
             <div class="flex flex-col gap-1">
               <div class="flex items-start gap-1">
                 <span class="text-xs text-base-content/60 shrink-0">nullifier:</span>
-                <a href={"/compliances/#{unit["id"]}"} class="font-mono text-sm hover:text-primary break-all">
+                <a
+                  href={"/compliances/#{unit["id"]}"}
+                  class="font-mono text-sm hover:text-primary break-all"
+                >
                   {unit["consumedNullifier"]}
                 </a>
                 <.copy_button
@@ -403,7 +406,9 @@ defmodule AnomaExplorerWeb.CompliancesLive do
                     href={"/transactions/#{unit["action"]["transaction"]["id"]}"}
                     class="font-mono hover:text-primary"
                   >
-                    {Formatting.truncate_hash(unit["action"]["transaction"]["evmTransaction"]["txHash"])}
+                    {Formatting.truncate_hash(
+                      unit["action"]["transaction"]["evmTransaction"]["txHash"]
+                    )}
                   </a>
                   <.copy_button
                     text={unit["action"]["transaction"]["evmTransaction"]["txHash"]}
@@ -440,7 +445,9 @@ defmodule AnomaExplorerWeb.CompliancesLive do
         <table class="data-table w-full">
           <thead>
             <tr>
-              <th title="Hash proving the input resource was consumed - prevents double-spending">Nullifier</th>
+              <th title="Hash proving the input resource was consumed - prevents double-spending">
+                Nullifier
+              </th>
               <th title="Blockchain network where this compliance unit was recorded">Network</th>
               <th title="Block number where this compliance unit was included">Block</th>
             </tr>
@@ -451,7 +458,10 @@ defmodule AnomaExplorerWeb.CompliancesLive do
                 <td>
                   <div class="flex flex-col gap-0.5">
                     <div class="flex items-center gap-1">
-                      <a href={"/compliances/#{unit["id"]}"} class="font-mono text-sm hover:text-primary">
+                      <a
+                        href={"/compliances/#{unit["id"]}"}
+                        class="font-mono text-sm hover:text-primary"
+                      >
                         {unit["consumedNullifier"]}
                       </a>
                       <.copy_button
@@ -472,10 +482,16 @@ defmodule AnomaExplorerWeb.CompliancesLive do
                     <%= if unit["action"] && unit["action"]["transaction"] do %>
                       <div class="flex items-center gap-1 text-xs text-base-content/50">
                         <span>tx:</span>
-                        <a href={"/transactions/#{unit["action"]["transaction"]["id"]}"} class="font-mono hover:text-primary">
+                        <a
+                          href={"/transactions/#{unit["action"]["transaction"]["id"]}"}
+                          class="font-mono hover:text-primary"
+                        >
                           {unit["action"]["transaction"]["evmTransaction"]["txHash"]}
                         </a>
-                        <.copy_button text={unit["action"]["transaction"]["evmTransaction"]["txHash"]} tooltip="Copy tx hash" />
+                        <.copy_button
+                          text={unit["action"]["transaction"]["evmTransaction"]["txHash"]}
+                          tooltip="Copy tx hash"
+                        />
                       </div>
                     <% end %>
                   </div>
@@ -491,13 +507,21 @@ defmodule AnomaExplorerWeb.CompliancesLive do
                   <%= if unit["action"] do %>
                     <div class="flex items-center gap-1">
                       <%= if block_url = Networks.block_url(unit["action"]["chainId"], unit["action"]["blockNumber"]) do %>
-                        <a href={block_url} target="_blank" rel="noopener" class="font-mono text-sm link link-hover">
+                        <a
+                          href={block_url}
+                          target="_blank"
+                          rel="noopener"
+                          class="font-mono text-sm link link-hover"
+                        >
                           {unit["action"]["blockNumber"]}
                         </a>
                       <% else %>
                         <span class="font-mono text-sm">{unit["action"]["blockNumber"]}</span>
                       <% end %>
-                      <.copy_button text={to_string(unit["action"]["blockNumber"])} tooltip="Copy block number" />
+                      <.copy_button
+                        text={to_string(unit["action"]["blockNumber"])}
+                        tooltip="Copy block number"
+                      />
                     </div>
                   <% else %>
                     -
@@ -527,5 +551,4 @@ defmodule AnomaExplorerWeb.CompliancesLive do
     </div>
     """
   end
-
 end

@@ -209,35 +209,39 @@ defmodule AnomaExplorerWeb.AdminAuth do
   @spec handle_info(atom(), Phoenix.LiveView.Socket.t()) ::
           {:handled, Phoenix.LiveView.Socket.t()} | :not_handled
   def handle_info(:admin_check_expiration, socket) do
-    if socket.assigns.admin_authorized do
-      if authorized?(socket.assigns.admin_authorized_at, socket.assigns.admin_timeout_ms) do
+    cond do
+      not socket.assigns.admin_authorized ->
+        {:handled, socket}
+
+      authorized?(socket.assigns.admin_authorized_at, socket.assigns.admin_timeout_ms) ->
         # Still valid, schedule next check
-        remaining =
-          socket.assigns.admin_authorized_at + socket.assigns.admin_timeout_ms -
-            System.system_time(:millisecond)
-
-        if remaining > 0 do
-          Process.send_after(self(), :admin_check_expiration, min(remaining + 100, 60_000))
-        end
-
+        schedule_next_expiration_check(socket.assigns)
         {:handled, socket}
-      else
+
+      true ->
         # Expired
-        socket =
-          socket
-          |> assign(:admin_authorized, false)
-          |> assign(:admin_authorized_at, nil)
-          |> push_event("admin_clear_session", %{})
-          |> put_flash(:info, "Admin session expired")
-
-        {:handled, socket}
-      end
-    else
-      {:handled, socket}
+        {:handled, expire_admin_session(socket)}
     end
   end
 
   def handle_info(_msg, _socket), do: :not_handled
+
+  defp expire_admin_session(socket) do
+    socket
+    |> assign(:admin_authorized, false)
+    |> assign(:admin_authorized_at, nil)
+    |> push_event("admin_clear_session", %{})
+    |> put_flash(:info, "Admin session expired")
+  end
+
+  defp schedule_next_expiration_check(assigns) do
+    remaining =
+      assigns.admin_authorized_at + assigns.admin_timeout_ms - System.system_time(:millisecond)
+
+    if remaining > 0 do
+      Process.send_after(self(), :admin_check_expiration, min(remaining + 100, 60_000))
+    end
+  end
 
   # Schedules an expiration check message
   defp schedule_expiration_check(authorized_at, timeout_ms) do
