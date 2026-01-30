@@ -409,66 +409,100 @@ defmodule AnomaExplorerWeb.CommitmentsLive do
         <p>No commitment tree roots found</p>
       </div>
     <% else %>
-      <div class="overflow-x-auto">
+      <%!-- Mobile card layout --%>
+      <div class="space-y-3 lg:hidden">
+        <%= for commitment <- @commitments do %>
+          <div class="p-3 rounded-lg bg-base-200/50 hover:bg-base-200 transition-colors">
+            <div class="flex flex-col gap-1">
+              <div class="flex items-start gap-1">
+                <code class="font-mono text-sm break-all">{commitment["root"]}</code>
+                <.copy_button
+                  :if={commitment["root"]}
+                  text={commitment["root"]}
+                  tooltip="Copy root"
+                  class="shrink-0"
+                />
+              </div>
+              <%= if commitment["txHash"] do %>
+                <div class="flex items-center gap-1 text-xs text-base-content/60">
+                  <span>tx:</span>
+                  <code class="font-mono">{Formatting.truncate_hash(commitment["txHash"])}</code>
+                  <.copy_button text={commitment["txHash"]} tooltip="Copy tx hash" />
+                </div>
+              <% end %>
+              <div class="flex items-center gap-1.5 text-xs text-base-content/50 flex-wrap">
+                <span
+                  class="hover:text-primary cursor-pointer"
+                  phx-click="show_chain_info"
+                  phx-value-chain-id={commitment["chainId"]}
+                >
+                  {Networks.short_name(commitment["chainId"])}
+                </span>
+                <span>•</span>
+                <%= if block_url = Networks.block_url(commitment["chainId"], commitment["blockNumber"]) do %>
+                  <a href={block_url} target="_blank" rel="noopener" class="hover:text-primary">
+                    #{commitment["blockNumber"]}
+                  </a>
+                <% else %>
+                  <span>#{commitment["blockNumber"]}</span>
+                <% end %>
+                <span>•</span>
+                <span>{Formatting.format_timestamp(commitment["timestamp"])}</span>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <%!-- Desktop table layout --%>
+      <div class="hidden lg:block overflow-x-auto">
         <table class="data-table w-full">
           <thead>
             <tr>
               <th title="Merkle root of the commitment tree">Root</th>
-              <th class="hidden sm:table-cell" title="Blockchain network">Network</th>
-              <th class="hidden sm:table-cell" title="Block number">Block</th>
-              <th title="Transaction hash">
-                <span class="hidden sm:inline">Transaction</span>
-                <span class="sm:hidden">Tx</span>
-              </th>
-              <th class="hidden lg:table-cell" title="Timestamp">Time</th>
+              <th title="Blockchain network">Network</th>
+              <th title="Block number">Block</th>
+              <th title="Timestamp">Time</th>
             </tr>
           </thead>
           <tbody>
             <%= for commitment <- @commitments do %>
               <tr class="hover:bg-base-200/50">
                 <td>
-                  <div class="flex flex-col">
+                  <div class="flex flex-col gap-0.5">
                     <div class="flex items-center gap-1">
-                      <code class="hash-display text-xs">{Formatting.truncate_hash(commitment["root"])}</code>
+                      <code class="font-mono text-sm">{commitment["root"]}</code>
                       <.copy_button
                         :if={commitment["root"]}
                         text={commitment["root"]}
                         tooltip="Copy root"
-                        class="hidden sm:inline-flex"
                       />
                     </div>
-                    <span class="text-xs text-base-content/50 lg:hidden">
-                      {Formatting.format_timestamp(commitment["timestamp"])}
-                    </span>
-                  </div>
-                </td>
-                <td class="hidden sm:table-cell">
-                  <.network_button chain_id={commitment["chainId"]} />
-                </td>
-                <td class="hidden sm:table-cell">
-                  <div class="flex items-center gap-1">
-                    <span class="font-mono text-sm">{commitment["blockNumber"]}</span>
-                    <.copy_button
-                      text={to_string(commitment["blockNumber"])}
-                      tooltip="Copy block number"
-                    />
+                    <%= if commitment["txHash"] do %>
+                      <div class="flex items-center gap-1 text-xs text-base-content/50">
+                        <span>tx:</span>
+                        <code class="font-mono">{commitment["txHash"]}</code>
+                        <.copy_button text={commitment["txHash"]} tooltip="Copy tx hash" />
+                      </div>
+                    <% end %>
                   </div>
                 </td>
                 <td>
-                  <%= if commitment["txHash"] do %>
-                    <div class="flex items-center gap-1">
-                      <code class="hash-display text-xs">{Formatting.truncate_hash(commitment["txHash"])}</code>
-                      <.copy_button
-                        text={commitment["txHash"]}
-                        tooltip="Copy tx hash"
-                        class="hidden sm:inline-flex"
-                      />
-                    </div>
-                  <% else %>
-                    -
-                  <% end %>
+                  <.network_button chain_id={commitment["chainId"]} />
                 </td>
-                <td class="hidden lg:table-cell text-base-content/60 text-sm">
+                <td>
+                  <div class="flex items-center gap-1">
+                    <%= if block_url = Networks.block_url(commitment["chainId"], commitment["blockNumber"]) do %>
+                      <a href={block_url} target="_blank" rel="noopener" class="font-mono text-sm link link-hover">
+                        {commitment["blockNumber"]}
+                      </a>
+                    <% else %>
+                      <span class="font-mono text-sm">{commitment["blockNumber"]}</span>
+                    <% end %>
+                    <.copy_button text={to_string(commitment["blockNumber"])} tooltip="Copy block number" />
+                  </div>
+                </td>
+                <td class="text-base-content/60 text-sm">
                   {Formatting.format_timestamp(commitment["timestamp"])}
                 </td>
               </tr>

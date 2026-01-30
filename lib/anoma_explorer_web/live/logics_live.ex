@@ -7,6 +7,7 @@ defmodule AnomaExplorerWeb.LogicsLive do
   alias AnomaExplorerWeb.Layouts
   alias AnomaExplorer.Indexer.GraphQL
   alias AnomaExplorer.Indexer.Client
+  alias AnomaExplorer.Indexer.Networks
   alias AnomaExplorer.Utils.Formatting
 
   alias AnomaExplorerWeb.Live.Helpers.SharedHandlers
@@ -407,90 +408,127 @@ defmodule AnomaExplorerWeb.LogicsLive do
         <p>No logic inputs found</p>
       </div>
     <% else %>
-      <div class="overflow-x-auto">
+      <%!-- Mobile card layout --%>
+      <div class="space-y-3 lg:hidden">
+        <%= for logic <- @logics do %>
+          <div class="p-3 rounded-lg bg-base-200/50 hover:bg-base-200 transition-colors">
+            <div class="flex flex-col gap-1">
+              <div class="flex items-start gap-1">
+                <%= if logic["isConsumed"] do %>
+                  <span class="text-error text-xs shrink-0" title="Nullifier">N</span>
+                <% else %>
+                  <span class="text-success text-xs shrink-0" title="Commitment">C</span>
+                <% end %>
+                <%= if logic["resource"] do %>
+                  <a href={"/resources/#{logic["resource"]["id"]}"} class="font-mono text-sm hover:text-primary break-all">
+                    {logic["tag"]}
+                  </a>
+                <% else %>
+                  <a href={"/logics/#{logic["id"]}"} class="font-mono text-sm hover:text-primary break-all" title="No linked resource">
+                    {logic["tag"]}
+                  </a>
+                <% end %>
+                <.copy_button :if={logic["tag"]} text={logic["tag"]} tooltip="Copy resource ID" class="shrink-0" />
+              </div>
+              <%= if logic["logicRef"] do %>
+                <div class="flex items-center gap-1 text-xs text-base-content/60">
+                  <span>logic:</span>
+                  <code class="font-mono">{Formatting.truncate_hash(logic["logicRef"])}</code>
+                  <.copy_button text={logic["logicRef"]} tooltip="Copy logic ref" />
+                </div>
+              <% end %>
+              <%= if logic["action"] && logic["action"]["transaction"] do %>
+                <div class="flex items-center gap-1 text-xs text-base-content/60">
+                  <span>tx:</span>
+                  <a
+                    href={"/transactions/#{logic["action"]["transaction"]["id"]}"}
+                    class="font-mono hover:text-primary"
+                  >
+                    {Formatting.truncate_hash(logic["action"]["transaction"]["evmTransaction"]["txHash"])}
+                  </a>
+                  <.copy_button text={logic["action"]["transaction"]["evmTransaction"]["txHash"]} tooltip="Copy tx hash" />
+                </div>
+              <% end %>
+              <div class="flex items-center gap-1.5 text-xs text-base-content/50 flex-wrap">
+                <%= if logic["action"] do %>
+                  <span
+                    class="hover:text-primary cursor-pointer"
+                    phx-click="show_chain_info"
+                    phx-value-chain-id={logic["action"]["chainId"]}
+                  >
+                    {Networks.short_name(logic["action"]["chainId"])}
+                  </span>
+                  <span>•</span>
+                <% end %>
+                <span class="badge badge-ghost badge-xs">A:{logic["applicationPayloadCount"] || 0}</span>
+                <span class="badge badge-ghost badge-xs">D:{logic["discoveryPayloadCount"] || 0}</span>
+                <span class="badge badge-ghost badge-xs">E:{logic["externalPayloadCount"] || 0}</span>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <%!-- Desktop table layout --%>
+      <div class="hidden lg:block overflow-x-auto">
         <table class="data-table w-full">
           <thead>
             <tr>
-              <th title="Resource identifier - nullifier hash (consumed) or commitment hash (created)">
-                <span class="hidden sm:inline">Resource ID</span>
-                <span class="sm:hidden">ID</span>
-              </th>
-              <th class="hidden md:table-cell" title="Reference to the logic circuit (verifying key) that validates this resource">Logic Ref</th>
-              <th class="hidden lg:table-cell" title="Payload counts: A=Application, D=Discovery, E=External">Payloads</th>
-              <th class="hidden sm:table-cell" title="Blockchain network where this logic input was recorded">Network</th>
-              <th title="Transaction containing this logic input">
-                <span class="hidden sm:inline">Transaction</span>
-                <span class="sm:hidden">Tx</span>
-              </th>
+              <th title="Resource identifier - nullifier hash (consumed) or commitment hash (created)">Resource ID</th>
+              <th title="Payload counts: A=Application, D=Discovery, E=External">Payloads</th>
+              <th title="Blockchain network where this logic input was recorded">Network</th>
             </tr>
           </thead>
           <tbody>
             <%= for logic <- @logics do %>
               <tr class="hover:bg-base-200/50">
                 <td>
-                  <div class="flex items-center gap-1">
-                    <%= if logic["isConsumed"] do %>
-                      <span class="text-error text-xs" title="Nullifier">N</span>
-                    <% else %>
-                      <span class="text-success text-xs" title="Commitment">C</span>
+                  <div class="flex flex-col gap-0.5">
+                    <div class="flex items-center gap-1">
+                      <%= if logic["isConsumed"] do %>
+                        <span class="text-error text-xs" title="Nullifier">N</span>
+                      <% else %>
+                        <span class="text-success text-xs" title="Commitment">C</span>
+                      <% end %>
+                      <%= if logic["resource"] do %>
+                        <a href={"/resources/#{logic["resource"]["id"]}"} class="font-mono text-sm hover:text-primary">
+                          {logic["tag"]}
+                        </a>
+                      <% else %>
+                        <a href={"/logics/#{logic["id"]}"} class="font-mono text-sm hover:text-primary" title="No linked resource">
+                          {logic["tag"]}
+                        </a>
+                      <% end %>
+                      <.copy_button :if={logic["tag"]} text={logic["tag"]} tooltip="Copy resource ID" />
+                    </div>
+                    <%= if logic["logicRef"] do %>
+                      <div class="flex items-center gap-1 text-xs text-base-content/50">
+                        <span>logic:</span>
+                        <code class="font-mono">{logic["logicRef"]}</code>
+                        <.copy_button text={logic["logicRef"]} tooltip="Copy logic ref" />
+                      </div>
                     <% end %>
-                    <%= if logic["resource"] do %>
-                      <a href={"/resources/#{logic["resource"]["id"]}"} class="hash-display text-xs hover:text-primary">
-                        {Formatting.truncate_hash(logic["tag"])}
-                      </a>
-                    <% else %>
-                      <a href={"/logics/#{logic["id"]}"} class="hash-display text-xs hover:text-primary" title="No linked resource - view logic input">
-                        {Formatting.truncate_hash(logic["tag"])}
-                      </a>
+                    <%= if logic["action"] && logic["action"]["transaction"] do %>
+                      <div class="flex items-center gap-1 text-xs text-base-content/50">
+                        <span>tx:</span>
+                        <a href={"/transactions/#{logic["action"]["transaction"]["id"]}"} class="font-mono hover:text-primary">
+                          {logic["action"]["transaction"]["evmTransaction"]["txHash"]}
+                        </a>
+                        <.copy_button text={logic["action"]["transaction"]["evmTransaction"]["txHash"]} tooltip="Copy tx hash" />
+                      </div>
                     <% end %>
-                    <.copy_button :if={logic["tag"]} text={logic["tag"]} tooltip="Copy resource ID" class="hidden sm:inline-flex" />
                   </div>
-                </td>
-                <td class="hidden md:table-cell">
-                  <div class="flex items-center gap-1">
-                    <code class="hash-display text-xs">{Formatting.truncate_hash(logic["logicRef"])}</code>
-                    <.copy_button
-                      :if={logic["logicRef"]}
-                      text={logic["logicRef"]}
-                      tooltip="Copy logic ref"
-                    />
-                  </div>
-                </td>
-                <td class="hidden lg:table-cell">
-                  <div class="flex gap-1">
-                    <span class="badge badge-ghost badge-xs" title="Application payloads - app-specific data for the logic circuit">
-                      A:{logic["applicationPayloadCount"] || 0}
-                    </span>
-                    <span class="badge badge-ghost badge-xs" title="Discovery payloads - data for resource indexing">
-                      D:{logic["discoveryPayloadCount"] || 0}
-                    </span>
-                    <span class="badge badge-ghost badge-xs" title="External payloads - data stored off-chain">
-                      E:{logic["externalPayloadCount"] || 0}
-                    </span>
-                  </div>
-                </td>
-                <td class="hidden sm:table-cell">
-                  <%= if logic["action"] do %>
-                    <.network_button chain_id={logic["action"]["chainId"]} />
-                  <% else %>
-                    -
-                  <% end %>
                 </td>
                 <td>
-                  <%= if logic["action"] && logic["action"]["transaction"] do %>
-                    <div class="flex items-center gap-1">
-                      <a
-                        href={"/transactions/#{logic["action"]["transaction"]["id"]}"}
-                        class="hash-display text-xs hover:text-primary"
-                      >
-                        {Formatting.truncate_hash(logic["action"]["transaction"]["evmTransaction"]["txHash"])}
-                      </a>
-                      <.copy_button
-                        text={logic["action"]["transaction"]["evmTransaction"]["txHash"]}
-                        tooltip="Copy tx hash"
-                        class="hidden sm:inline-flex"
-                      />
-                    </div>
+                  <div class="flex gap-1">
+                    <span class="badge badge-ghost badge-xs" title="Application payloads">A:{logic["applicationPayloadCount"] || 0}</span>
+                    <span class="badge badge-ghost badge-xs" title="Discovery payloads">D:{logic["discoveryPayloadCount"] || 0}</span>
+                    <span class="badge badge-ghost badge-xs" title="External payloads">E:{logic["externalPayloadCount"] || 0}</span>
+                  </div>
+                </td>
+                <td>
+                  <%= if logic["action"] do %>
+                    <.network_button chain_id={logic["action"]["chainId"]} />
                   <% else %>
                     -
                   <% end %>

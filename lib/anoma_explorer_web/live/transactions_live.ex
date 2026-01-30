@@ -464,10 +464,10 @@ defmodule AnomaExplorerWeb.TransactionsLive do
                 </a>
                 <.copy_button text={evm_tx["txHash"]} tooltip="Copy tx hash" class="shrink-0" />
               </div>
-              <div class="flex items-center gap-1 text-xs text-base-content/60">
-                <span>from:</span>
-                <span class="font-mono">{Formatting.truncate_hash(evm_tx["from"])}</span>
-                <.copy_button :if={evm_tx["from"]} text={evm_tx["from"]} tooltip="Copy address" />
+              <div class="flex items-start gap-1 text-xs text-base-content/60">
+                <span class="shrink-0">from:</span>
+                <span class="font-mono break-all">{evm_tx["from"]}</span>
+                <.copy_button :if={evm_tx["from"]} text={evm_tx["from"]} tooltip="Copy address" class="shrink-0" />
               </div>
               <div class="flex items-center gap-1.5 text-xs text-base-content/50 flex-wrap">
                 <span
@@ -517,7 +517,6 @@ defmodule AnomaExplorerWeb.TransactionsLive do
               <th>Tx Hash</th>
               <th>Network</th>
               <th>Block</th>
-              <th>From</th>
               <th>Resources</th>
               <th>Time</th>
             </tr>
@@ -530,11 +529,18 @@ defmodule AnomaExplorerWeb.TransactionsLive do
               <% created = length(tags) - consumed %>
               <tr>
                 <td>
-                  <div class="flex items-center gap-1">
-                    <a href={"/transactions/#{tx["id"]}"} class="font-mono text-sm hover:text-primary">
-                      {evm_tx["txHash"]}
-                    </a>
-                    <.copy_button text={evm_tx["txHash"]} tooltip="Copy tx hash" />
+                  <div class="flex flex-col gap-0.5">
+                    <div class="flex items-center gap-1">
+                      <a href={"/transactions/#{tx["id"]}"} class="font-mono text-sm hover:text-primary">
+                        {evm_tx["txHash"]}
+                      </a>
+                      <.copy_button text={evm_tx["txHash"]} tooltip="Copy tx hash" />
+                    </div>
+                    <div class="flex items-center gap-1 text-xs text-base-content/50">
+                      <span>from:</span>
+                      <span class="font-mono">{evm_tx["from"]}</span>
+                      <.copy_button :if={evm_tx["from"]} text={evm_tx["from"]} tooltip="Copy address" />
+                    </div>
                   </div>
                 </td>
                 <td>
@@ -555,12 +561,6 @@ defmodule AnomaExplorerWeb.TransactionsLive do
                       <span class="font-mono text-sm">{evm_tx["blockNumber"]}</span>
                     <% end %>
                     <.copy_button text={to_string(evm_tx["blockNumber"])} tooltip="Copy block number" />
-                  </div>
-                </td>
-                <td>
-                  <div class="flex items-center gap-1">
-                    <span class="hash-display text-sm">{Formatting.truncate_hash(evm_tx["from"])}</span>
-                    <.copy_button :if={evm_tx["from"]} text={evm_tx["from"]} tooltip="Copy address" />
                   </div>
                 </td>
                 <td>

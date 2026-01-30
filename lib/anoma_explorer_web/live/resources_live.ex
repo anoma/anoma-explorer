@@ -477,78 +477,121 @@ defmodule AnomaExplorerWeb.ResourcesLive do
         <p>No resources found</p>
       </div>
     <% else %>
-      <div class="overflow-x-auto">
+      <%!-- Mobile card layout --%>
+      <div class="space-y-3 lg:hidden">
+        <%= for resource <- @resources do %>
+          <div class="p-3 rounded-lg bg-base-200/50 hover:bg-base-200 transition-colors">
+            <div class="flex flex-col gap-1">
+              <div class="flex items-start gap-1">
+                <%= if resource["isConsumed"] do %>
+                  <span class="text-error text-xs shrink-0" title="Nullifier">N</span>
+                <% else %>
+                  <span class="text-success text-xs shrink-0" title="Commitment">C</span>
+                <% end %>
+                <a href={"/resources/#{resource["id"]}"} class="font-mono text-sm hover:text-primary break-all">
+                  {resource["tag"]}
+                </a>
+                <.copy_button :if={resource["tag"]} text={resource["tag"]} tooltip="Copy resource ID" class="shrink-0" />
+              </div>
+              <%= if resource["logicRef"] do %>
+                <div class="flex items-center gap-1 text-xs text-base-content/60">
+                  <span>logic:</span>
+                  <code class="font-mono">{Formatting.truncate_hash(resource["logicRef"])}</code>
+                  <.copy_button text={resource["logicRef"]} tooltip="Copy logic ref" />
+                </div>
+              <% end %>
+              <%= if resource["transaction"] do %>
+                <div class="flex items-center gap-1 text-xs text-base-content/60">
+                  <span>tx:</span>
+                  <a
+                    href={"/transactions/#{resource["transaction"]["id"]}"}
+                    class="font-mono hover:text-primary"
+                  >
+                    {Formatting.truncate_hash(resource["transaction"]["evmTransaction"]["txHash"])}
+                  </a>
+                  <.copy_button text={resource["transaction"]["evmTransaction"]["txHash"]} tooltip="Copy tx hash" />
+                </div>
+              <% end %>
+              <div class="flex items-center gap-1.5 text-xs text-base-content/50 flex-wrap">
+                <span
+                  class="hover:text-primary cursor-pointer"
+                  phx-click="show_chain_info"
+                  phx-value-chain-id={resource["chainId"]}
+                >
+                  {Networks.short_name(resource["chainId"])}
+                </span>
+                <span>•</span>
+                <%= if block_url = Networks.block_url(resource["chainId"], resource["blockNumber"]) do %>
+                  <a href={block_url} target="_blank" rel="noopener" class="hover:text-primary">
+                    #{resource["blockNumber"]}
+                  </a>
+                <% else %>
+                  <span>#{resource["blockNumber"]}</span>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <%!-- Desktop table layout --%>
+      <div class="hidden lg:block overflow-x-auto">
         <table class="data-table w-full">
           <thead>
             <tr>
-              <th title="Unique identifier - nullifier hash (if consumed) or commitment hash (if created)">
-                <span class="hidden sm:inline">Resource ID</span>
-                <span class="sm:hidden">ID</span>
-              </th>
-              <th class="hidden sm:table-cell" title="Blockchain network where this resource exists">Network</th>
-              <th class="hidden md:table-cell" title="Reference to the logic circuit that validates this resource">Logic Ref</th>
-              <th class="hidden lg:table-cell" title="Block number where this resource was recorded">Block</th>
-              <th title="EVM transaction that created or consumed this resource">
-                <span class="hidden sm:inline">Transaction</span>
-                <span class="sm:hidden">Tx</span>
-              </th>
+              <th title="Unique identifier - nullifier hash (if consumed) or commitment hash (if created)">Resource ID</th>
+              <th title="Blockchain network where this resource exists">Network</th>
+              <th title="Block number where this resource was recorded">Block</th>
             </tr>
           </thead>
           <tbody>
             <%= for resource <- @resources do %>
               <tr class="hover:bg-base-200/50">
                 <td>
-                  <div class="flex items-center gap-1">
-                    <%= if resource["isConsumed"] do %>
-                      <span class="text-error text-xs" title="Nullifier">N</span>
-                    <% else %>
-                      <span class="text-success text-xs" title="Commitment">C</span>
+                  <div class="flex flex-col gap-0.5">
+                    <div class="flex items-center gap-1">
+                      <%= if resource["isConsumed"] do %>
+                        <span class="text-error text-xs" title="Nullifier">N</span>
+                      <% else %>
+                        <span class="text-success text-xs" title="Commitment">C</span>
+                      <% end %>
+                      <a href={"/resources/#{resource["id"]}"} class="font-mono text-sm hover:text-primary">
+                        {resource["tag"]}
+                      </a>
+                      <.copy_button :if={resource["tag"]} text={resource["tag"]} tooltip="Copy resource ID" />
+                    </div>
+                    <%= if resource["logicRef"] do %>
+                      <div class="flex items-center gap-1 text-xs text-base-content/50">
+                        <span>logic:</span>
+                        <code class="font-mono">{resource["logicRef"]}</code>
+                        <.copy_button text={resource["logicRef"]} tooltip="Copy logic ref" />
+                      </div>
                     <% end %>
-                    <a
-                      href={"/resources/#{resource["id"]}"}
-                      class="hash-display text-xs hover:text-primary"
-                    >
-                      {Formatting.truncate_hash(resource["tag"])}
-                    </a>
-                    <.copy_button :if={resource["tag"]} text={resource["tag"]} tooltip="Copy resource ID" class="hidden sm:inline-flex" />
-                  </div>
-                </td>
-                <td class="hidden sm:table-cell">
-                  <.network_button chain_id={resource["chainId"]} />
-                </td>
-                <td class="hidden md:table-cell">
-                  <div class="flex items-center gap-1">
-                    <code class="hash-display text-xs">{Formatting.truncate_hash(resource["logicRef"])}</code>
-                    <.copy_button
-                      :if={resource["logicRef"]}
-                      text={resource["logicRef"]}
-                      tooltip="Copy logic ref"
-                    />
-                  </div>
-                </td>
-                <td class="hidden lg:table-cell">
-                  <div class="flex items-center gap-1">
-                    <span class="font-mono text-sm">{resource["blockNumber"]}</span>
-                    <.copy_button
-                      text={to_string(resource["blockNumber"])}
-                      tooltip="Copy block number"
-                    />
+                    <%= if resource["transaction"] do %>
+                      <div class="flex items-center gap-1 text-xs text-base-content/50">
+                        <span>tx:</span>
+                        <a href={"/transactions/#{resource["transaction"]["id"]}"} class="font-mono hover:text-primary">
+                          {resource["transaction"]["evmTransaction"]["txHash"]}
+                        </a>
+                        <.copy_button text={resource["transaction"]["evmTransaction"]["txHash"]} tooltip="Copy tx hash" />
+                      </div>
+                    <% end %>
                   </div>
                 </td>
                 <td>
-                  <%= if resource["transaction"] do %>
-                    <div class="flex items-center gap-1">
-                      <a
-                        href={"/transactions/#{resource["transaction"]["id"]}"}
-                        class="hash-display text-xs hover:text-primary"
-                      >
-                        {Formatting.truncate_hash(resource["transaction"]["evmTransaction"]["txHash"])}
+                  <.network_button chain_id={resource["chainId"]} />
+                </td>
+                <td>
+                  <div class="flex items-center gap-1">
+                    <%= if block_url = Networks.block_url(resource["chainId"], resource["blockNumber"]) do %>
+                      <a href={block_url} target="_blank" rel="noopener" class="font-mono text-sm link link-hover">
+                        {resource["blockNumber"]}
                       </a>
-                      <.copy_button text={resource["transaction"]["evmTransaction"]["txHash"]} tooltip="Copy tx hash" class="hidden sm:inline-flex" />
-                    </div>
-                  <% else %>
-                    -
-                  <% end %>
+                    <% else %>
+                      <span class="font-mono text-sm">{resource["blockNumber"]}</span>
+                    <% end %>
+                    <.copy_button text={to_string(resource["blockNumber"])} tooltip="Copy block number" />
+                  </div>
                 </td>
               </tr>
             <% end %>

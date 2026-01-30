@@ -395,80 +395,120 @@ defmodule AnomaExplorerWeb.ActionsLive do
         <p>No actions found</p>
       </div>
     <% else %>
-      <div class="overflow-x-auto">
+      <%!-- Mobile card layout --%>
+      <div class="space-y-3 lg:hidden">
+        <%= for action <- @actions do %>
+          <div class="p-3 rounded-lg bg-base-200/50 hover:bg-base-200 transition-colors">
+            <div class="flex flex-col gap-1">
+              <div class="flex items-start gap-1">
+                <a href={"/actions/#{action["id"]}"} class="font-mono text-sm hover:text-primary break-all">
+                  {action["actionTreeRoot"]}
+                </a>
+                <.copy_button
+                  :if={action["actionTreeRoot"]}
+                  text={action["actionTreeRoot"]}
+                  tooltip="Copy action root"
+                  class="shrink-0"
+                />
+              </div>
+              <%= if action["transaction"] do %>
+                <div class="flex items-center gap-1 text-xs text-base-content/60">
+                  <span>tx:</span>
+                  <a
+                    href={"/transactions/#{action["transaction"]["id"]}"}
+                    class="font-mono hover:text-primary"
+                  >
+                    {Formatting.truncate_hash(action["transaction"]["evmTransaction"]["txHash"])}
+                  </a>
+                  <.copy_button
+                    text={action["transaction"]["evmTransaction"]["txHash"]}
+                    tooltip="Copy tx hash"
+                  />
+                </div>
+              <% end %>
+              <div class="flex items-center gap-1.5 text-xs text-base-content/50 flex-wrap">
+                <span
+                  class="hover:text-primary cursor-pointer"
+                  phx-click="show_chain_info"
+                  phx-value-chain-id={action["chainId"]}
+                >
+                  {Networks.short_name(action["chainId"])}
+                </span>
+                <span>•</span>
+                <%= if block_url = Networks.block_url(action["chainId"], action["blockNumber"]) do %>
+                  <a href={block_url} target="_blank" rel="noopener" class="hover:text-primary">
+                    #{action["blockNumber"]}
+                  </a>
+                <% else %>
+                  <span>#{action["blockNumber"]}</span>
+                <% end %>
+                <span>•</span>
+                <span>{Formatting.format_timestamp(action["timestamp"])}</span>
+                <span>•</span>
+                <span class="badge badge-ghost badge-xs">{action["tagCount"]} tags</span>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <%!-- Desktop table layout --%>
+      <div class="hidden lg:block overflow-x-auto">
         <table class="data-table w-full">
           <thead>
             <tr>
-              <th title="Merkle root uniquely identifying the action and all its contents">
-                <span class="hidden sm:inline">Action Root</span>
-                <span class="sm:hidden">Root</span>
-              </th>
-              <th class="hidden sm:table-cell" title="Blockchain network where this action was recorded">Network</th>
+              <th title="Merkle root uniquely identifying the action and all its contents">Action Root</th>
+              <th title="Blockchain network where this action was recorded">Network</th>
               <th title="Total number of resource tags (nullifiers + commitments)">Tags</th>
-              <th class="hidden sm:table-cell" title="Blockchain block number">Block</th>
-              <th title="EVM transaction that submitted this action">
-                <span class="hidden sm:inline">Transaction</span>
-                <span class="sm:hidden">Tx</span>
-              </th>
-              <th class="hidden lg:table-cell" title="When the action was recorded">Time</th>
+              <th title="Blockchain block number">Block</th>
+              <th title="When the action was recorded">Time</th>
             </tr>
           </thead>
           <tbody>
             <%= for action <- @actions do %>
               <tr class="hover:bg-base-200/50">
                 <td>
-                  <div class="flex flex-col">
+                  <div class="flex flex-col gap-0.5">
                     <div class="flex items-center gap-1">
-                      <a
-                        href={"/actions/#{action["id"]}"}
-                        class="hash-display text-xs hover:text-primary"
-                      >
-                        {Formatting.truncate_hash(action["actionTreeRoot"])}
+                      <a href={"/actions/#{action["id"]}"} class="font-mono text-sm hover:text-primary">
+                        {action["actionTreeRoot"]}
                       </a>
                       <.copy_button
                         :if={action["actionTreeRoot"]}
                         text={action["actionTreeRoot"]}
-                        tooltip="Copy action tree root"
-                        class="hidden sm:inline-flex"
+                        tooltip="Copy action root"
                       />
                     </div>
-                    <span class="text-xs text-base-content/50 lg:hidden">
-                      {Formatting.format_timestamp(action["timestamp"])}
-                    </span>
+                    <%= if action["transaction"] do %>
+                      <div class="flex items-center gap-1 text-xs text-base-content/50">
+                        <span>tx:</span>
+                        <a href={"/transactions/#{action["transaction"]["id"]}"} class="font-mono hover:text-primary">
+                          {action["transaction"]["evmTransaction"]["txHash"]}
+                        </a>
+                        <.copy_button text={action["transaction"]["evmTransaction"]["txHash"]} tooltip="Copy tx hash" />
+                      </div>
+                    <% end %>
                   </div>
                 </td>
-                <td class="hidden sm:table-cell">
+                <td>
                   <.network_button chain_id={action["chainId"]} />
                 </td>
                 <td>
                   <span class="badge badge-ghost badge-sm">{action["tagCount"]}</span>
                 </td>
-                <td class="hidden sm:table-cell">
+                <td>
                   <div class="flex items-center gap-1">
-                    <span class="font-mono text-sm">{action["blockNumber"]}</span>
+                    <%= if block_url = Networks.block_url(action["chainId"], action["blockNumber"]) do %>
+                      <a href={block_url} target="_blank" rel="noopener" class="font-mono text-sm link link-hover">
+                        {action["blockNumber"]}
+                      </a>
+                    <% else %>
+                      <span class="font-mono text-sm">{action["blockNumber"]}</span>
+                    <% end %>
                     <.copy_button text={to_string(action["blockNumber"])} tooltip="Copy block number" />
                   </div>
                 </td>
-                <td>
-                  <%= if action["transaction"] do %>
-                    <div class="flex items-center gap-1">
-                      <a
-                        href={"/transactions/#{action["transaction"]["id"]}"}
-                        class="hash-display text-xs hover:text-primary"
-                      >
-                        {Formatting.truncate_hash(action["transaction"]["evmTransaction"]["txHash"])}
-                      </a>
-                      <.copy_button
-                        text={action["transaction"]["evmTransaction"]["txHash"]}
-                        tooltip="Copy tx hash"
-                        class="hidden sm:inline-flex"
-                      />
-                    </div>
-                  <% else %>
-                    -
-                  <% end %>
-                </td>
-                <td class="hidden lg:table-cell text-base-content/60 text-sm">
+                <td class="text-base-content/60 text-sm">
                   {Formatting.format_timestamp(action["timestamp"])}
                 </td>
               </tr>

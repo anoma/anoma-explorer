@@ -8,6 +8,7 @@ defmodule AnomaExplorerWeb.CompliancesLive do
   alias AnomaExplorerWeb.IndexerSetupComponents
   alias AnomaExplorer.Indexer.GraphQL
   alias AnomaExplorer.Indexer.Client
+  alias AnomaExplorer.Indexer.Networks
   alias AnomaExplorer.Settings
   alias AnomaExplorer.Utils.Formatting
 
@@ -370,88 +371,135 @@ defmodule AnomaExplorerWeb.CompliancesLive do
         <p>No compliance units found</p>
       </div>
     <% else %>
-      <div class="overflow-x-auto">
+      <%!-- Mobile card layout --%>
+      <div class="space-y-3 lg:hidden">
+        <%= for unit <- @compliances do %>
+          <div class="p-3 rounded-lg bg-base-200/50 hover:bg-base-200 transition-colors">
+            <div class="flex flex-col gap-1">
+              <div class="flex items-start gap-1">
+                <span class="text-xs text-base-content/60 shrink-0">nullifier:</span>
+                <a href={"/compliances/#{unit["id"]}"} class="font-mono text-sm hover:text-primary break-all">
+                  {unit["consumedNullifier"]}
+                </a>
+                <.copy_button
+                  :if={unit["consumedNullifier"]}
+                  text={unit["consumedNullifier"]}
+                  tooltip="Copy nullifier"
+                  class="shrink-0"
+                />
+              </div>
+              <div class="flex items-start gap-1">
+                <span class="text-xs text-base-content/60 shrink-0">commitment:</span>
+                <code class="font-mono text-sm break-all">{unit["createdCommitment"]}</code>
+                <.copy_button
+                  :if={unit["createdCommitment"]}
+                  text={unit["createdCommitment"]}
+                  tooltip="Copy commitment"
+                  class="shrink-0"
+                />
+              </div>
+              <%= if unit["action"] && unit["action"]["transaction"] do %>
+                <div class="flex items-center gap-1 text-xs text-base-content/60">
+                  <span>tx:</span>
+                  <a
+                    href={"/transactions/#{unit["action"]["transaction"]["id"]}"}
+                    class="font-mono hover:text-primary"
+                  >
+                    {Formatting.truncate_hash(unit["action"]["transaction"]["evmTransaction"]["txHash"])}
+                  </a>
+                  <.copy_button
+                    text={unit["action"]["transaction"]["evmTransaction"]["txHash"]}
+                    tooltip="Copy tx hash"
+                  />
+                </div>
+              <% end %>
+              <%= if unit["action"] do %>
+                <div class="flex items-center gap-1.5 text-xs text-base-content/50 flex-wrap">
+                  <span
+                    class="hover:text-primary cursor-pointer"
+                    phx-click="show_chain_info"
+                    phx-value-chain-id={unit["action"]["chainId"]}
+                  >
+                    {Networks.short_name(unit["action"]["chainId"])}
+                  </span>
+                  <span>•</span>
+                  <%= if block_url = Networks.block_url(unit["action"]["chainId"], unit["action"]["blockNumber"]) do %>
+                    <a href={block_url} target="_blank" rel="noopener" class="hover:text-primary">
+                      #{unit["action"]["blockNumber"]}
+                    </a>
+                  <% else %>
+                    <span>#{unit["action"]["blockNumber"]}</span>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <%!-- Desktop table layout --%>
+      <div class="hidden lg:block overflow-x-auto">
         <table class="data-table w-full">
           <thead>
             <tr>
-              <th title="Hash proving the input resource was consumed - prevents double-spending">
-                <span class="hidden sm:inline">Nullifier</span>
-                <span class="sm:hidden">ID</span>
-              </th>
-              <th class="hidden md:table-cell" title="Hash representing the new output resource added to the commitment tree">Commitment</th>
-              <th class="hidden sm:table-cell" title="Blockchain network where this compliance unit was recorded">Network</th>
-              <th class="hidden sm:table-cell" title="Block number where this compliance unit was included">Block</th>
-              <th title="EVM transaction containing this compliance unit">
-                <span class="hidden sm:inline">Transaction</span>
-                <span class="sm:hidden">Tx</span>
-              </th>
+              <th title="Hash proving the input resource was consumed - prevents double-spending">Nullifier</th>
+              <th title="Blockchain network where this compliance unit was recorded">Network</th>
+              <th title="Block number where this compliance unit was included">Block</th>
             </tr>
           </thead>
           <tbody>
             <%= for unit <- @compliances do %>
               <tr class="hover:bg-base-200/50">
                 <td>
-                  <div class="flex items-center gap-1">
-                    <a
-                      href={"/compliances/#{unit["id"]}"}
-                      class="hash-display text-xs hover:text-primary"
-                    >
-                      {Formatting.truncate_hash(unit["consumedNullifier"])}
-                    </a>
-                    <.copy_button
-                      :if={unit["consumedNullifier"]}
-                      text={unit["consumedNullifier"]}
-                      tooltip="Copy nullifier"
-                      class="hidden sm:inline-flex"
-                    />
+                  <div class="flex flex-col gap-0.5">
+                    <div class="flex items-center gap-1">
+                      <a href={"/compliances/#{unit["id"]}"} class="font-mono text-sm hover:text-primary">
+                        {unit["consumedNullifier"]}
+                      </a>
+                      <.copy_button
+                        :if={unit["consumedNullifier"]}
+                        text={unit["consumedNullifier"]}
+                        tooltip="Copy nullifier"
+                      />
+                    </div>
+                    <div class="flex items-center gap-1 text-xs text-base-content/50">
+                      <span>commitment:</span>
+                      <code class="font-mono">{unit["createdCommitment"]}</code>
+                      <.copy_button
+                        :if={unit["createdCommitment"]}
+                        text={unit["createdCommitment"]}
+                        tooltip="Copy commitment"
+                      />
+                    </div>
+                    <%= if unit["action"] && unit["action"]["transaction"] do %>
+                      <div class="flex items-center gap-1 text-xs text-base-content/50">
+                        <span>tx:</span>
+                        <a href={"/transactions/#{unit["action"]["transaction"]["id"]}"} class="font-mono hover:text-primary">
+                          {unit["action"]["transaction"]["evmTransaction"]["txHash"]}
+                        </a>
+                        <.copy_button text={unit["action"]["transaction"]["evmTransaction"]["txHash"]} tooltip="Copy tx hash" />
+                      </div>
+                    <% end %>
                   </div>
                 </td>
-                <td class="hidden md:table-cell">
-                  <div class="flex items-center gap-1">
-                    <code class="hash-display text-xs">
-                      {Formatting.truncate_hash(unit["createdCommitment"])}
-                    </code>
-                    <.copy_button
-                      :if={unit["createdCommitment"]}
-                      text={unit["createdCommitment"]}
-                      tooltip="Copy commitment"
-                    />
-                  </div>
-                </td>
-                <td class="hidden sm:table-cell">
+                <td>
                   <%= if unit["action"] do %>
                     <.network_button chain_id={unit["action"]["chainId"]} />
                   <% else %>
                     -
                   <% end %>
                 </td>
-                <td class="hidden sm:table-cell">
+                <td>
                   <%= if unit["action"] do %>
                     <div class="flex items-center gap-1">
-                      <span class="font-mono text-sm">{unit["action"]["blockNumber"]}</span>
-                      <.copy_button
-                        text={to_string(unit["action"]["blockNumber"])}
-                        tooltip="Copy block number"
-                      />
-                    </div>
-                  <% else %>
-                    -
-                  <% end %>
-                </td>
-                <td>
-                  <%= if unit["action"] && unit["action"]["transaction"] do %>
-                    <div class="flex items-center gap-1">
-                      <a
-                        href={"/transactions/#{unit["action"]["transaction"]["id"]}"}
-                        class="hash-display text-xs hover:text-primary"
-                      >
-                        {Formatting.truncate_hash(unit["action"]["transaction"]["evmTransaction"]["txHash"])}
-                      </a>
-                      <.copy_button
-                        text={unit["action"]["transaction"]["evmTransaction"]["txHash"]}
-                        tooltip="Copy tx hash"
-                        class="hidden sm:inline-flex"
-                      />
+                      <%= if block_url = Networks.block_url(unit["action"]["chainId"], unit["action"]["blockNumber"]) do %>
+                        <a href={block_url} target="_blank" rel="noopener" class="font-mono text-sm link link-hover">
+                          {unit["action"]["blockNumber"]}
+                        </a>
+                      <% else %>
+                        <span class="font-mono text-sm">{unit["action"]["blockNumber"]}</span>
+                      <% end %>
+                      <.copy_button text={to_string(unit["action"]["blockNumber"])} tooltip="Copy block number" />
                     </div>
                   <% else %>
                     -
