@@ -7,15 +7,15 @@ import Config
 # before starting your production server.
 config :anoma_explorer, AnomaExplorerWeb.Endpoint,
   cache_static_manifest: "priv/static/cache_manifest.json",
-  # Compile-time placeholder for force_ssl - actual value set in runtime.exs
-  # via FORCE_SSL env var. This placeholder is required because Phoenix
-  # validates that force_ssl exists at compile time.
-  force_ssl: [rewrite_on: [:x_forwarded_proto]]
-
-# SSL/HTTPS redirect is configured via FORCE_SSL environment variable
-# in config/runtime.exs. Defaults to enabled (true) for security.
-# Set FORCE_SSL=false to disable HTTPS redirect (e.g., when behind a proxy
-# that handles TLS termination, or for health check endpoints).
+  # Force SSL/HTTPS redirect with HSTS enabled.
+  # Health check paths are excluded to allow HTTP health probes from load balancers.
+  # Uses MFA tuple instead of anonymous function to match compile-time and runtime.
+  # Set FORCE_SSL=false env var at runtime to disable (see runtime.exs).
+  force_ssl: [
+    rewrite_on: [:x_forwarded_proto],
+    hsts: true,
+    exclude: {AnomaExplorerWeb.SSL, :exclude_health_checks?, []}
+  ]
 
 # Do not print debug messages in production
 config :logger, level: :info

@@ -90,25 +90,16 @@ if config_env() == :prod do
     end
 
   # Force SSL/HTTPS redirect configuration
-  # FORCE_SSL=true (default): Redirects HTTP to HTTPS, enables HSTS
-  # FORCE_SSL=false: Disables redirect (useful when TLS terminates at load balancer)
-  force_ssl_enabled = System.get_env("FORCE_SSL", "true") == "true"
+  # Default: enabled (configured in prod.exs with HSTS and health check exclusion)
+  # Set FORCE_SSL=false to disable redirect (useful when TLS terminates at load balancer)
+  #
+  # IMPORTANT: The force_ssl config must match compile-time value exactly to avoid
+  # Phoenix compile_env validation errors. The full config is in prod.exs.
+  # Here we only override to `false` when explicitly disabled.
+  force_ssl_disabled = System.get_env("FORCE_SSL") == "false"
 
-  force_ssl_config =
-    if force_ssl_enabled do
-      [
-        rewrite_on: [:x_forwarded_proto],
-        hsts: true,
-        # Exclude health check paths from HTTPS redirect
-        exclude: fn conn ->
-          conn.request_path in ["/health", "/health/ready", "/healthz"]
-        end
-      ]
-    else
-      false
-    end
-
-  config :anoma_explorer, AnomaExplorerWeb.Endpoint,
+  # Base endpoint config without force_ssl (uses compile-time value from prod.exs)
+  endpoint_config = [
     url: [host: host, port: 443, scheme: "https"],
     http: [
       # Enable IPv6 and bind on all interfaces.
@@ -118,8 +109,19 @@ if config_env() == :prod do
       ip: {0, 0, 0, 0, 0, 0, 0, 0}
     ],
     check_origin: check_origin,
-    secret_key_base: secret_key_base,
-    force_ssl: force_ssl_config
+    secret_key_base: secret_key_base
+  ]
+
+  # Only override force_ssl when explicitly disabled
+  endpoint_config =
+    if force_ssl_disabled do
+      Keyword.put(endpoint_config, :force_ssl, false)
+    else
+      # Use compile-time value from prod.exs (with MFA tuple for exclude function)
+      endpoint_config
+    end
+
+  config :anoma_explorer, AnomaExplorerWeb.Endpoint, endpoint_config
 
   # ## SSL Support
   #
