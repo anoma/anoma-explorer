@@ -4,15 +4,15 @@ defmodule AnomaExplorerWeb.CompliancesLive do
   """
   use AnomaExplorerWeb, :live_view
 
-  alias AnomaExplorerWeb.Layouts
-  alias AnomaExplorerWeb.IndexerSetupComponents
-  alias AnomaExplorer.Indexer.GraphQL
   alias AnomaExplorer.Indexer.Client
+  alias AnomaExplorer.Indexer.GraphQL
   alias AnomaExplorer.Indexer.Networks
   alias AnomaExplorer.Utils.Formatting
 
-  alias AnomaExplorerWeb.Live.Helpers.SharedHandlers
+  alias AnomaExplorerWeb.IndexerSetupComponents
+  alias AnomaExplorerWeb.Layouts
   alias AnomaExplorerWeb.Live.Helpers.SetupHandlers
+  alias AnomaExplorerWeb.Live.Helpers.SharedHandlers
   import AnomaExplorerWeb.Live.Helpers.FilterHelpers
 
   @default_filters %{

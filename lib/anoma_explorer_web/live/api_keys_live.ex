@@ -1,8 +1,9 @@
 defmodule AnomaExplorerWeb.ApiKeysLive do
   use AnomaExplorerWeb, :live_view
 
-  alias AnomaExplorerWeb.Layouts
   alias AnomaExplorer.EnvConfig
+
+  alias AnomaExplorerWeb.Layouts
 
   @impl true
   def mount(_params, _session, socket) do

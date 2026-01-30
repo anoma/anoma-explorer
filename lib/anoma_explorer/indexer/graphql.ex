@@ -8,9 +8,9 @@ defmodule AnomaExplorer.Indexer.GraphQL do
 
   require Logger
 
-  alias AnomaExplorer.Settings
   alias AnomaExplorer.Indexer.Cache
   alias AnomaExplorer.Indexer.GraphQL.QueryBuilder
+  alias AnomaExplorer.Settings
 
   # Default timeout values
   @default_timeout 15_000

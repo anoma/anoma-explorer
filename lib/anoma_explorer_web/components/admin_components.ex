@@ -9,8 +9,8 @@ defmodule AnomaExplorerWeb.AdminComponents do
   use Phoenix.Component
   import AnomaExplorerWeb.CoreComponents
 
-  alias Phoenix.LiveView.JS
   alias AnomaExplorerWeb.AdminAuth
+  alias Phoenix.LiveView.JS
 
   @doc """
   Renders a protected button that shows a lock icon when not authorized.

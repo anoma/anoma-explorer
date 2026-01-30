@@ -9,11 +9,11 @@ defmodule AnomaExplorer.Settings do
   import Ecto.Query
 
   alias AnomaExplorer.Repo
-  alias AnomaExplorer.Settings.Protocol
-  alias AnomaExplorer.Settings.ContractAddress
-  alias AnomaExplorer.Settings.Network
   alias AnomaExplorer.Settings.AppSetting
   alias AnomaExplorer.Settings.Cache
+  alias AnomaExplorer.Settings.ContractAddress
+  alias AnomaExplorer.Settings.Network
+  alias AnomaExplorer.Settings.Protocol
 
   @pubsub AnomaExplorer.PubSub
   @topic "settings:changes"

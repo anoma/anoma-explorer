@@ -15,8 +15,8 @@ defmodule AnomaExplorer.Settings.Cache do
 
   require Logger
 
-  alias AnomaExplorer.Settings.ContractAddress
   alias AnomaExplorer.Settings.AppSetting
+  alias AnomaExplorer.Settings.ContractAddress
   alias AnomaExplorer.Settings.Network
 
   @table_name :contract_addresses_cache
