@@ -67,7 +67,10 @@ def application do
       {:plug_cowboy, "~> 2.7"},
       # Testing
       {:mox, "~> 1.2", only: :test},
-      {:tidewave, "~> 0.5.4", only: :dev}
+      {:tidewave, "~> 0.5.4", only: :dev},
+      # Code quality
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false}
     ]
   end
 
