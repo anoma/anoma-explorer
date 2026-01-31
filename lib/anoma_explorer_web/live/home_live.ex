@@ -219,11 +219,16 @@ defmodule AnomaExplorerWeb.HomeLive do
         </div>
         <div class="flex items-center gap-2">
           <%= if @last_updated do %>
-            <span class="text-xs text-base-content/50">
+            <span class="text-xs text-base-content/70">
               Updated {Formatting.format_time(@last_updated)}
             </span>
           <% end %>
-          <button phx-click="refresh" class="btn btn-ghost btn-sm" disabled={@loading}>
+          <button
+            phx-click="refresh"
+            class="btn btn-ghost btn-sm"
+            disabled={@loading}
+            aria-label="Refresh dashboard"
+          >
             <.icon name="hero-arrow-path" class={["w-4 h-4", @loading && "animate-spin"]} />
           </button>
         </div>
@@ -486,7 +491,7 @@ defmodule AnomaExplorerWeb.HomeLive do
                     class="shrink-0"
                   />
                 </div>
-                <div class="flex items-center gap-1.5 text-xs text-base-content/50 flex-wrap">
+                <div class="flex items-center gap-1.5 text-xs text-base-content/70 flex-wrap">
                   <span
                     class="hover:text-primary cursor-pointer"
                     phx-click="show_chain_info"
@@ -513,10 +518,10 @@ defmodule AnomaExplorerWeb.HomeLive do
                     class="inline-flex items-center gap-1 cursor-pointer hover:text-primary"
                     title="View resources"
                   >
-                    <span class="badge badge-outline badge-xs text-error border-error/50">
+                    <span class="badge badge-xs badge-error">
                       {consumed}
                     </span>
-                    <span class="badge badge-outline badge-xs text-success border-success/50">
+                    <span class="badge badge-xs badge-success">
                       {created}
                     </span>
                   </button>

@@ -183,7 +183,7 @@ defmodule AnomaExplorerWeb.TransactionLive do
           >
             Timestamp
           </div>
-          <div class="font-mono">{Formatting.format_timestamp_full(@evm_tx["timestamp"])}</div>
+          <div class="text-sm">{Formatting.format_timestamp_full(@evm_tx["timestamp"])}</div>
         </div>
         <div>
           <div
@@ -205,12 +205,12 @@ defmodule AnomaExplorerWeb.TransactionLive do
           </div>
           <div class="flex items-center gap-2">
             <%= if @block_url do %>
-              <a href={@block_url} target="_blank" class="font-mono hover:text-primary">
+              <a href={@block_url} target="_blank" class="font-mono text-sm hover:text-primary">
                 {@evm_tx["blockNumber"]}
                 <.icon name="hero-arrow-top-right-on-square" class="w-3 h-3 inline ml-1" />
               </a>
             <% else %>
-              <span class="font-mono">{@evm_tx["blockNumber"]}</span>
+              <span class="font-mono text-sm">{@evm_tx["blockNumber"]}</span>
             <% end %>
             <.copy_button text={to_string(@evm_tx["blockNumber"])} tooltip="Copy block number" />
           </div>

@@ -329,7 +329,7 @@ defmodule AnomaExplorerWeb.Layouts do
           class="block w-full pl-11 pr-28 py-3 text-sm bg-base-200/50 border border-base-300/50 rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary/50 focus:bg-base-100 transition-all duration-200 placeholder:text-base-content/40 shadow-sm hover:border-base-300"
         />
         <div class="absolute inset-y-0 right-0 flex items-center gap-2 pr-3">
-          <span class="text-xs text-base-content/40 hidden sm:inline">Transactions</span>
+          <span class="text-xs text-base-content/70 hidden sm:inline">Transactions</span>
           <kbd class="hidden sm:inline-flex items-center gap-0.5 px-2 py-1 text-xs font-medium text-base-content/50 bg-base-300/70 rounded-md border border-base-content/10">
             <span class="text-[10px]">⌘</span>K
           </kbd>
