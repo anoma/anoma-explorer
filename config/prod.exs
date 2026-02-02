@@ -6,16 +6,10 @@ import Config
 # which you should run after static files are built and
 # before starting your production server.
 config :anoma_explorer, AnomaExplorerWeb.Endpoint,
-  cache_static_manifest: "priv/static/cache_manifest.json",
-  # Force SSL/HTTPS redirect with HSTS enabled.
-  # Health check paths are excluded to allow HTTP health probes from load balancers.
-  # Uses MFA tuple instead of anonymous function to match compile-time and runtime.
-  # Set FORCE_SSL=false env var at runtime to disable (see runtime.exs).
-  force_ssl: [
-    rewrite_on: [:x_forwarded_proto],
-    hsts: true,
-    exclude: {AnomaExplorerWeb.SSL, :exclude_health_checks?, []}
-  ]
+  cache_static_manifest: "priv/static/cache_manifest.json"
+
+# Note: force_ssl is configured in runtime.exs to allow runtime control.
+# Set FORCE_SSL=true to enable HTTPS redirect with HSTS.
 
 # Do not print debug messages in production
 config :logger, level: :info

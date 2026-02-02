@@ -60,9 +60,7 @@ defmodule AnomaExplorer.Settings.MonitoringManager do
     active_addresses = Settings.list_active_addresses()
     monitored = MapSet.new(active_addresses, &address_key/1)
 
-    Logger.info("MonitoringManager ready",
-      tracked_addresses: MapSet.size(monitored)
-    )
+    Logger.info("MonitoringManager ready (tracking #{MapSet.size(monitored)} addresses)")
 
     {:noreply, %{state | monitored: monitored}}
   end
@@ -72,7 +70,11 @@ defmodule AnomaExplorer.Settings.MonitoringManager do
     new_state =
       if address.active do
         key = address_key(address)
-        Logger.debug(fn -> "MonitoringManager: new active address\n#{format_address_key(key)}" end)
+
+        Logger.debug(fn ->
+          "MonitoringManager: new active address\n#{format_address_key(key)}"
+        end)
+
         %{state | monitored: MapSet.put(state.monitored, key)}
       else
         state
@@ -88,11 +90,17 @@ defmodule AnomaExplorer.Settings.MonitoringManager do
     new_state =
       cond do
         address.active and not MapSet.member?(state.monitored, key) ->
-          Logger.debug(fn -> "MonitoringManager: address activated\n#{format_address_key(key)}" end)
+          Logger.debug(fn ->
+            "MonitoringManager: address activated\n#{format_address_key(key)}"
+          end)
+
           %{state | monitored: MapSet.put(state.monitored, key)}
 
         not address.active and MapSet.member?(state.monitored, key) ->
-          Logger.debug(fn -> "MonitoringManager: address deactivated\n#{format_address_key(key)}" end)
+          Logger.debug(fn ->
+            "MonitoringManager: address deactivated\n#{format_address_key(key)}"
+          end)
+
           %{state | monitored: MapSet.delete(state.monitored, key)}
 
         true ->

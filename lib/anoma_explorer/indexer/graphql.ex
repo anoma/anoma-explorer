@@ -1033,30 +1033,7 @@ defmodule AnomaExplorer.Indexer.GraphQL do
 
     case :httpc.request(:post, request, http_options, body_format: :binary) do
       {:ok, {{_http_version, 200, _reason}, _headers, response_body}} ->
-        case Jason.decode(response_body) do
-          {:ok, %{"data" => data}} ->
-            {:ok, data}
-
-          {:ok, %{"errors" => errors}} ->
-            Logger.warning(fn ->
-              """
-              GraphQL query returned errors
-                #{inspect(errors, pretty: true, limit: :infinity)}
-              """
-            end)
-
-            {:error, {:graphql_error, errors}}
-
-          {:error, reason} ->
-            Logger.error(fn ->
-              """
-              Failed to decode GraphQL response
-                reason: #{inspect(reason, pretty: true)}
-              """
-            end)
-
-            {:error, {:decode_error, reason}}
-        end
+        decode_graphql_response(response_body)
 
       {:ok, {{_http_version, status, _reason}, _headers, response_body}} ->
         Logger.error(fn ->
@@ -1080,6 +1057,33 @@ defmodule AnomaExplorer.Indexer.GraphQL do
         end)
 
         {:error, {:connection_error, reason}}
+    end
+  end
+
+  defp decode_graphql_response(response_body) do
+    case Jason.decode(response_body) do
+      {:ok, %{"data" => data}} ->
+        {:ok, data}
+
+      {:ok, %{"errors" => errors}} ->
+        Logger.warning(fn ->
+          """
+          GraphQL query returned errors
+            #{inspect(errors, pretty: true, limit: :infinity)}
+          """
+        end)
+
+        {:error, {:graphql_error, errors}}
+
+      {:error, reason} ->
+        Logger.error(fn ->
+          """
+          Failed to decode GraphQL response
+            reason: #{inspect(reason, pretty: true)}
+          """
+        end)
+
+        {:error, {:decode_error, reason}}
     end
   end
 

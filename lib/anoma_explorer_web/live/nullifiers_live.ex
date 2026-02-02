@@ -362,7 +362,11 @@ defmodule AnomaExplorerWeb.NullifiersLive do
                 <div class="flex items-start gap-1 text-xs text-base-content/60">
                   <span>logic:</span>
                   <code class="font-mono break-all">{unit["consumedLogicRef"]}</code>
-                  <.copy_button text={unit["consumedLogicRef"]} tooltip="Copy logic ref" class="shrink-0" />
+                  <.copy_button
+                    text={unit["consumedLogicRef"]}
+                    tooltip="Copy logic ref"
+                    class="shrink-0"
+                  />
                 </div>
               <% end %>
               <%= if unit["consumedResource"] do %>

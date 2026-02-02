@@ -90,15 +90,12 @@ if config_env() == :prod do
     end
 
   # Force SSL/HTTPS redirect configuration
-  # Default: enabled (configured in prod.exs with HSTS and health check exclusion)
-  # Set FORCE_SSL=false to disable redirect (useful when TLS terminates at load balancer)
-  #
-  # IMPORTANT: The force_ssl config must match compile-time value exactly to avoid
-  # Phoenix compile_env validation errors. The full config is in prod.exs.
-  # Here we only override to `false` when explicitly disabled.
-  force_ssl_disabled = System.get_env("FORCE_SSL") == "false"
+  # Default: disabled (TLS typically terminates at the load balancer)
+  # Set FORCE_SSL=true to enable HTTPS redirect with HSTS
+  # (useful when the app handles TLS directly or needs to enforce HTTPS)
+  force_ssl_enabled = System.get_env("FORCE_SSL") == "true"
 
-  # Base endpoint config without force_ssl (uses compile-time value from prod.exs)
+  # Base endpoint config
   endpoint_config = [
     url: [host: host, port: 443, scheme: "https"],
     http: [
@@ -112,12 +109,15 @@ if config_env() == :prod do
     secret_key_base: secret_key_base
   ]
 
-  # Only override force_ssl when explicitly disabled
+  # Add force_ssl only when explicitly enabled
   endpoint_config =
-    if force_ssl_disabled do
-      Keyword.put(endpoint_config, :force_ssl, false)
+    if force_ssl_enabled do
+      Keyword.put(endpoint_config, :force_ssl,
+        rewrite_on: [:x_forwarded_proto],
+        hsts: true,
+        exclude: {AnomaExplorerWeb.SSL, :exclude_health_checks?, []}
+      )
     else
-      # Use compile-time value from prod.exs (with MFA tuple for exclude function)
       endpoint_config
     end
 
