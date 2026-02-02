@@ -374,7 +374,6 @@ defmodule AnomaExplorerWeb.HomeLive do
         />
       </div>
     </div>
-    <.stats_warning stats={@stats} />
     """
   end
 
@@ -412,36 +411,6 @@ defmodule AnomaExplorerWeb.HomeLive do
         <div class="text-xl font-bold text-base-content">
           {Formatting.format_number(@value)}
         </div>
-      </div>
-    <% end %>
-    """
-  end
-
-  defp stats_warning(assigns) do
-    limit = assigns.stats[:stats_limit] || 10_000
-
-    has_capped_value =
-      assigns.stats.transactions >= limit or
-        assigns.stats.resources >= limit or
-        assigns.stats.actions >= limit or
-        (assigns.stats[:compliances] || 0) >= limit or
-        (assigns.stats[:logics] || 0) >= limit
-
-    assigns =
-      assigns
-      |> assign(:show_warning, has_capped_value)
-      |> assign(:limit, limit)
-
-    ~H"""
-    <%= if @show_warning do %>
-      <div class="flex items-center gap-2 text-xs text-base-content/50 mb-6">
-        <.icon name="hero-information-circle" class="w-4 h-4" />
-        <span>
-          Stats showing {Formatting.format_number(@limit)} may be limited by the <a
-            href="/settings/indexer"
-            class="link link-primary"
-          >indexer API</a>. Actual counts could be higher.
-        </span>
       </div>
     <% end %>
     """

@@ -24,6 +24,7 @@ import {
   Payload,
   CommitmentTreeRoot,
   ForwarderCall,
+  Stats,
   handlerContext,
   ProtocolAdapter_TransactionExecuted_event,
   ProtocolAdapter_ActionExecuted_event,
@@ -194,6 +195,69 @@ function clearDecodedCache(txHash: string): void {
 }
 
 // ============================================
+// Stats Singleton
+// ============================================
+const STATS_ID = "global";
+
+/**
+ * Gets the current stats or creates a new one with zero counts.
+ */
+async function getOrCreateStats(context: handlerContext): Promise<Stats> {
+  const existing = await context.Stats.get(STATS_ID);
+  if (existing) {
+    return existing;
+  }
+  return {
+    id: STATS_ID,
+    transactions: 0,
+    resources: 0,
+    resourcesConsumed: 0,
+    resourcesCreated: 0,
+    actions: 0,
+    complianceUnits: 0,
+    logicInputs: 0,
+    commitmentRoots: 0,
+    lastUpdatedBlock: 0,
+    lastUpdatedTimestamp: 0,
+  };
+}
+
+/**
+ * Updates stats with increments and saves to context.
+ */
+async function incrementStats(
+  context: handlerContext,
+  blockNumber: number,
+  timestamp: number,
+  increments: {
+    transactions?: number;
+    resources?: number;
+    resourcesConsumed?: number;
+    resourcesCreated?: number;
+    actions?: number;
+    complianceUnits?: number;
+    logicInputs?: number;
+    commitmentRoots?: number;
+  }
+): Promise<void> {
+  const stats = await getOrCreateStats(context);
+  const updated: Stats = {
+    ...stats,
+    transactions: stats.transactions + (increments.transactions || 0),
+    resources: stats.resources + (increments.resources || 0),
+    resourcesConsumed: stats.resourcesConsumed + (increments.resourcesConsumed || 0),
+    resourcesCreated: stats.resourcesCreated + (increments.resourcesCreated || 0),
+    actions: stats.actions + (increments.actions || 0),
+    complianceUnits: stats.complianceUnits + (increments.complianceUnits || 0),
+    logicInputs: stats.logicInputs + (increments.logicInputs || 0),
+    commitmentRoots: stats.commitmentRoots + (increments.commitmentRoots || 0),
+    lastUpdatedBlock: blockNumber,
+    lastUpdatedTimestamp: timestamp,
+  };
+  context.Stats.set(updated);
+}
+
+// ============================================
 // TransactionExecuted Handler
 // ============================================
 // This event fires LAST in the transaction, after all payload events.
@@ -344,6 +408,18 @@ ProtocolAdapter.TransactionExecuted.handler(async ({ event, context }: Transacti
       context.Resource.set(resourceEntity);
     }
   }
+
+  // Update global stats
+  const totalResources = event.params.tags.length;
+  const consumedCount = Math.floor(totalResources / 2);
+  const createdCount = totalResources - consumedCount;
+
+  await incrementStats(context, event.block.number, event.block.timestamp, {
+    transactions: 1,
+    resources: totalResources,
+    resourcesConsumed: consumedCount,
+    resourcesCreated: createdCount,
+  });
 
   // Clear the cache after processing is complete
   clearDecodedCache(txHash);
@@ -504,6 +580,18 @@ ProtocolAdapter.ActionExecuted.handler(async ({ event, context }: ActionExecuted
         context.Resource.set(updatedResource);
       }
     }
+
+    // Update stats for compliance units and logic inputs from this action
+    await incrementStats(context, event.block.number, event.block.timestamp, {
+      actions: 1,
+      complianceUnits: decodedAction.complianceVerifierInputs.length,
+      logicInputs: decodedAction.logicVerifierInputs.length,
+    });
+  } else {
+    // No decoded action data - just count the action itself
+    await incrementStats(context, event.block.number, event.block.timestamp, {
+      actions: 1,
+    });
   }
 });
 
@@ -614,7 +702,6 @@ ProtocolAdapter.ApplicationPayload.handler(async ({ event, context }: Applicatio
 // ============================================
 
 ProtocolAdapter.CommitmentTreeRootAdded.handler(
-  // eslint-disable-next-line @typescript-eslint/require-await
   async ({ event, context }: CommitmentTreeRootAddedArgs) => {
     const eventId = createEventId(event);
 
@@ -631,6 +718,11 @@ ProtocolAdapter.CommitmentTreeRootAdded.handler(
     };
 
     context.CommitmentTreeRoot.set(entity);
+
+    // Update stats
+    await incrementStats(context, event.block.number, event.block.timestamp, {
+      commitmentRoots: 1,
+    });
   }
 );
 

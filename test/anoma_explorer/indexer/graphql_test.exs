@@ -42,15 +42,20 @@ defmodule AnomaExplorer.Indexer.GraphQLTest do
       |> expect(:post_graphql, fn _url, _query, _timeout, _connect_timeout ->
         {:ok,
          %{
-           "transactions" => [%{"id" => "1"}, %{"id" => "2"}],
-           "resources" => [
-             %{"id" => "r1", "isConsumed" => true},
-             %{"id" => "r2", "isConsumed" => false},
-             %{"id" => "r3", "isConsumed" => false}
-           ],
-           "actions" => [%{"id" => "a1"}],
-           "compliances" => [%{"id" => "c1"}, %{"id" => "c2"}],
-           "logics" => [%{"id" => "l1"}]
+           "Stats" => [
+             %{
+               "transactions" => 2,
+               "resources" => 3,
+               "resourcesConsumed" => 1,
+               "resourcesCreated" => 2,
+               "actions" => 1,
+               "complianceUnits" => 2,
+               "logicInputs" => 1,
+               "commitmentRoots" => 5,
+               "lastUpdatedBlock" => 12345,
+               "lastUpdatedTimestamp" => 1_700_000_000
+             }
+           ]
          }}
       end)
 
@@ -62,6 +67,8 @@ defmodule AnomaExplorer.Indexer.GraphQLTest do
       assert stats.actions == 1
       assert stats.compliances == 2
       assert stats.logics == 1
+      assert stats.commitment_roots == 5
+      assert stats.last_updated_block == 12345
     end
 
     test "returns error when not configured" do
@@ -75,14 +82,8 @@ defmodule AnomaExplorer.Indexer.GraphQLTest do
 
       AnomaExplorer.GraphQLHTTPClientMock
       |> expect(:post_graphql, fn _url, _query, _timeout, _connect_timeout ->
-        {:ok,
-         %{
-           "transactions" => [],
-           "resources" => [],
-           "actions" => [],
-           "compliances" => [],
-           "logics" => []
-         }}
+        # Stats singleton doesn't exist yet - empty array
+        {:ok, %{"Stats" => []}}
       end)
 
       assert {:ok, stats} = GraphQL.get_stats()
@@ -100,13 +101,23 @@ defmodule AnomaExplorer.Indexer.GraphQLTest do
 
       AnomaExplorer.GraphQLHTTPClientMock
       |> expect(:post_graphql, fn _url, _query, _timeout, _connect_timeout ->
+        # Stats singleton exists but with nil fields
         {:ok,
          %{
-           "transactions" => nil,
-           "resources" => nil,
-           "actions" => nil,
-           "compliances" => nil,
-           "logics" => nil
+           "Stats" => [
+             %{
+               "transactions" => nil,
+               "resources" => nil,
+               "resourcesConsumed" => nil,
+               "resourcesCreated" => nil,
+               "actions" => nil,
+               "complianceUnits" => nil,
+               "logicInputs" => nil,
+               "commitmentRoots" => nil,
+               "lastUpdatedBlock" => nil,
+               "lastUpdatedTimestamp" => nil
+             }
+           ]
          }}
       end)
 

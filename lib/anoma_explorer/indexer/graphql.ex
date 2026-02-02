@@ -73,7 +73,9 @@ defmodule AnomaExplorer.Indexer.GraphQL do
           actions: integer(),
           compliances: integer(),
           logics: integer(),
-          stats_limit: integer()
+          commitment_roots: integer(),
+          last_updated_block: integer(),
+          last_updated_timestamp: integer()
         }
 
   @doc """
@@ -93,36 +95,71 @@ defmodule AnomaExplorer.Indexer.GraphQL do
     end
   end
 
-  # Maximum number of items to fetch for counting
-  # Envio GraphQL API doesn't support aggregate queries, so we fetch items and count them
-  @stats_limit 10_000
-
   defp fetch_stats do
+    # Query the Stats singleton entity (id: "global") for accurate counts
     query = """
     query {
-      transactions: Transaction(limit: #{@stats_limit}) { id }
-      resources: Resource(limit: #{@stats_limit}) { id isConsumed }
-      actions: Action(limit: #{@stats_limit}) { id }
-      compliances: ComplianceUnit(limit: #{@stats_limit}) { id }
-      logics: LogicInput(limit: #{@stats_limit}) { id }
+      Stats(where: {id: {_eq: "global"}}) {
+        transactions
+        resources
+        resourcesConsumed
+        resourcesCreated
+        actions
+        complianceUnits
+        logicInputs
+        commitmentRoots
+        lastUpdatedBlock
+        lastUpdatedTimestamp
+      }
     }
     """
 
     case execute(query) do
-      {:ok, data} ->
-        resources = data["resources"] || []
-        consumed = Enum.count(resources, & &1["isConsumed"])
-
+      {:ok, %{"Stats" => [stats | _]}} ->
         {:ok,
          %{
-           transactions: length(data["transactions"] || []),
-           resources: length(resources),
-           consumed: consumed,
-           created: length(resources) - consumed,
-           actions: length(data["actions"] || []),
-           compliances: length(data["compliances"] || []),
-           logics: length(data["logics"] || []),
-           stats_limit: @stats_limit
+           transactions: stats["transactions"] || 0,
+           resources: stats["resources"] || 0,
+           consumed: stats["resourcesConsumed"] || 0,
+           created: stats["resourcesCreated"] || 0,
+           actions: stats["actions"] || 0,
+           compliances: stats["complianceUnits"] || 0,
+           logics: stats["logicInputs"] || 0,
+           commitment_roots: stats["commitmentRoots"] || 0,
+           last_updated_block: stats["lastUpdatedBlock"] || 0,
+           last_updated_timestamp: stats["lastUpdatedTimestamp"] || 0
+         }}
+
+      {:ok, %{"Stats" => []}} ->
+        # No stats yet - return zeros
+        {:ok,
+         %{
+           transactions: 0,
+           resources: 0,
+           consumed: 0,
+           created: 0,
+           actions: 0,
+           compliances: 0,
+           logics: 0,
+           commitment_roots: 0,
+           last_updated_block: 0,
+           last_updated_timestamp: 0
+         }}
+
+      {:ok, _} ->
+        # Fallback for unexpected response shape
+        {:ok,
+         %{
+           transactions: 0,
+           resources: 0,
+           consumed: 0,
+           created: 0,
+           actions: 0,
+           compliances: 0,
+           logics: 0,
+           commitment_roots: 0,
+           last_updated_block: 0,
+           last_updated_timestamp: 0
          }}
 
       error ->

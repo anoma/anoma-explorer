@@ -213,3 +213,23 @@ type ForwarderCall {
   timestamp: Int!
   chainId: Int!
 }
+
+# ============================================
+# Aggregate Statistics
+# ============================================
+
+# Stats - Global statistics singleton (id: "global")
+# Counters are incremented by event handlers for accurate totals.
+type Stats {
+  id: ID!  # Always "global" - singleton pattern
+  transactions: Int!
+  resources: Int!
+  resourcesConsumed: Int!
+  resourcesCreated: Int!
+  actions: Int!
+  complianceUnits: Int!
+  logicInputs: Int!
+  commitmentRoots: Int!
+  lastUpdatedBlock: Int!
+  lastUpdatedTimestamp: Int!
+}
